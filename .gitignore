@@ -1,0 +1,9 @@
+# nextflow
+.nextflow*
+work
+log/*
+
+# data
+data/input/*
+
+.vscode
