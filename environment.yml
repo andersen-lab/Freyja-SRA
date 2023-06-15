@@ -1,0 +1,9 @@
+name: freyja-sra
+channels:
+    - bioconda
+    - conda-forge
+    - defaults
+dependencies:
+  - bioconda::freyja
+  - bioconda::sra-tools
+  - bioconda::minimap2
