@@ -2,8 +2,7 @@ name: freyja-sra
 channels:
     - bioconda
     - conda-forge
-    - defaults
 dependencies:
   - bioconda::freyja
-  - bioconda::sra-tools
   - bioconda::minimap2
+  - bioconda::nextflow=23.04.1

@@ -1,7 +1,8 @@
 # nextflow
 .nextflow*
 work
-log/*
+log
+null
 
 # data
 data/input/*

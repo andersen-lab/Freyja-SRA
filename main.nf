@@ -1,23 +1,35 @@
 #!/usr/bin/env nextflow
 
 /*
- * Automated SRA download and processing pipeline for Freyja analysis.
+ * Automated pipeline for Freyja analysis on SRA data
  */
 
 // Enable DSL 2 syntax
 nextflow.enable.dsl=2
 
 // Define the input parameters
-params.sra_data = "$baseDir/data/input/*.csv"
 
 // SARS-CoV-2 by default, but can be changed to any other pathogen.
-params.refseq = "$baseDir/data/NC_045512_Hu-1.fasta"
-params.primer_bed = "$baseDir/data/nCov-2019_v3.primer.bed"
+params.ref = "$baseDir/data/preprocessing/NC_045512_Hu-1.fasta"
+ref = file(params.ref)
 
-Channel 
-    .fromPath(params.sra_data)
-    .splitCsv(header: true, sep: ',')
-    .map { row -> row.acc}
-    .set { sra_accessions_ch }
-    // .fromSRA(apiKey:$ncbi_api_key)
-sra_accessions_ch.view()
+params.primer_bed = "$baseDir/data/preprocessing/nCov-2019_v3.primer.bed"
+primer_bed = file(params.primer_bed)
+
+// Import modules
+include { 
+    GET_ACCESSIONS;
+    FETCH_NGS;
+} from "./modules/SRA.nf"
+
+Channel
+    .fromPath(params.input)
+    .set { sra_data_ch }
+
+workflow {
+    GET_ACCESSIONS(sra_data_ch)
+    FETCH_NGS(GET_ACCESSIONS.out)
+    
+    Channel.fromFilePairs("${FETCH_NGS.out}/*_{1,2}.fastq.gz")
+        .set { fastq_ch }
+}
