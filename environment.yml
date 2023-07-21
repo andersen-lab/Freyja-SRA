@@ -5,4 +5,5 @@ channels:
 dependencies:
   - bioconda::freyja
   - bioconda::minimap2
+  - bioconda::sra-tools
   - bioconda::nextflow=23.04.1

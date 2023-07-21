@@ -18,15 +18,16 @@ process GET_ACCESSIONS {
     """ 
 }
 
-process FETCH_NGS {
+process FASTERQ_DUMP {
     input:
-    path accession_list
+    val accession
 
     output:
-    path "fastq_dir"
+    tuple val(accession), path("${accession}.fastq.gz")
 
     script:
     """
-    nextflow run nf-core/fetchngs --input ${accession_list} --outdir fastq_dir
-    """ 
+    fasterq-dump --split-files ${accession}
+    """    
+
 }

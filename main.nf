@@ -19,17 +19,25 @@ primer_bed = file(params.primer_bed)
 // Import modules
 include { 
     GET_ACCESSIONS;
-    FETCH_NGS;
+    FASTERQ_DUMP;
 } from "./modules/SRA.nf"
 
-Channel
-    .fromPath(params.input)
-    .set { sra_data_ch }
+include {
+    MINIMAP2;
+    IVAR_TRIM;
+} from "./modules/preprocessing.nf"
 
 workflow {
+    Channel
+        .fromPath(params.input)
+        .set { sra_data_ch }
+
     GET_ACCESSIONS(sra_data_ch)
-    FETCH_NGS(GET_ACCESSIONS.out)
+        .splitCsv(header: false)
+        .set { accession_ch }
+
+    FASTERQ_DUMP(accession_ch)
     
-    Channel.fromFilePairs("${FETCH_NGS.out}/*_{1,2}.fastq.gz")
-        .set { fastq_ch }
+    // Split the accession list into individual accessions
+
 }
