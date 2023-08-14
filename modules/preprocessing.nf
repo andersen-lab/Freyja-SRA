@@ -1,5 +1,5 @@
 /*
- *  Preprocessing steps
+ *  NGS processing
  */
 
 process MINIMAP2 {

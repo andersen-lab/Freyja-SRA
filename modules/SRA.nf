@@ -3,6 +3,7 @@
  */
 
 process GET_ACCESSIONS {
+    publishDir "data/SRA/", mode: 'move'
     input:
     file sra_data
 
@@ -19,15 +20,16 @@ process GET_ACCESSIONS {
 }
 
 process FASTERQ_DUMP {
+    container 'ncbi/sra-tools'
     input:
     val accession
 
     output:
-    tuple val(accession), path("${accession}.fastq.gz")
+    tuple val(accession), path("${accession}_1.fastq"), path("${accession}_2.fastq")
 
     script:
     """
-    fasterq-dump --split-files ${accession}
-    """    
-
+    #!/bin/sh
+    fasterq-dump -e 2 -p ${accession}
+    """
 }

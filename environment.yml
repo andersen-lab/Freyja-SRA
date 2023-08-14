@@ -3,7 +3,6 @@ channels:
     - bioconda
     - conda-forge
 dependencies:
-  - bioconda::freyja
-  - bioconda::minimap2
-  - bioconda::sra-tools
+  - bioconda::freyja=1.4.5
+  - bioconda::minimap2=2.26
   - bioconda::nextflow=23.04.1
