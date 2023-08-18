@@ -20,7 +20,7 @@ process GET_ACCESSIONS {
 }
 
 process FASTERQ_DUMP {
-    container 'ncbi/sra-tools'
+    container 'docker://ncbi/sra-tools'
     input:
     val accession
 
@@ -30,6 +30,6 @@ process FASTERQ_DUMP {
     script:
     """
     #!/bin/sh
-    fasterq-dump -e 2 -p ${accession}
+    fasterq-dump ${accession} --split-files
     """
 }

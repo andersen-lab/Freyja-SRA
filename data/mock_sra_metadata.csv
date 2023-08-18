@@ -1,0 +1,136 @@
+acc,assay_type,center_name,consent,experiment,sample_name,instrument,librarylayout,libraryselection,librarysource,platform,sample_acc,biosample,organism,sra_study,releasedate,bioproject,mbytes,loaddate,avgspotlen,mbases,insertsize,library_name,biosamplemodel_sam,collection_date_sam,geo_loc_name_country_calc,geo_loc_name_country_continent_calc,geo_loc_name_sam,ena_first_public_run,ena_last_update_run,sample_name_sam,datastore_filetype,datastore_provider,datastore_region,attributes,jattr
+SRR17238185,AMPLICON,CSIRO LAND AND WATER,public,SRX13417274,209C,DNBSEQ-G400,PAIRED,RT-PCR,METAGENOMIC,BGISEQ,SRS11318904,SAMN24103239,wastewater metagenome,SRP350896,2021-12-15 00:00:00.000000 UTC,PRJNA789244,2667,,100,4843,,209_C,[SARS-CoV-2: wastewater surveillance],2021-11-25,Australia,Oceania,[Australia: Darwin],[],[],[],"[fastq,run.zq,sra]","[s3,ncbi,gs]","[s3.us-east-1,ncbi.public,gs.US]","{
+  ""attributes"": [{
+    ""k"": ""bases"",
+    ""v"": ""4843829200""
+  }, {
+    ""k"": ""bytes"",
+    ""v"": ""2796745529""
+  }, {
+    ""k"": ""run_file_create_date"",
+    ""v"": ""2021-12-15T12:30:00.000Z""
+  }, {
+    ""k"": ""run_file_version"",
+    ""v"": ""1""
+  }, {
+    ""k"": ""collected_by_sam"",
+    ""v"": ""CSIRO Australia""
+  }, {
+    ""k"": ""collection_date_sam"",
+    ""v"": ""2021-11-25""
+  }, {
+    ""k"": ""isolation_source_sam_ss_dpl262"",
+    ""v"": ""aircraft wastewater""
+  }, {
+    ""k"": ""purpose_of_ww_sampling_sam"",
+    ""v"": ""public health surveillance building-level""
+  }, {
+    ""k"": ""purpose_of_ww_sequencing_sam"",
+    ""v"": ""confirmation of Omicron VOC presence""
+  }, {
+    ""k"": ""sequenced_by_sam"",
+    ""v"": ""MGI Australia""
+  }, {
+    ""k"": ""ww_industrial_effluent_percent_sam"",
+    ""v"": ""0""
+  }, {
+    ""k"": ""ww_population_sam"",
+    ""v"": ""300""
+  }, {
+    ""k"": ""ww_population_source_sam"",
+    ""v"": ""onboard passengers""
+  }, {
+    ""k"": ""ww_pre_treatment_sam"",
+    ""v"": ""none""
+  }, {
+    ""k"": ""ww_primary_sludge_retention_time_sam"",
+    ""v"": ""flight duration""
+  }, {
+    ""k"": ""ww_processing_protocol_sam"",
+    ""v"": ""ultrafiltration with CP Select""
+  }, {
+    ""k"": ""ww_sample_duration_sam"",
+    ""v"": ""0""
+  }, {
+    ""k"": ""ww_sample_matrix_sam"",
+    ""v"": ""raw wastewater""
+  }, {
+    ""k"": ""ww_sample_site_sam"",
+    ""v"": ""airplane""
+  }, {
+    ""k"": ""ww_sample_type_sam"",
+    ""v"": ""grab""
+  }, {
+    ""k"": ""ww_surv_target_1_conc_sam"",
+    ""v"": ""400 GC/mL""
+  }, {
+    ""k"": ""ww_surv_target_1_conc_unit_sam"",
+    ""v"": ""400000""
+  }, {
+    ""k"": ""ww_surv_target_1_gene_sam"",
+    ""v"": ""CDC N1""
+  }, {
+    ""k"": ""ww_surv_target_1_known_present_sam"",
+    ""v"": ""yes""
+  }, {
+    ""k"": ""ww_surv_target_1_protocol_sam"",
+    ""v"": ""https://doi.org/10.1016/j.envint.2021.106938""
+  }, {
+    ""k"": ""ww_surv_target_1_sam"",
+    ""v"": ""SARS-CoV-2""
+  }, {
+    ""k"": ""ww_surv_target_2_conc_sam"",
+    ""v"": ""252 GC/mL""
+  }, {
+    ""k"": ""ww_surv_target_2_conc_unit_sam"",
+    ""v"": ""252000""
+  }, {
+    ""k"": ""ww_surv_target_2_gene_sam"",
+    ""v"": ""CDC N2""
+  }, {
+    ""k"": ""ww_surv_target_2_known_present_sam"",
+    ""v"": ""yes""
+  }, {
+    ""k"": ""ww_surv_target_2_sam"",
+    ""v"": ""SARS-CoV-2""
+  }, {
+    ""k"": ""primary_search"",
+    ""v"": ""209C""
+  }, {
+    ""k"": ""primary_search"",
+    ""v"": ""209_C""
+  }, {
+    ""k"": ""primary_search"",
+    ""v"": ""24103239""
+  }, {
+    ""k"": ""primary_search"",
+    ""v"": ""789244""
+  }, {
+    ""k"": ""primary_search"",
+    ""v"": ""CORONAVIRIDAE""
+  }, {
+    ""k"": ""primary_search"",
+    ""v"": ""PRJNA789244""
+  }, {
+    ""k"": ""primary_search"",
+    ""v"": ""Raw_209_C_1.fq.gz""
+  }, {
+    ""k"": ""primary_search"",
+    ""v"": ""SAMN24103239""
+  }, {
+    ""k"": ""primary_search"",
+    ""v"": ""SRP350896""
+  }, {
+    ""k"": ""primary_search"",
+    ""v"": ""SRR17238185""
+  }, {
+    ""k"": ""primary_search"",
+    ""v"": ""SRS11318904""
+  }, {
+    ""k"": ""primary_search"",
+    ""v"": ""SRX13417274""
+  }, {
+    ""k"": ""primary_search"",
+    ""v"": ""bp0""
+  }]
+}","{""bases"": 4843829200, ""bytes"": 2796745529, ""run_file_create_date"": ""2021-12-15T12:30:00.000Z"", ""run_file_version"": 1, ""collected_by_sam"": [""CSIRO Australia""], ""collection_date_sam"": [""2021-11-25""], ""isolation_source_sam_ss_dpl262"": [""aircraft wastewater""], ""purpose_of_ww_sampling_sam"": ""public health surveillance building-level"", ""purpose_of_ww_sequencing_sam"": ""confirmation of Omicron VOC presence"", ""sequenced_by_sam"": [""MGI Australia""], ""ww_industrial_effluent_percent_sam"": ""0"", ""ww_population_sam"": ""300"", ""ww_population_source_sam"": ""onboard passengers"", ""ww_pre_treatment_sam"": ""none"", ""ww_primary_sludge_retention_time_sam"": ""flight duration"", ""ww_processing_protocol_sam"": ""ultrafiltration with CP Select"", ""ww_sample_duration_sam"": ""0"", ""ww_sample_matrix_sam"": ""raw wastewater"", ""ww_sample_site_sam"": ""airplane"", ""ww_sample_type_sam"": ""grab"", ""ww_surv_target_1_conc_sam"": ""400 GC/mL"", ""ww_surv_target_1_conc_unit_sam"": ""400000"", ""ww_surv_target_1_gene_sam"": ""CDC N1"", ""ww_surv_target_1_known_present_sam"": ""yes"", ""ww_surv_target_1_protocol_sam"": ""https://doi.org/10.1016/j.envint.2021.106938"", ""ww_surv_target_1_sam"": ""SARS-CoV-2"", ""ww_surv_target_2_conc_sam"": ""252 GC/mL"", ""ww_surv_target_2_conc_unit_sam"": ""252000"", ""ww_surv_target_2_gene_sam"": ""CDC N2"", ""ww_surv_target_2_known_present_sam"": ""yes"", ""ww_surv_target_2_sam"": ""SARS-CoV-2"", ""primary_search"": ""209C""}"
