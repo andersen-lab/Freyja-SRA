@@ -6,12 +6,9 @@
 
 
 // SARS-CoV-2 by default, but can be changed to any other pathogen.
-params.ref = "$baseDir/data/preprocessing/NC_045512_Hu-1.fasta"
+params.ref = "$baseDir/data/NC_045512_Hu-1.fasta"
 ref = file(params.ref)
 
-// Primer file for iVar trimming
-params.primer_bed = "$baseDir/data/preprocessing/nCov-2019_v3.primer.bed"
-primer_bed = file(params.primer_bed)
 
 // Import modules
 include { 
@@ -37,7 +34,9 @@ workflow {
     GET_ACCESSIONS(input_ch)
         .splitCsv()
         .map { line -> line.join('') }
+        .take(5)
         .set { acc_ch }
 
     FASTERQ_DUMP(acc_ch)
+    MINIMAP2(FASTERQ_DUMP.out, ref)
 }

@@ -3,7 +3,7 @@ process FREYJA_VARIANTS {
     path input_bam
 
     output:
-    tuple path("${input_bam.baseName}_variants.tsv"), path("${input_bam.baseName}_depths.tsv")
+    tuple val(input_bam.baseName), path("${input_bam.baseName}_variants.tsv"), path("${input_bam.baseName}_depths.tsv")
 
     script:
     """

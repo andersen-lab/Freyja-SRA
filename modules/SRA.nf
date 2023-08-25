@@ -3,7 +3,6 @@
  */
 
 process GET_ACCESSIONS {
-    publishDir "data/SRA/", mode: 'move'
     input:
     file sra_data
 
@@ -20,7 +19,7 @@ process GET_ACCESSIONS {
 }
 
 process FASTERQ_DUMP {
-    container 'docker://ncbi/sra-tools'
+    container { params.profile == "docker" ? "ncbi/sra-tools" : "docker://ncbi/sra-tools" }
     input:
     val accession
 

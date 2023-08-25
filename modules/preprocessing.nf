@@ -4,7 +4,7 @@
 
 process MINIMAP2 {
     input:
-    tuple val(sample_id), path(reads)
+    tuple val(sample_id), path(read1), path(read2)
     path ref
 
     output:
@@ -12,10 +12,24 @@ process MINIMAP2 {
 
     script:
     """
-    minimap2 -ax sr ${ref} ${reads[0]} ${reads[1]} | samtools view -bS - > ${sample_id}.bam
+    minimap2 -ax sr ${ref} ${read1} ${read2} | samtools view -bS - > ${sample_id}.bam
     """
 }
 
+process GET_PRIMER_BED {
+    input:
+    val(sample_id)
+
+    output:
+    path "${sample_id}_primer.bed"
+
+    script:
+    """
+    #!/usr/bin/env python3
+
+    from get_ncbi_metadata import *;pull_sample_bed('${sample}')
+    """
+}
 process IVAR_TRIM {
     input:
     path input_bam
