@@ -13,35 +13,22 @@ process MINIMAP2 {
     script:
     """
     minimap2 -ax sr ${ref} ${read1} ${read2} | samtools view -bS - > ${sample_id}.bam
+    samtools sort -o ${sample_id}.bam ${sample_id}.bam
     """
 }
 
-process GET_PRIMER_BED {
-    input:
-    val(sample_id)
-
-    output:
-    path "${sample_id}_primer.bed"
-
-    script:
-    """
-    #!/usr/bin/env python3
-
-    from get_ncbi_metadata import *;pull_sample_bed('${sample}')
-    """
-}
 process IVAR_TRIM {
     input:
     path input_bam
-    path primer_bed
+    val primer_scheme
+    path bedfiles
 
     output:
-    path "${input_bam.baseName}.trimmed.bam"
+    path "${input_bam.baseName}.bam"
 
     script:
     """
     samtools sort -o ${input_bam.baseName}.sorted.bam ${input_bam}
-    samtools index ${input_bam.baseName}.sorted.bam
-    ivar trim -x 5 -e -i ${input_bam.baseName}.sorted.bam -b ${primer_bed} -p ${input_bam.baseName}.trimmed.bam
+    ivar trim -x 4 -e -m 80 -i ${input_bam.baseName}.sorted.bam -b ${bedfiles}/${primer_scheme}.bed -p ${input_bam.baseName}.bam
     """
 }

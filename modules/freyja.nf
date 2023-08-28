@@ -7,19 +7,20 @@ process FREYJA_VARIANTS {
 
     script:
     """
-    freyja variants ${input_bam} --variants ${input_bam.baseName}_variants.tsv --depths ${input_bam.baseName}_depths.tsv --ref ${params.ref}
+    samtools sort -o ${input_bam.baseName}.sorted.bam ${input_bam}
+    freyja variants ${input_bam}.sorted.bam --variants ${input_bam.baseName}_variants.tsv --depths ${input_bam.baseName}_depths.tsv --ref ${params.ref}
     """
 }
 
-process FREYJA_BOOT {
+process FREYJA_DEMIX {
     input:
-    tuple path(variants), path(depths)
+    tuple val(sample_id), path(variants), path(depths)
 
     output:
-    tuple path("${variants.baseName}_boot.tsv"), path("${depths.baseName}_boot.tsv")
+    path "${sample_id}_demix.tsv"
 
     script:
     """
-    freyja boot ${variants} ${depths} --variants ${variants.baseName}_boot.tsv --depths ${depths.baseName}_boot.tsv --output_basename ${variants.baseName}
+    freyja demix ${variants} ${depths} --variants ${variants} --depths ${depths} --output ${sample_id}_demix.tsv
     """
 }
