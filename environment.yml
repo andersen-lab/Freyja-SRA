@@ -1,7 +1,6 @@
 name: freyja-sra
 channels:
     - bioconda
-    - conda-forge
 dependencies:
   - bioconda::freyja=1.4.5
   - bioconda::minimap2=2.26

@@ -1,5 +1,5 @@
 /*
- *  NGS processing
+ *  NGS processing and iVar trimming
  */
 
 process MINIMAP2 {
@@ -17,21 +17,48 @@ process MINIMAP2 {
     """
 }
 
-
-process IVAR_TRIM {
-    errorStrategy 'ignore'
-    
+process SAMTOOLS_1 {
     input:
-    path input_bam
+    path bamfile
+
+    output:
+    path "${bamfile.baseName}.sorted.bam"
+    path "${bamfile.baseName}.sorted.bam.bai"
+
+    script:
+    """
+    samtools sort -o ${bamfile.baseName}.sorted.bam ${bamfile}
+    samtools index ${bamfile.baseName}.sorted.bam
+    """
+}
+
+process SAMTOOLS_2 {
+    input:
+    path bamfile
+
+    output:
+    path "${bamfile.baseName}.sorted.bam"
+    path "${bamfile.baseName}.sorted.bam.bai"
+
+    script:
+    """
+    samtools sort -o ${bamfile.baseName}.sorted.bam ${bamfile}
+    samtools index ${bamfile.baseName}.sorted.bam
+    """
+}
+
+process IVAR_TRIM {    
+    input:
+    path sorted_bam
+    path bam_index
     val primer_scheme
     path bedfiles
 
     output:
-    path "${input_bam.baseName}.trimmed.bam"
+    path "${sorted_bam.baseName}.trimmed.bam"
 
     script:
     """
-    samtools sort -o ${input_bam.baseName}.sorted.bam ${input_bam}
-    ivar trim -x 4 -e -m 80 -i ${input_bam.baseName}.sorted.bam -b ${bedfiles}/${primer_scheme}.bed -p ${input_bam.baseName}.trimmed.bam
+    ivar trim -x 4 -e -m 80 -i ${sorted_bam} -b ${bedfiles}/${primer_scheme}.bed -p ${sorted_bam.baseName}.trimmed.bam
     """
 }

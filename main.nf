@@ -22,12 +22,15 @@ include {
 
 include {
     MINIMAP2;
+    SAMTOOLS_1;
+    SAMTOOLS_2;
     IVAR_TRIM;
 } from "./modules/preprocessing.nf"
 
 include {
     FREYJA_VARIANTS;
     FREYJA_DEMIX;
+    FREYJA_AGGREGATE;
 } from "./modules/freyja.nf"
 
 workflow preprocessing {
@@ -41,16 +44,24 @@ workflow preprocessing {
         .take(5)
         .set { acc_ch }
 
-
-    FASTERQ_DUMP(acc_ch)
-    MINIMAP2(FASTERQ_DUMP.out, ref)
-    
     GET_AMPLICON_SCHEME(acc_ch, input_ch.first())
         .map { it.text }
         .set { primer_scheme_ch }
 
-    
-    IVAR_TRIM(MINIMAP2.out, primer_scheme_ch, bedfiles)
-    //FREYJA_VARIANTS(IVAR_TRIM.out, ref)
-    //FREYJA_DEMIX(FREYJA_VARIANTS.out)
+    FASTERQ_DUMP(acc_ch)
+    MINIMAP2(FASTERQ_DUMP.out, ref)
+    SAMTOOLS_1(MINIMAP2.out)
+    IVAR_TRIM(SAMTOOLS_1.out, primer_scheme_ch, bedfiles)
+    SAMTOOLS_2(IVAR_TRIM.out)
+    FREYJA_VARIANTS(SAMTOOLS_2.out, ref)
+}
+
+workflow demix {
+    Channel
+        .fromFilePairs("${params.output}/variants/SRR*{variants,depths}.tsv")
+        .set { variants_ch }
+
+    FREYJA_DEMIX(variants_ch)
+        .collect()
+        .set { demix_ch }
 }

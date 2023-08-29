@@ -43,7 +43,7 @@ process GET_AMPLICON_SCHEME {
     elif 'SNAP' in scheme:
         primer_scheme = 'snap_primers'
     else:
-        primer_scheme = 'unknown scheme'
+        primer_scheme = 'default'
 
     with open('primer_scheme.txt', 'w') as f:
         f.write(primer_scheme)
