@@ -13,7 +13,7 @@ process GET_ACCESSIONS {
     """
     #!/usr/bin/env python3
     import pandas as pd
-    df = pd.read_csv('wastewater_ncbi.csv',index_col=0)
+    df = pd.read_csv('${sra_data}',index_col=0)
     pd.Series(df.index).to_csv('acc_list.csv', index=False, header=False)
     """ 
 }
