@@ -8,7 +8,7 @@
 // SARS-CoV-2 by default, but can be changed to any other pathogen.
 params.ref = "$baseDir/data/NC_045512_Hu-1.fasta"
 params.bedfiles = "$baseDir/data/bedfiles"
-
+params.output = "$baseDir/output"
 
 ref = file(params.ref)
 bedfiles = file(params.bedfiles)
@@ -51,10 +51,6 @@ workflow preprocessing {
 
     
     IVAR_TRIM(MINIMAP2.out, primer_scheme_ch, bedfiles)
-    FREYJA_VARIANTS(IVAR_TRIM.out)
-    FREYJA_DEMIX(FREYJA_VARIANTS.out)
+    //FREYJA_VARIANTS(IVAR_TRIM.out, ref)
+    //FREYJA_DEMIX(FREYJA_VARIANTS.out)
 }
-
-// workflow DEMIX {
-//     FREYJA_DEMIX()
-// }

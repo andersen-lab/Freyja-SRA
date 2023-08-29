@@ -17,18 +17,21 @@ process MINIMAP2 {
     """
 }
 
+
 process IVAR_TRIM {
+    errorStrategy 'ignore'
+    
     input:
     path input_bam
     val primer_scheme
     path bedfiles
 
     output:
-    path "${input_bam.baseName}.bam"
+    path "${input_bam.baseName}.trimmed.bam"
 
     script:
     """
     samtools sort -o ${input_bam.baseName}.sorted.bam ${input_bam}
-    ivar trim -x 4 -e -m 80 -i ${input_bam.baseName}.sorted.bam -b ${bedfiles}/${primer_scheme}.bed -p ${input_bam.baseName}.bam
+    ivar trim -x 4 -e -m 80 -i ${input_bam.baseName}.sorted.bam -b ${bedfiles}/${primer_scheme}.bed -p ${input_bam.baseName}.trimmed.bam
     """
 }
