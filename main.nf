@@ -5,24 +5,24 @@
  */
 
 
-// SARS-CoV-2 by default, but can be changed to any other pathogen.
+// SARS-CoV-2 default parameters
 params.ref = "$baseDir/data/NC_045512_Hu-1.fasta"
+params.annot = "$baseDir/data/NC_045512_Hu-1.gff"
 params.bedfiles = "$baseDir/data/bedfiles"
-params.baseDir = "$baseDir"
 params.output = "$baseDir/output"
 
 // Freyja covariants specific parameters
-params.annot = "$baseDir/data/NC_045512_Hu-1.gff"
 params.min_site = 21563
 params.max_site = 25384
 
 ref = file(params.ref)
 bedfiles = file(params.bedfiles)
-baseDir = file(params.baseDir)
+baseDir = file("$baseDir")
 annot = file(params.annot)
 
 // Import modules
-include { 
+include {
+    GET_NCBI_METADATA;
     GET_ACCESSIONS;
     GET_AMPLICON_SCHEME;
     FASTERQ_DUMP;
@@ -44,9 +44,12 @@ include {
 } from "./modules/freyja.nf"
 
 workflow preprocessing {
-    Channel
-        .fromPath(params.input)
-        .set { input_ch } 
+    // Channel
+    //     .fromPath(params.input)
+    //     .set { input_ch } 
+
+    GET_NCBI_METADATA(baseDir)
+        .set { input_ch }
 
     GET_ACCESSIONS(input_ch)
         .splitCsv()
