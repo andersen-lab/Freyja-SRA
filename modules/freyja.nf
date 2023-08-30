@@ -2,17 +2,17 @@ process FREYJA_VARIANTS {
     publishDir "${params.output}/variants", mode: 'copy'
 
     input:
+    val sra_accession
     path input_bam
     path bam_index
     path ref
 
     output:
-    tuple val(input_bam.baseName), path("${input_bam.baseName}.variants.tsv"), path("${input_bam.baseName}.depths.tsv")
+    tuple val(sra_accession), path("${sra_accession}.variants.tsv"), path("${sra_accession}.depths.tsv")
 
     script:
     """
-    samtools sort -o ${input_bam.baseName}.sorted.bam ${input_bam}
-    freyja variants ${input_bam.baseName}.sorted.bam --variants ${input_bam.baseName}.variants.tsv --depths ${input_bam.baseName}.depths.tsv --ref ${ref}
+    freyja variants ${input_bam} --variants ${sra_accession}.variants.tsv --depths ${sra_accession}.depths.tsv --ref ${ref}
     """
 }
 
@@ -32,17 +32,42 @@ process FREYJA_DEMIX {
 }
 
 process FREYJA_AGGREGATE {
-    publishDir params.output, mode: 'copy'
+    publishDir "${params.output}/demix", mode: 'copy'
 
     input:
-    path demix
+    val demix_outputs
 
     output:
-    path "demix/aggregate.tsv"
+    path "aggregate.tsv"
 
     script:
     """
-    freyja aggregate ${demix} --output demix/aggregate.tsv
+    #!/usr/bin/env python3
+    import subprocess
+
+    paths_string = "${demix_outputs}"
+    paths_list = paths_string[1:-1].split(", ")
+
+    subprocess.run(["mkdir", "aggregate_dir"])
+    for file in paths_list:
+       subprocess.run(["cp", file, "aggregate_dir"])
+
+    subprocess.run(["freyja", "aggregate", "aggregate_dir/", "--output", "aggregate.tsv"])
+    """
+}
+
+process FREYJA_PLOT {
+    publishDir "${params.output}/plot", mode: 'copy'
+
+    input:
+    path aggregate_output
+
+    output:
+    path "mix_plot.pdf"
+
+    script:
+    """
+    freyja plot ${aggregate_output} --output mix_plot.pdf
     """
 }
 process FREYJA_COVARIANTS {

@@ -22,6 +22,7 @@ process SAMTOOLS_1 {
     path bamfile
 
     output:
+    val bamfile.baseName
     path "${bamfile.baseName}.sorted.bam"
     path "${bamfile.baseName}.sorted.bam.bai"
 
@@ -31,34 +32,37 @@ process SAMTOOLS_1 {
     samtools index ${bamfile.baseName}.sorted.bam
     """
 }
-
-process SAMTOOLS_2 {
+process IVAR_TRIM {
     input:
-    path bamfile
-
-    output:
-    path "${bamfile.baseName}.sorted.bam"
-    path "${bamfile.baseName}.sorted.bam.bai"
-
-    script:
-    """
-    samtools sort -o ${bamfile.baseName}.sorted.bam ${bamfile}
-    samtools index ${bamfile.baseName}.sorted.bam
-    """
-}
-
-process IVAR_TRIM {    
-    input:
+    val sra_accession
     path sorted_bam
     path bam_index
     val primer_scheme
     path bedfiles
 
     output:
-    path "${sorted_bam.baseName}.trimmed.bam"
+    val sra_accession
+    path "${sra_accession}.trimmed.bam"
 
     script:
     """
-    ivar trim -x 4 -e -m 80 -i ${sorted_bam} -b ${bedfiles}/${primer_scheme}.bed -p ${sorted_bam.baseName}.trimmed.bam
+    ivar trim -x 4 -e -m 80 -i ${sorted_bam} -b ${bedfiles}/${primer_scheme}.bed -p ${sra_accession}.trimmed.bam
+    """
+}
+
+process SAMTOOLS_2 {
+    input:
+    val sra_accession
+    path bamfile
+
+    output:
+    val sra_accession
+    path "${sra_accession}.sorted.bam"
+    path "${sra_accession}.sorted.bam.bai"
+
+    script:
+    """
+    samtools sort -o ${sra_accession}.sorted.bam ${bamfile}
+    samtools index ${sra_accession}.sorted.bam
     """
 }

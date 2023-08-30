@@ -31,6 +31,7 @@ include {
     FREYJA_VARIANTS;
     FREYJA_DEMIX;
     FREYJA_AGGREGATE;
+    FREYJA_PLOT;
 } from "./modules/freyja.nf"
 
 workflow preprocessing {
@@ -64,4 +65,7 @@ workflow demix {
     FREYJA_DEMIX(variants_ch)
         .collect()
         .set { demix_ch }
+
+    FREYJA_AGGREGATE(demix_ch)
+    FREYJA_PLOT(FREYJA_AGGREGATE.out)
 }
