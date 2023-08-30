@@ -5,6 +5,6 @@ log
 null
 
 # data
-data/input/*
+output/*
 
 .vscode
