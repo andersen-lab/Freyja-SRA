@@ -36,6 +36,7 @@ process FREYJA_AGGREGATE {
 
     input:
     val demix_outputs
+    path workDir
 
     output:
     path "aggregate.tsv"
