@@ -32,11 +32,11 @@ process FREYJA_DEMIX {
 }
 
 process FREYJA_AGGREGATE {
-    publishDir "${params.output}/demix", mode: 'copy'
+    publishDir "${params.output}/aggregate", mode: 'copy'
 
     input:
     val demix_outputs
-    path workDir
+    path baseDir
 
     output:
     path "aggregate.tsv"
@@ -72,17 +72,20 @@ process FREYJA_PLOT {
     """
 }
 process FREYJA_COVARIANTS {
+    publishDir "${params.output}/covariants", mode: 'copy'
+
     input:
-    input_bam
+    val sra_accession
+    path input_bam
+    path bam_index
     path ref
     path annot
 
     output:
-    path "${input_bam.baseName}.covariants.tsv"
+    path "${sra_accession}.covariants.tsv"
 
     script:
     """
-    samtools sort -o ${input_bam.baseName}.sorted.bam ${input_bam}
-    freyja covariants ${input_bam}.sorted.bam --variants ${input_bam.baseName}.covariants.tsv --ref ${ref} --annot ${annot}
+    freyja covariants ${input_bam} ${params.min_site} ${params.max_site} --output ${sra_accession}.covariants.tsv --ref-genome ${ref} --gff-file ${annot}
     """
 }

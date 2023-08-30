@@ -8,7 +8,7 @@
 // SARS-CoV-2 by default, but can be changed to any other pathogen.
 params.ref = "$baseDir/data/NC_045512_Hu-1.fasta"
 params.bedfiles = "$baseDir/data/bedfiles"
-params.workDir = "$baseDir/work"
+params.baseDir = "$baseDir"
 params.output = "$baseDir/output"
 
 // Freyja covariants specific parameters
@@ -18,7 +18,7 @@ params.max_site = 25384
 
 ref = file(params.ref)
 bedfiles = file(params.bedfiles)
-workDir = file(params.workDir)
+baseDir = file(params.baseDir)
 annot = file(params.annot)
 
 // Import modules
@@ -40,6 +40,7 @@ include {
     FREYJA_DEMIX;
     FREYJA_AGGREGATE;
     FREYJA_PLOT;
+    FREYJA_COVARIANTS;
 } from "./modules/freyja.nf"
 
 workflow preprocessing {
@@ -50,7 +51,6 @@ workflow preprocessing {
     GET_ACCESSIONS(input_ch)
         .splitCsv()
         .map { line -> line.join('') }
-        .take(100)
         .set { acc_ch }
 
     GET_AMPLICON_SCHEME(acc_ch, input_ch.first())
@@ -63,6 +63,7 @@ workflow preprocessing {
     IVAR_TRIM(SAMTOOLS_1.out, primer_scheme_ch, bedfiles)
     SAMTOOLS_2(IVAR_TRIM.out)
     FREYJA_VARIANTS(SAMTOOLS_2.out, ref)
+    //FREYJA_COVARIANTS(SAMTOOLS_2.out, ref, annot)
 }
 
 workflow demix {
@@ -74,6 +75,6 @@ workflow demix {
         .collect()
         .set { demix_ch }
 
-    FREYJA_AGGREGATE(demix_ch, workDir)
+    FREYJA_AGGREGATE(demix_ch, baseDir)
     FREYJA_PLOT(FREYJA_AGGREGATE.out)
 }

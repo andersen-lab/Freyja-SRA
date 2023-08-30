@@ -1,5 +1,5 @@
 /*
- *  NGS processing and iVar trimming
+ *  Alignment and primer trimming
  */
 
 process MINIMAP2 {
