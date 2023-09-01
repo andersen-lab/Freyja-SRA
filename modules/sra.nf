@@ -68,8 +68,8 @@ process GET_NCBI_METADATA {
     # df = df[df['collection_date'] >='2023-07-20']
 
     # Drop rows where `freyja variants` output already exists
-    variants = [file.split('.')[0] for file in os.listdir("${baseDir}/output/variants") if file.endswith('.variants.tsv')]
-    df = df[~df.index.isin(variants)]
+    #variants = [file.split('.')[0] for file in os.listdir("${baseDir}/output/variants") if file.endswith('.variants.tsv')]
+    #df = df[~df.index.isin(variants)]
 
     df.to_csv('wastewater_ncbi.csv')
     """

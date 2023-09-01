@@ -20,20 +20,39 @@ process FREYJA_DEMIX {
     publishDir "${params.output}/demix", mode: 'copy'
 
     input:
-    tuple val(sample_id), path(variants_output)
+    tuple val(sample_id), path(variants), path(depths)
 
     output:
     path "${sample_id}.demix.tsv"
 
     script:
     """
-    freyja demix ${variants_output[1]} ${variants_output[0]} --output ${sample_id}.demix.tsv
+    freyja demix ${variants} ${depths} --output ${sample_id}.demix.tsv
     """
 }
 
-process FREYJA_AGGREGATE {
-    publishDir "${params.output}/aggregate", mode: 'copy'
+process FREYJA_COVARIANTS {
+    publishDir "${params.output}/covariants", mode: 'copy'
 
+    input:
+    val sra_accession
+    path input_bam
+    path bam_index
+    path ref
+    path annot
+
+    output:
+    path "${sra_accession}.covariants.tsv"
+
+    script:
+    """
+    freyja covariants ${input_bam} ${params.min_site} ${params.max_site} --output ${sra_accession}.covariants.tsv --ref-genome ${ref} --gff-file ${annot}
+    """
+}
+
+//process AGGREGATE_VARIANTS {}
+
+process AGGREGATE_DEMIX {
     input:
     val demix_outputs
     path baseDir
@@ -57,35 +76,4 @@ process FREYJA_AGGREGATE {
     """
 }
 
-process FREYJA_PLOT {
-    publishDir "${params.output}/plot", mode: 'copy'
-
-    input:
-    path aggregate_output
-
-    output:
-    path "mix_plot.pdf"
-
-    script:
-    """
-    freyja plot ${aggregate_output} --output mix_plot.pdf
-    """
-}
-process FREYJA_COVARIANTS {
-    publishDir "${params.output}/covariants", mode: 'copy'
-
-    input:
-    val sra_accession
-    path input_bam
-    path bam_index
-    path ref
-    path annot
-
-    output:
-    path "${sra_accession}.covariants.tsv"
-
-    script:
-    """
-    freyja covariants ${input_bam} ${params.min_site} ${params.max_site} --output ${sra_accession}.covariants.tsv --ref-genome ${ref} --gff-file ${annot}
-    """
-}
+//process AGGREGATE_COVARIANTS {}
