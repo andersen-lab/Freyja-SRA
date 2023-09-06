@@ -67,10 +67,6 @@ process GET_NCBI_METADATA {
     ## add last 
     # df = df[df['collection_date'] >='2023-07-20']
 
-    # Drop rows where `freyja variants` output already exists
-    #variants = [file.split('.')[0] for file in os.listdir("${baseDir}/output/variants") if file.endswith('.variants.tsv')]
-    #df = df[~df.index.isin(variants)]
-
     df.to_csv('wastewater_ncbi.csv')
     """
 }
@@ -94,12 +90,15 @@ process GET_ACCESSIONS {
 }
 
 process GET_AMPLICON_SCHEME {
+
     input:
-    val sample_id
-    file sra_data
+    val sra_accession
+    file sra_data    
 
     output:
-    path 'primer_scheme.txt'
+    val sra_accession
+    path('primer_scheme.txt')
+
 
     script:
     """
@@ -108,20 +107,25 @@ process GET_AMPLICON_SCHEME {
     import pandas as pd
     
     df = pd.read_csv('${sra_data}',index_col=0)
-    scheme = df.loc['${sample_id}','amplicon_PCR_primer_scheme']
-    if 'QIAseq' in scheme or 'v3' in scheme:
+    scheme = df.loc['${sra_accession}','amplicon_PCR_primer_scheme']
+    
+    scheme = str(scheme)
+
+    if scheme == 'nan':
+        primer_scheme = 'unknown'
+    elif 'QIAseq' in scheme or 'v3' in scheme:
         primer_scheme = 'ARTICv3'
     elif 'V5.3' in scheme:
         primer_scheme = 'ARTICv5.3.2'
-    elif 'V4.1' in scheme:
+    elif 'V4.1' or 'v4.1' in scheme:
         primer_scheme = 'ARTICv4.1'
     elif 'SNAP' in scheme:
         primer_scheme = 'snap_primers'
     else:
-        primer_scheme = 'default'
+        primer_scheme = 'unknown'
 
     with open('primer_scheme.txt', 'w') as f:
-        f.write(primer_scheme)
+            f.write(primer_scheme)
     """
 }
 
@@ -130,9 +134,10 @@ process FASTERQ_DUMP {
     container { params.profile == "docker" ? "ncbi/sra-tools" : "docker://ncbi/sra-tools" }
     input:
     val accession
+    path primer_scheme
 
     output:
-    tuple val(accession), path("${accession}_1.fastq"), path("${accession}_2.fastq")
+    tuple val(accession), path("${accession}_1.fastq"), path("${accession}_2.fastq"), path(primer_scheme)
 
     script:
     """

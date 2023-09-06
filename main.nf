@@ -37,19 +37,15 @@ include {
     FREYJA_COVARIANTS;
     AGGREGATE_VARIANTS
     AGGREGATE_DEMIX;
-    // AGGREGATE_COVARIANTS;
+    AGGREGATE_COVARIANTS;
 } from "./modules/freyja.nf"
 
 include {
     CHECK_SAMPLES_IN_ES;
 } from "./modules/elasticsearch.nf"
 
-params.input = "./output/metadata/wastewater_ncbi.csv"
-input = file(params.input)
+
 workflow fetch {
-    // Channel
-    //     .fromPath(input)
-    //     .set { input_ch }
 
     GET_NCBI_METADATA(baseDir)
         .set { input_ch }
@@ -76,9 +72,14 @@ workflow fetch {
     SAMTOOLS_1_unknown_primer(unknown_primer_bam_ch)
         .set { unknown_primer_sorted_trimmed_ch }
     
+    fq_ch.known_primer
+        .map { it[3].text }
+        .set { primer_ch }
+    
     MINIMAP2(fq_ch.known_primer, ref)
     SAMTOOLS_1(MINIMAP2.out)
-    IVAR_TRIM(SAMTOOLS_1.out, bedfiles)
+    IVAR_TRIM(SAMTOOLS_1.out, primer_ch,
+                 bedfiles)
     SAMTOOLS_2(IVAR_TRIM.out)
         .set { known_primer_sorted_trimmed_ch }
 
@@ -92,17 +93,17 @@ workflow fetch {
         .map { it[1] }
         .set { variants_ch }
 
-    // FREYJA_DEMIX(FREYJA_VARIANTS.out)
-    //     .collect()
-    //     .set { demix_ch }
+    FREYJA_DEMIX(FREYJA_VARIANTS.out)
+        .collect()
+        .set { demix_ch }
 
-    // FREYJA_COVARIANTS(SAMTOOLS_2.out, ref, annot)
-    //     .collect()
-    //     .set { covariants_ch }
+    FREYJA_COVARIANTS(SAMTOOLS_2.out, ref, annot)
+        .collect()
+        .set { covariants_ch }
 
-    // AGGREGATE_VARIANTS(variants_ch, baseDir)
-    // AGGREGATE_DEMIX(demix_ch, baseDir)
-    // AGGREGATE_COVARIANTS()
+    AGGREGATE_VARIANTS(variants_ch, baseDir)
+    AGGREGATE_DEMIX(demix_ch, baseDir)
+    AGGREGATE_COVARIANTS(covariants_ch, baseDir)
 }
 
 workflow rerun_demix {

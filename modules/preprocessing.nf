@@ -22,12 +22,10 @@ process MINIMAP2 {
 
     output:
     path "${sample_id}.bam"
-    val primer_scheme
 
     script:
     """
     minimap2 -ax sr ${ref} ${read1} ${read2} | samtools view -bS - > ${sample_id}.bam
-    samtools sort -o ${sample_id}.bam ${sample_id}.bam
     """
 }
 
@@ -42,20 +40,17 @@ process MINIMAP2_unknown_primer {
     script:
     """
     minimap2 -ax sr ${ref} ${read1} ${read2} | samtools view -bS - > ${sample_id}.bam
-    samtools sort -o ${sample_id}.bam ${sample_id}.bam
     """
 }
 
 process SAMTOOLS_1 {
     input:
     path bamfile
-    val primer_scheme
 
     output:
     val bamfile.baseName
     path "${bamfile.baseName}.sorted.bam"
     path "${bamfile.baseName}.sorted.bam.bai"
-    val primer_scheme
 
     script:
     """
