@@ -24,9 +24,7 @@ include {
 include {
     BBDUK_TRIM;
     MINIMAP2;
-    MINIMAP2_unknown_primer;
     SAMTOOLS_1;
-    SAMTOOLS_1_unknown_primer;
     SAMTOOLS_2;
     IVAR_TRIM;
 } from "./modules/preprocessing.nf"
@@ -45,7 +43,7 @@ include {
 } from "./modules/elasticsearch.nf"
 
 
-workflow fetch {
+workflow fetch_sra {
 
     GET_NCBI_METADATA(baseDir)
         .set { input_ch }
@@ -66,29 +64,61 @@ workflow fetch {
         }
         .set { fq_ch }
 
-    BBDUK_TRIM(fq_ch.unknown_primer)
-    MINIMAP2_unknown_primer(BBDUK_TRIM.out, ref)
-        .set { unknown_primer_bam_ch }
-    SAMTOOLS_1_unknown_primer(unknown_primer_bam_ch)
-        .set { unknown_primer_sorted_trimmed_ch }
+    process_unknown_primer(fq_ch.unknown_primer)
+    process_known_primer(fq_ch.known_primer)
+
+    // BBDUK_TRIM(fq_ch.unknown_primer)
+    // MINIMAP2_unknown_primer(BBDUK_TRIM.out, ref)
+    //     .set { unknown_primer_bam_ch }
+    // SAMTOOLS_1_unknown_primer(unknown_primer_bam_ch)
+    //     .set { unknown_primer_sorted_trimmed_ch }
     
-    fq_ch.known_primer
+    // fq_ch.known_primer
+    //     .map { it[3].text }
+    //     .set { primer_ch }
+    
+    // MINIMAP2(fq_ch.known_primer, ref)
+    // SAMTOOLS_1(MINIMAP2.out)
+    // IVAR_TRIM(SAMTOOLS_1.out, primer_ch,
+    //              bedfiles)
+    // SAMTOOLS_2(IVAR_TRIM.out)
+    //     .set { known_primer_sorted_trimmed_ch }
+}
+
+workflow process_unknown_primer {
+    take: unknown_primer_fastq_ch
+
+    main:
+    BBDUK_TRIM(unknown_primer_fastq_ch)
+    MINIMAP2(BBDUK_TRIM.out, ref)
+    SAMTOOLS_1(MINIMAP2.out)
+
+    freyja(SAMTOOLS_1.out)
+}
+
+workflow process_known_primer {
+    take: known_primer_fastq_ch
+
+    main:
+    known_primer_fastq_ch
         .map { it[3].text }
         .set { primer_ch }
-    
-    MINIMAP2(fq_ch.known_primer, ref)
+    MINIMAP2(known_primer_fastq_ch, ref)
     SAMTOOLS_1(MINIMAP2.out)
-    IVAR_TRIM(SAMTOOLS_1.out, primer_ch,
-                 bedfiles)
+    IVAR_TRIM(SAMTOOLS_1.out, primer_ch, bedfiles)
     SAMTOOLS_2(IVAR_TRIM.out)
-        .set { known_primer_sorted_trimmed_ch }
 
-    Channel
-        .from(unknown_primer_sorted_trimmed_ch)
-        .concat(known_primer_sorted_trimmed_ch)
-        .set { sorted_trimmed_ch }
+    freyja(SAMTOOLS_2.out)
+}
 
-    FREYJA_VARIANTS(known_primer_sorted_trimmed_ch, ref)
+workflow freyja {
+    take:
+    sra_accession
+    input_bam
+    bam_index
+    
+    main:
+    FREYJA_VARIANTS(sra_accession, input_bam, bam_index, ref)
         .collect()
         .map { it[1] }
         .set { variants_ch }
@@ -97,7 +127,7 @@ workflow fetch {
         .collect()
         .set { demix_ch }
 
-    FREYJA_COVARIANTS(SAMTOOLS_2.out, ref, annot)
+    FREYJA_COVARIANTS(sra_accession, input_bam, bam_index, ref, annot)
         .collect()
         .set { covariants_ch }
 
@@ -105,6 +135,7 @@ workflow fetch {
     AGGREGATE_DEMIX(demix_ch, baseDir)
     AGGREGATE_COVARIANTS(covariants_ch, baseDir)
 }
+
 
 workflow rerun_demix {
     Channel

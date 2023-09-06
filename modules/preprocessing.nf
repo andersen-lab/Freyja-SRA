@@ -29,37 +29,7 @@ process MINIMAP2 {
     """
 }
 
-process MINIMAP2_unknown_primer {
-    input:
-    tuple val(sample_id), path(read1), path(read2), val(primer_scheme)
-    path ref
-
-    output:
-    path "${sample_id}.bam"
-
-    script:
-    """
-    minimap2 -ax sr ${ref} ${read1} ${read2} | samtools view -bS - > ${sample_id}.bam
-    """
-}
-
 process SAMTOOLS_1 {
-    input:
-    path bamfile
-
-    output:
-    val bamfile.baseName
-    path "${bamfile.baseName}.sorted.bam"
-    path "${bamfile.baseName}.sorted.bam.bai"
-
-    script:
-    """
-    samtools sort -o ${bamfile.baseName}.sorted.bam ${bamfile}
-    samtools index ${bamfile.baseName}.sorted.bam
-    """
-}
-
-process SAMTOOLS_1_unknown_primer {
     input:
     path bamfile
 
