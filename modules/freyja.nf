@@ -21,13 +21,14 @@ process FREYJA_DEMIX {
 
     input:
     tuple val(sample_id), path(variants), path(depths)
+    val eps
 
     output:
     path "${sample_id}.demix.tsv"
 
     script:
     """
-    freyja demix ${variants} ${depths} --output ${sample_id}.demix.tsv
+    freyja demix ${variants} ${depths} --eps ${eps} --output ${sample_id}.demix.tsv
     """
 }
 
