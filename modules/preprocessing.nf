@@ -11,7 +11,7 @@ process BBDUK_TRIM {
 
     script:
     """
-    bbduk.sh in=${read1} in2=${read2} out=${sample_id}_trimmed_1.fastq out2=${sample_id}_trimmed_2.fastq ftl=10 ftr=139
+    bbduk.sh in=${read1} in2=${read2} out=${sample_id}_trimmed_1.fastq out2=${sample_id}_trimmed_2.fastq ftl=30 ftr=119
     """
 }
 

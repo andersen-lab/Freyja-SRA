@@ -33,7 +33,8 @@ process FREYJA_DEMIX {
 
 process FREYJA_COVARIANTS {
     publishDir "${params.output}/covariants", mode: 'copy'
-
+    errorStrategy 'ignore'
+    
     input:
     val sra_accession
     path input_bam

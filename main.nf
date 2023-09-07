@@ -67,22 +67,6 @@ workflow fetch_sra {
     process_unknown_primer(fq_ch.unknown_primer)
     process_known_primer(fq_ch.known_primer)
 
-    // BBDUK_TRIM(fq_ch.unknown_primer)
-    // MINIMAP2_unknown_primer(BBDUK_TRIM.out, ref)
-    //     .set { unknown_primer_bam_ch }
-    // SAMTOOLS_1_unknown_primer(unknown_primer_bam_ch)
-    //     .set { unknown_primer_sorted_trimmed_ch }
-    
-    // fq_ch.known_primer
-    //     .map { it[3].text }
-    //     .set { primer_ch }
-    
-    // MINIMAP2(fq_ch.known_primer, ref)
-    // SAMTOOLS_1(MINIMAP2.out)
-    // IVAR_TRIM(SAMTOOLS_1.out, primer_ch,
-    //              bedfiles)
-    // SAMTOOLS_2(IVAR_TRIM.out)
-    //     .set { known_primer_sorted_trimmed_ch }
 }
 
 workflow process_unknown_primer {
