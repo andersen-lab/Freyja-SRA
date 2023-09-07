@@ -59,8 +59,7 @@ process GET_NCBI_METADATA {
         dictVals['SRA_id'] = root0[0].attrib['accession']
         allDictVals[sampID] =dictVals
 
-    // acc_in_db = pd.read_csv('${acc_in_db}',header=None).index
-    // print('acc in db', acc_in_db)
+    #print('acc in db', acc_in_db)
 
     df = pd.DataFrame(allDictVals).T
 
@@ -71,7 +70,7 @@ process GET_NCBI_METADATA {
     ## add last 
 
 
-    df = df[df['collection_date'] >='2023-07-20']
+    df = df[df['collection_date'] >='2023-02-01']
 
     
     df.to_csv('wastewater_ncbi.csv')

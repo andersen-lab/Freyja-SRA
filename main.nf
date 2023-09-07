@@ -51,7 +51,6 @@ workflow fetch_sra {
     GET_ACCESSIONS(input_ch)
         .splitCsv()
         .map { line -> line.join('') }
-        .take(10)
         .set { acc_ch }
 
     GET_AMPLICON_SCHEME(acc_ch, input_ch)
