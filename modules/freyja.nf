@@ -99,6 +99,7 @@ process AGGREGATE_VARIANTS {
 }
 
 process AGGREGATE_DEMIX {
+    publishDir "${params.output}/aggregate", mode: 'copy'
     input:
     val demix_outputs
     path baseDir

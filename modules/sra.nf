@@ -4,6 +4,7 @@
 
 process GET_NCBI_METADATA {
     input:
+    //path acc_in_db
     path baseDir
 
     output: 
@@ -58,6 +59,9 @@ process GET_NCBI_METADATA {
         dictVals['SRA_id'] = root0[0].attrib['accession']
         allDictVals[sampID] =dictVals
 
+    // acc_in_db = pd.read_csv('${acc_in_db}',header=None).index
+    // print('acc in db', acc_in_db)
+
     df = pd.DataFrame(allDictVals).T
 
     df.columns = df.columns.str.replace(' ','_')
@@ -65,8 +69,11 @@ process GET_NCBI_METADATA {
     df['collection_date'] = pd.to_datetime(df['collection_date'].apply(lambda x: x.split('/')[0] if '/' in x else x))
     df = df.sort_values(by='collection_date',ascending=False)
     ## add last 
-    # df = df[df['collection_date'] >='2023-07-20']
 
+
+    df = df[df['collection_date'] >='2023-07-20']
+
+    
     df.to_csv('wastewater_ncbi.csv')
     """
 }

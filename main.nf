@@ -40,8 +40,8 @@ include {
 
 include {
     CHECK_SAMPLES_IN_ES;
+    PUSH_TO_ES;
 } from "./modules/elasticsearch.nf"
-
 
 workflow fetch_sra {
 
@@ -118,6 +118,8 @@ workflow freyja {
     AGGREGATE_VARIANTS(variants_ch, baseDir)
     AGGREGATE_DEMIX(demix_ch, baseDir)
     AGGREGATE_COVARIANTS(covariants_ch, baseDir)
+
+    //PUSH_TO_ES(host, user, password, AGGREGATE_VARIANTS.out, AGGREGATE_DEMIX.out, AGGREGATE_COVARIANTS.out)
 }
 
 
