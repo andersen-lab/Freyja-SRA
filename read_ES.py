@@ -2,7 +2,7 @@ import eland as ed
 from elasticsearch import Elasticsearch
 
 USER = 'elastic'
-PASS = 'g*tfsy4uJIXUtyBrFhHs'
+PASS = 'changeme'
 CERTIFICATE = '/etc/ssl/certs/ca-certificates.crt'
 
 es = Elasticsearch(['https://localhost:9200'], basic_auth=(USER, PASS), verify_certs=False, ca_certs=CERTIFICATE)

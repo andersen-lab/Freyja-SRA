@@ -13,3 +13,6 @@ output/*
 # Singularity
 *.img
 *.sif
+
+# Elasticsearch
+elasticsearch-*
