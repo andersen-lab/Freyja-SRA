@@ -4,28 +4,43 @@
 
 process BBDUK_TRIM {
     input:
-    tuple val(sample_id), path(read1), path(read2), val(primer_scheme)
+    tuple val(sample_id), path(primer_scheme), path(reads)
 
     output:
-    tuple val(sample_id), path("${sample_id}_trimmed_1.fastq"), path("${sample_id}_trimmed_2.fastq"), val(primer_scheme)
+    tuple val(sample_id), val(primer_scheme), path("*_trimmed.fastq")
 
     script:
+    def read1 = reads.first()
+    def read2 = reads.last()
     """
-    bbduk.sh in=${read1} in2=${read2} out=${sample_id}_trimmed_1.fastq out2=${sample_id}_trimmed_2.fastq ftl=30 ftr=119
+    if ${read1} == ${read2}
+    then
+        bbduk.sh in=${read1} out=${sample_id}_trimmed.fastq ftl=30 ftr=119
+    else
+    bbduk.sh in=${read1} in2=${read2} out=${sample_id}_1_trimmed.fastq out2=${sample_id}_2_trimmed.fastq ftl=30 ftr=119
+    fi
     """
 }
 
 process MINIMAP2 {
     input:
-    tuple val(sample_id), path(read1), path(read2), val(primer_scheme)
+    tuple val(sample_id), val(primer_scheme), path(reads)
     path ref
 
     output:
     path "${sample_id}.bam"
 
     script:
+    def read1 = reads.first()
+    def read2 = reads.last()
+
     """
-    minimap2 -ax sr ${ref} ${read1} ${read2} | samtools view -bS - > ${sample_id}.bam
+    if ${read1} == ${read2}
+    then
+        minimap2 -ax sr ${ref} ${read1} | samtools view -bS - > ${sample_id}.bam
+    else
+        minimap2 -ax sr ${ref} ${read1} ${read2} | samtools view -bS - > ${sample_id}.bam
+    fi
     """
 }
 

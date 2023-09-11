@@ -7,4 +7,9 @@ null
 # data
 output/*
 
+# vscode
 .vscode
+
+# Singularity
+*.img
+*.sif

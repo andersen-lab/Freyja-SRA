@@ -4,6 +4,9 @@
  * Automated pipeline for Freyja analysis of SRA data
  */
 
+
+input = file(params.input)
+
 ref = file(params.ref)
 bedfiles = file(params.bedfiles)
 baseDir = file("$baseDir")
@@ -15,7 +18,6 @@ password = params.es_pass
 
 // Import modules
 include {
-    GET_NCBI_METADATA;
     GET_ACCESSIONS;
     GET_AMPLICON_SCHEME;
     FASTERQ_DUMP;
@@ -45,21 +47,23 @@ include {
 
 workflow fetch_sra {
 
-    GET_NCBI_METADATA(baseDir)
+    Channel
+        .fromPath(input)
         .set { input_ch }
 
     GET_ACCESSIONS(input_ch)
         .splitCsv()
         .map { line -> line.join('') }
+        .take(50)
         .set { acc_ch }
 
-    GET_AMPLICON_SCHEME(acc_ch, input_ch)
+    GET_AMPLICON_SCHEME(acc_ch, input)
         .set { primer_scheme_ch }
 
     FASTERQ_DUMP(primer_scheme_ch)
         .branch {
-            unknown_primer: it[3].text == 'unknown'
-            known_primer: it[3].text != 'unknown'
+            unknown_primer: it[1].text == 'unknown'
+            known_primer: it[1].text != 'unknown'
         }
         .set { fq_ch }
 
@@ -84,7 +88,7 @@ workflow process_known_primer {
 
     main:
     known_primer_fastq_ch
-        .map { it[3].text }
+        .map { it[1].text }
         .set { primer_ch }
     MINIMAP2(known_primer_fastq_ch, ref)
     SAMTOOLS_1(MINIMAP2.out)
