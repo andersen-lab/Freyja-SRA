@@ -1,0 +1,6 @@
+Singularity:
+singularity exec -B ./:/mnt/ freyja-sra_latest.sif python3 /mnt/fetch_sra_metadata.py 
+singularity exec freyja-sra_latest.sif cp wastewater_ncbi.csv .
+
+Docker:
+TODO

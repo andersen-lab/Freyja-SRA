@@ -10,7 +10,6 @@ argparser = argparse.ArgumentParser(description='Fetch most recent SRA metadata'
 
 def main():
     Entrez.email = "jolevy@scripps.edu"
-    # handle = Entrez.esearch(db="sra", idtype='acc', retmax=10000, term="((wastewater metagenome[Organism] OR (wastewater metagenome[Organism] OR wastewater metagenome[All Fields])) AND (Severe acute respiratory syndrome coronavirus 2[Organism] OR (Severe acute respiratory syndrome coronavirus 2[Organism] OR sars-cov-2[All Fields]))) AND strategy wgs[Properties]")#, idtype="acc")
     handle = Entrez.esearch(db="sra", idtype='acc', retmax=2000,
                             sort='recently_added',
                             term="((wastewater metagenome[Organism] OR wastewater metagenome[All Fields]) AND SARS-CoV-2))") 
@@ -38,7 +37,6 @@ def main():
         sampID =  [r.text for r in root0.findall('.//RUN_SET/RUN/IDENTIFIERS/PRIMARY_ID')]
         if len(sampID)>1:
             print('more than one experiment... add funcs')
-            asdfa
         else:
             sampID = sampID[0]
         ## write to dictionary form
@@ -48,8 +46,6 @@ def main():
         dictVals['experiment_id'] = sampID
         dictVals['SRA_id'] = root0[0].attrib['accession']
         allDictVals[sampID] =dictVals
-
-    #print('acc in db', acc_in_db)
 
     df = pd.DataFrame(allDictVals).T
 
