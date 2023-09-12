@@ -4,7 +4,8 @@ channels:
     - conda-forge
     - agbiome
 dependencies:
-  - bioconda::freyja=1.4.6
+  - bioconda::freyja=1.4.7
   - bioconda::minimap2=2.26
   - conda-forge::click=8.1.7
+  - conda-forge::shortuuid=1.0.11
   - agbiome::bbtools=37.62
