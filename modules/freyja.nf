@@ -18,6 +18,8 @@ process FREYJA_VARIANTS {
 
 process FREYJA_DEMIX {
     publishDir "${params.output}/demix", mode: 'copy'
+    errorStrategy 'retry'
+    maxRetries 3
 
     input:
     tuple val(sample_id), path(variants), path(depths)
@@ -29,7 +31,7 @@ process FREYJA_DEMIX {
 
     script:
     """
-    freyja demix ${variants} ${depths} --eps ${eps} --depthcutoff ${depthCutoff} --output ${sample_id}.demix.tsv
+    freyja demix ${variants} ${depths} --eps ${eps} --depthcutoff ${depthCutoff + (5*task.attempt)} --output ${sample_id}.demix.tsv
     """
 }
 
