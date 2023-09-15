@@ -59,7 +59,7 @@ def main():
     df = df[df['collection_date'] >='2023-02-01']
 
 
-    df.to_csv('/mnt/wastewater_ncbi.csv')
+    df.to_csv('data/wastewater_ncbi.csv')
 
 if __name__ == "__main__":
     main()

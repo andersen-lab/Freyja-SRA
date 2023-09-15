@@ -1,4 +1,4 @@
-name: fetch_ncbi_metadata
+name: Update NCBI metadata
 
 on:
   schedule:
@@ -7,10 +7,26 @@ on:
 jobs:
   fetch_ncbi_metadata:
     runs-on: ubuntu-latest
+    container: dylanpilz/freyja-sra:latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - name: Checkout main
+        uses: actions/checkout@main
         with:
-          python-version: "3.8"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Fetch NCBI metadata
-        run: python fetch_ncbi_metadata.py
+        run: python scripts/fetch_sra_metadata.py
+
+      - name: Find new samples
+        run: python scripts/find_new_samples.py
+
+      - name: Run pipeline on new samples
+        run: |
+              nextflow run main.nf \
+              --input samples_to_process.csv \
+              -profile docker \
+              -entry fetch_sra \
+              -resume 
+      - name: Commit and push changes (if any)
+        run: 
+
