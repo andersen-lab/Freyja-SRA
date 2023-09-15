@@ -4,15 +4,9 @@ work
 log
 null
 
-# data
-output/*
-
 # vscode
 .vscode
 
 # Singularity
 *.img
 *.sif
-
-# Elasticsearch
-elasticsearch-*

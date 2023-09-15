@@ -64,7 +64,7 @@ process GET_AMPLICON_SCHEME {
 process FASTERQ_DUMP {
     container { params.profile == "docker" ? "ncbi/sra-tools" : "docker://ncbi/sra-tools" }
     errorStrategy 'ignore'
-    
+    disk '1TB'
     input:
     val accession
     path primer_scheme
