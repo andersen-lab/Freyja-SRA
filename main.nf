@@ -24,7 +24,7 @@ include {
 } from "./modules/sra.nf"
 
 include {
-    BBDUK_TRIM;
+    CUTADAPT_TRIM;
     MINIMAP2;
     SAMTOOLS_1;
     SAMTOOLS_2;
@@ -39,6 +39,7 @@ include {
     AGGREGATE_DEMIX;
     AGGREGATE_COVARIANTS;
 } from "./modules/freyja.nf"
+
 
 workflow fetch_sra {
 
@@ -71,7 +72,7 @@ workflow process_unknown_primer {
     take: unknown_primer_fastq_ch
 
     main:
-    BBDUK_TRIM(unknown_primer_fastq_ch)
+    CUTADAPT_TRIM(unknown_primer_fastq_ch)
     MINIMAP2(BBDUK_TRIM.out, ref)
     SAMTOOLS_1(MINIMAP2.out)
 
