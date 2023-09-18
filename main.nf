@@ -24,7 +24,7 @@ include {
 } from "./modules/sra.nf"
 
 include {
-    BBDUK_TRIM;
+    CUTADAPT_TRIM;
     MINIMAP2;
     SAMTOOLS_1;
     SAMTOOLS_2;
@@ -39,6 +39,7 @@ include {
     AGGREGATE_DEMIX;
     AGGREGATE_COVARIANTS;
 } from "./modules/freyja.nf"
+
 
 workflow fetch_sra {
 
@@ -71,7 +72,7 @@ workflow process_unknown_primer {
     take: unknown_primer_fastq_ch
 
     main:
-    BBDUK_TRIM(unknown_primer_fastq_ch)
+    CUTADAPT_TRIM(unknown_primer_fastq_ch)
     MINIMAP2(BBDUK_TRIM.out, ref)
     SAMTOOLS_1(MINIMAP2.out)
 
@@ -116,8 +117,6 @@ workflow freyja {
     AGGREGATE_VARIANTS(variants_ch, baseDir)
     AGGREGATE_DEMIX(demix_ch, baseDir)
     AGGREGATE_COVARIANTS(covariants_ch, baseDir)
-
-    //PUSH_TO_ES(host, user, password, AGGREGATE_VARIANTS.out, AGGREGATE_DEMIX.out, AGGREGATE_COVARIANTS.out)
 }
 
 
@@ -131,5 +130,4 @@ workflow rerun_demix {
         .set { demix_ch }
 
     FREYJA_AGGREGATE(demix_ch, baseDir)
-    FREYJA_PLOT(FREYJA_AGGREGATE.out)
 }
