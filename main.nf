@@ -40,11 +40,6 @@ include {
     AGGREGATE_COVARIANTS;
 } from "./modules/freyja.nf"
 
-include {
-    CHECK_SAMPLES_IN_ES;
-    PUSH_TO_ES;
-} from "./modules/elasticsearch.nf"
-
 workflow fetch_sra {
 
     Channel
@@ -54,7 +49,7 @@ workflow fetch_sra {
     GET_ACCESSIONS(input_ch)
         .splitCsv()
         .map { line -> line.join('') }
-        .take(50)
+        .take(10)
         .set { acc_ch }
 
     GET_AMPLICON_SCHEME(acc_ch, input)
