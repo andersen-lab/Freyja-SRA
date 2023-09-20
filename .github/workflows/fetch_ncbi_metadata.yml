@@ -14,14 +14,14 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
-        with:
-          sparse-checkout: .
+
 
       - name: Setup nextflow
         uses: nf-core/setup-nextflow@v1
 
       - name: Fetch NCBI metadata
-        run: ls
+          
+        run: python scripts/fetch_sra_metadata.py
 
       - name: Find new samples
         run: python scripts/find_new_samples.py
