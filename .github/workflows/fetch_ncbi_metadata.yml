@@ -16,14 +16,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           sparse-checkout: .
+
       - name: Setup nextflow
         uses: nf-core/setup-nextflow@v1
 
       - name: Fetch NCBI metadata
-        run: python scripts/fetch_sra_metadata.py
+        run: python /home/runner/work/Freyja-SRA/scripts/fetch_sra_metadata.py
 
       - name: Find new samples
-        run: python scripts/find_new_samples.py
+        run: python /home/runner/work/Freyja-SRA/scripts/find_new_samples.py
 
       - name: Run pipeline on new samples
         run: |
