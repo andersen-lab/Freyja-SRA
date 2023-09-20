@@ -20,7 +20,7 @@ jobs:
           sparse-checkout: .
       - name: Remove Java JDK
         run: |
-              mamba remove -y --force java-jdk
+              docker run mamba remove -y --force java-jdk
 
       - name: Fetch NCBI metadata
         run: python scripts/fetch_sra_metadata.py
