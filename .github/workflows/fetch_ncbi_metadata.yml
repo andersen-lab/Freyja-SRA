@@ -21,10 +21,10 @@ jobs:
         uses: nf-core/setup-nextflow@v1
 
       - name: Fetch NCBI metadata
-        run: python /home/runner/work/Freyja-SRA/scripts/fetch_sra_metadata.py
+        run: echo $PWD
 
       - name: Find new samples
-        run: python /home/runner/work/Freyja-SRA/scripts/find_new_samples.py
+        run: python scripts/find_new_samples.py
 
       - name: Run pipeline on new samples
         run: |
