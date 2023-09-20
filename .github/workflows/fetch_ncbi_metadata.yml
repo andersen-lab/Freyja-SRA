@@ -10,9 +10,7 @@ on:
 jobs:
   fetch_ncbi_metadata:
     runs-on: ubuntu-latest
-    container:
-      image: dylanpilz/freyja-sra:latest
-      options: --user root
+
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
