@@ -2,7 +2,7 @@
  *  Alignment and primer trimming
  */
 
-process BBDUK_TRIM {
+process CUTADAPT_TRIM {
     input:
     tuple val(sample_id), path(primer_scheme), path(reads)
 
@@ -15,9 +15,9 @@ process BBDUK_TRIM {
     """
     if ${read1} == ${read2}
     then
-        bbduk.sh in=${read1} out=${sample_id}_trimmed.fastq ftl=30 ftr=119
+        cutadapt -l +30 -l -30 -o ${sample_id}_trimmed.fastq ${read1}
     else
-    bbduk.sh in=${read1} in2=${read2} out=${sample_id}_1_trimmed.fastq out2=${sample_id}_2_trimmed.fastq ftl=30 ftr=119
+        cutadapt -l +30 -l -30 -o ${sample_id}_1_trimmed.fastq -p ${sample_id}_2_trimmed.fastq ${read1} ${read2}
     fi
     """
 }
