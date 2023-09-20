@@ -4,7 +4,6 @@ nextflow.enable.dsl=2
  * Automated pipeline for Freyja analysis of SRA data
  */
 
-
 input = file(params.input)
 
 ref = file(params.ref)
@@ -20,7 +19,7 @@ include {
 } from "./modules/sra.nf"
 
 include {
-    CUTADAPT_TRIM;
+    BBDUK_TRIM;
     MINIMAP2;
     SAMTOOLS_1;
     SAMTOOLS_2;
@@ -67,7 +66,7 @@ workflow process_unknown_primer {
     take: unknown_primer_fastq_ch
 
     main:
-    CUTADAPT_TRIM(unknown_primer_fastq_ch)
+    BBDUK_TRIM(unknown_primer_fastq_ch)
     MINIMAP2(BBDUK_TRIM.out, ref)
     SAMTOOLS_1(MINIMAP2.out)
 

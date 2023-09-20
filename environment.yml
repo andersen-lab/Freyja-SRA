@@ -2,8 +2,9 @@ name: freyja-sra
 channels:
     - bioconda
     - conda-forge
+    - agbiome
 dependencies:
-  - bioconda::cutadapt=4.4
+  - agbiome::bbtools=37.62
   - bioconda::freyja=1.4.7
   - bioconda::minimap2=2.26
   - conda-forge::shortuuid=1.0.11
