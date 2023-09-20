@@ -1,0 +1,24 @@
+{
+    "mappings": {
+        "properties": {
+            "sample_id": {
+                "type": "keyword"
+            },
+            "lineages": {
+                "type": "nested"
+            },
+            "collection_date": {
+                "type": "date"
+            },
+            "geo_loc_name": {
+                "type": "keyword"
+            },
+            "ww_population": {
+                "type": "float"
+            },
+            "site_id": {
+                "type": "keyword"
+            }
+        }
+    }
+}

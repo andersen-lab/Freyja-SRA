@@ -31,16 +31,8 @@ process MINIMAP2 {
     path "${sample_id}.bam"
 
     script:
-    def read1 = reads.first()
-    def read2 = reads.last()
-
     """
-    if ${read1} == ${read2}
-    then
-        minimap2 -ax sr ${ref} ${read1} | samtools view -bS - > ${sample_id}.bam
-    else
-        minimap2 -ax sr ${ref} ${read1} ${read2} | samtools view -bS - > ${sample_id}.bam
-    fi
+    minimap2 -ax sr ${ref} ${reads} | samtools view -bS - > ${sample_id}.bam   
     """
 }
 

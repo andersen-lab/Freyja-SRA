@@ -1,5 +1,5 @@
 #!/usr/bin/env nextflow
-
+nextflow.enable.dsl=2
 /*
  * Automated pipeline for Freyja analysis of SRA data
  */
@@ -11,10 +11,6 @@ ref = file(params.ref)
 bedfiles = file(params.bedfiles)
 baseDir = file("$baseDir")
 annot = file(params.annot)
-
-host = params.es_host
-user = params.es_user
-password = params.es_pass
 
 // Import modules
 include {
@@ -40,6 +36,7 @@ include {
     AGGREGATE_COVARIANTS;
 } from "./modules/freyja.nf"
 
+
 workflow fetch_sra {
 
     Channel
@@ -49,7 +46,6 @@ workflow fetch_sra {
     GET_ACCESSIONS(input_ch)
         .splitCsv()
         .map { line -> line.join('') }
-        .take(10)
         .set { acc_ch }
 
     GET_AMPLICON_SCHEME(acc_ch, input)
@@ -116,8 +112,6 @@ workflow freyja {
     AGGREGATE_VARIANTS(variants_ch, baseDir)
     AGGREGATE_DEMIX(demix_ch, baseDir)
     AGGREGATE_COVARIANTS(covariants_ch, baseDir)
-
-    //PUSH_TO_ES(host, user, password, AGGREGATE_VARIANTS.out, AGGREGATE_DEMIX.out, AGGREGATE_COVARIANTS.out)
 }
 
 
@@ -131,5 +125,4 @@ workflow rerun_demix {
         .set { demix_ch }
 
     FREYJA_AGGREGATE(demix_ch, baseDir)
-    FREYJA_PLOT(FREYJA_AGGREGATE.out)
 }
