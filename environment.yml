@@ -6,5 +6,6 @@ channels:
 dependencies:
   - agbiome::bbtools=37.62
   - bioconda::freyja=1.4.7
+  - bioconda::nextflow=23.04.3
   - bioconda::minimap2=2.26
   - conda-forge::shortuuid=1.0.11
