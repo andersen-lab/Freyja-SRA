@@ -21,7 +21,7 @@ jobs:
         uses: nf-core/setup-nextflow@v1
 
       - name: Fetch NCBI metadata
-        run: echo $PWD
+        run: ls
 
       - name: Find new samples
         run: python scripts/find_new_samples.py
