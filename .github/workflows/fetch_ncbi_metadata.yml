@@ -1,6 +1,9 @@
 name: Update NCBI metadata
 
 on:
+  push:
+    branches:
+      - main
   schedule:
       - cron: "0 0 * * *"
 
@@ -23,10 +26,13 @@ jobs:
       - name: Run pipeline on new samples
         run: |
               nextflow run main.nf \
-              --input samples_to_process.csv \
+              --input data/new_samples.csv \
               -profile docker \
               -entry fetch_sra \
-              -resume 
-      - name: Commit and push changes (if any)
-        run: 
+              -resume
+      - name: Clean work and cache
+        run: |
+              nextflow clean -f
+      
+
 
