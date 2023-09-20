@@ -13,9 +13,9 @@ jobs:
     container: dylanpilz/freyja-sra:latest
     steps:
       - name: Checkout main
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          sparse-checkout: .
 
       - name: Fetch NCBI metadata
         run: python scripts/fetch_sra_metadata.py
