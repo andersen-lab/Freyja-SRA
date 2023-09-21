@@ -30,11 +30,14 @@ include {
     FREYJA_VARIANTS;
     FREYJA_DEMIX;
     FREYJA_COVARIANTS;
+} from "./modules/freyja.nf"
+
+include {
     AGGREGATE_VARIANTS
     AGGREGATE_DEMIX;
     AGGREGATE_COVARIANTS;
-} from "./modules/freyja.nf"
-
+    DEMIX_TO_JSON;
+} from "./modules/aggregate.nf"
 
 workflow fetch_sra {
 
@@ -111,6 +114,8 @@ workflow freyja {
     AGGREGATE_VARIANTS(variants_ch, baseDir)
     AGGREGATE_DEMIX(demix_ch, baseDir)
     AGGREGATE_COVARIANTS(covariants_ch, baseDir)
+
+    DEMIX_TO_JSON(AGGREGATE_DEMIX.out)
 }
 
 
