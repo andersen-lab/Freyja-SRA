@@ -70,11 +70,12 @@ process FASTERQ_DUMP {
     path primer_scheme
 
     output:
-    tuple val(accession), path(primer_scheme), path("*.fastq")
+    tuple val(accession), path(primer_scheme), path("*.fastq.gz")
 
     script:
     """
     #!/bin/sh
-    fasterq-dump --split-files ${accession} 
+    fasterq-dump --split-files ${accession}
+    gzip *.fastq
     """
 }
