@@ -2,7 +2,11 @@ import pandas as pd
 import json
 
 metadata = pd.read_csv('data/wastewater_ncbi.csv')
-current_samples = pd.read_csv('aggregate/aggregate_demix.tsv', sep='\t')['Unnamed: 0'].apply(lambda x: x.split('.')[0]).values
+print('Total samples: ', len(metadata))
+# Select only samples where 'amplicon_PCR_primer_scheme' is not empty
+metadata = metadata[metadata['amplicon_PCR_primer_scheme'].notna()]
+print('Samples with amplicon_PCR_primer_scheme: ', len(metadata))
+current_samples = pd.read_csv('outputs/aggregate/aggregate_demix.tsv', sep='\t')['Unnamed: 0'].apply(lambda x: x.split('.')[0]).values
 
 print('Current samples: ', len(current_samples))
 
