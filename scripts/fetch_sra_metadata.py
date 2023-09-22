@@ -47,19 +47,26 @@ def main():
         dictVals['SRA_id'] = root0[0].attrib['accession']
         allDictVals[sampID] =dictVals
 
-    df = pd.DataFrame(allDictVals).T
+    metadata = pd.DataFrame(allDictVals).T
 
-    df.columns = df.columns.str.replace(' ','_')
-    df = df[df['collection_date'].str.startswith('20')]
-    df['collection_date'] = pd.to_datetime(df['collection_date'].apply(lambda x: x.split('/')[0] if '/' in x else x))
-    df = df.sort_values(by='collection_date',ascending=False)
-    ## add last 
+    metadata.columns = metadata.columns.str.replace(' ','_')
+    metadata = metadata[metadata['collection_date'].str.startswith('20')]
+    metadata['collection_date'] = pd.to_datetime(metadata['collection_date'].apply(lambda x: x.split('/')[0] if '/' in x else x))
+    metadata = metadata.sort_values(by='collection_date',ascending=False)
 
+    metadata = metadata[metadata['collection_date'] >='2023-02-01']
 
-    df = df[df['collection_date'] >='2023-02-01']
+    # Select only samples where 'amplicon_PCR_primer_scheme' is not empty
+    metadata = metadata[metadata['amplicon_PCR_primer_scheme'].notna()]
+    print('Samples with amplicon_PCR_primer_scheme: ', len(metadata))
+    current_samples = pd.read_csv('outputs/aggregate/aggregate_demix.tsv', sep='\t')['Unnamed: 0'].apply(lambda x: x.split('.')[0]).values
 
+    print('Current samples: ', len(current_samples))
 
-    df.to_csv('data/wastewater_ncbi.csv')
+    new_samples = metadata[~metadata.index.isin(current_samples)]
+
+    metadata.to_csv('data/wastewater_ncbi.csv')
+    new_samples.to_csv('data/new_samples.csv', index=True)
 
 if __name__ == "__main__":
     main()
