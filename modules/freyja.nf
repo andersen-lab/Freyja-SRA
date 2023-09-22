@@ -18,8 +18,7 @@ process FREYJA_VARIANTS {
 
 process FREYJA_DEMIX {
     publishDir "${params.output}/demix", mode: 'copy'
-    errorStrategy 'retry'
-    maxRetries 3
+    errorStrategy 'ignore'
 
     input:
     tuple val(sample_id), path(variants), path(depths)
