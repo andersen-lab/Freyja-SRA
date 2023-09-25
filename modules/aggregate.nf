@@ -19,6 +19,9 @@ process AGGREGATE_VARIANTS {
     
     paths_list = paths_string[1:-1].split(", ")
 
+    for file in os.listdir('${baseDir}/outputs/variants'):
+        paths_list.append(os.path.join('${baseDir}/outputs/variants', file))
+
     ct_thresh = 20
     j=0
     for var_path in paths_list:
@@ -57,13 +60,17 @@ process AGGREGATE_DEMIX {
     script:
     """
     #!/usr/bin/env python3
+
     import subprocess
     import json
+    import os
     import pandas as pd
     import shortuuid
 
     paths_string = "${demix_outputs}"
     paths_list = paths_string[1:-1].split(", ")
+    for file in os.listdir('${baseDir}/outputs/demix'):
+        paths_list.append(os.path.join('${baseDir}/outputs/demix', file))
 
     subprocess.run(["mkdir", "aggregate_dir"])
     for file in paths_list:
@@ -92,6 +99,9 @@ process AGGREGATE_COVARIANTS {
     paths_string = "${covariants_outputs}"
     paths_list = paths_string[1:-1].split(", ")
 
+    for file in os.listdir('${baseDir}/outputs/covariants'):
+        paths_list.append(os.path.join('${baseDir}/outputs/covariants', file))
+
     agg_df = pd.DataFrame(columns=['Covariants','Sample', 'Count', 'Max_count', 'Freq', 'Coverage_start', 'Coverage_end'])
 
     for covar_path in paths_list:
@@ -117,55 +127,57 @@ process DEMIX_TO_JSON {
 
     script:
     """
-    import json
-    import pandas as pd
-    import shortuuid
+    #!/usr/bin/env python3
 
-    agg_demix = pd.read_csv('${demix_tsv}', sep='\t')
-    metadata = pd.read_csv('${metadata}')
+import json
+import pandas as pd
+import shortuuid
 
-    columns = ['accession', 'lineages', 'abundances', 'collection_date', 'geo_loc_name', 'ww_population', 'ww_surv_target_1_conc', 'collection_site_id']
+agg_demix = pd.read_csv('${demix_tsv}', sep='\t')
+metadata = pd.read_csv('${metadata}')
 
-    df = pd.DataFrame(columns=columns)
+columns = ['accession', 'lineages', 'abundances', 'collection_date', 'geo_loc_name', 'ww_population', 'ww_surv_target_1_conc', 'collection_site_id']
 
-    agg_demix['Unnamed: 0'] = agg_demix['Unnamed: 0'].apply(lambda x: x.split('.')[0])
+df = pd.DataFrame(columns=columns)
 
-    df['accession'] = agg_demix['Unnamed: 0']
-    df['lineages'] = agg_demix['lineages']
-    df['abundances'] = agg_demix['abundances']
+agg_demix['Unnamed: 0'] = agg_demix['Unnamed: 0'].apply(lambda x: x.split('.')[0])
+
+df['accession'] = agg_demix['Unnamed: 0']
+df['lineages'] = agg_demix['lineages']
+df['abundances'] = agg_demix['abundances']
 
 
-    for col in ['collection_date', 'geo_loc_name', 'ww_population','ww_surv_target_1_conc', 'collection_site_id']:
-        df[col] = [metadata[metadata['Unnamed: 0'] == x][col].values[0] for x in df['accession']]
+for col in ['collection_date', 'geo_loc_name', 'ww_population','ww_surv_target_1_conc', 'collection_site_id']:
+    df[col] = [metadata[metadata['Unnamed: 0'] == x][col].values[0] for x in df['accession']]
 
-    df['collection_date'] = pd.to_datetime(df['collection_date'].apply(lambda x: x.split('/')[0] if '/' in x and len(x.split('/')[0])>2 else x))
-    df['ww_population'] = df['ww_population'].astype(float).astype(int)
-    df['ww_surv_target_1_conc'] = df['ww_surv_target_1_conc'].astype(float)
-    df = df.rename(columns={'ww_surv_target_1_conc':'viral_load'})
+df['collection_date'] = pd.to_datetime(df['collection_date'].apply(lambda x: x.split('/')[0] if '/' in x and len(x.split('/')[0])>2 else x))
+df['ww_population'] = df['ww_population'].astype(float).astype(int)
+df['ww_surv_target_1_conc'] = df['ww_surv_target_1_conc'].astype(float)
+df = df.rename(columns={'ww_surv_target_1_conc':'viral_load'})
 
-    merged = df['geo_loc_name']+df['ww_population'].fillna('').astype(str)
-    merged = merged.apply(lambda x:shortuuid.uuid(x)[0:12])
-    df['site_id'] = df['collection_site_id'].combine_first(merged)
-    df.drop('collection_site_id', axis=1, inplace=True)
+merged = df['geo_loc_name']+df['ww_population'].fillna('').astype(str)
+merged = merged.apply(lambda x:shortuuid.uuid(x)[0:12])
+df['site_id'] = df['collection_site_id'].combine_first(merged)
+df.drop('collection_site_id', axis=1, inplace=True)
 
-    df.set_index('accession', inplace=True)
+df.set_index('accession', inplace=True)
 
-    with open('aggregate/aggregate_demix.json', 'a') as f:
-        for row in df.iterrows():
-            json_row = {
-                'sample_id': row[0],
-                'lineages': [
-                    {'name': lineage, 'abundance': float(abundance)} for lineage, abundance in zip(row[1]['lineages'].split(' '), row[1]['abundances'].split(' '))
-                ],
-                'collection_date': row[1]['collection_date'].strftime('%Y-%m-%d'),
-                'geo_loc_name': row[1]['geo_loc_name'],
-                'ww_population': row[1]['ww_population'],
-                'viral_load': row[1]['viral_load'],
-                'site_id': row[1]['site_id']
-            }
-            
-            json_row = json.dumps(json_row)
-            f.write(json_row+'\n')
+with open('aggregate/aggregate_demix.json', 'a') as f:
+    for row in df.iterrows():
+        json_row = {
+            'sample_id': row[0],
+            'lineages': [
+                {'name': lineage, 'abundance': float(abundance)} for lineage, abundance in zip(row[1]['lineages'].split(' '), row[1]['abundances'].split(' '))
+            ],
+            'collection_date': row[1]['collection_date'].strftime('%Y-%m-%d'),
+            'geo_loc_name': row[1]['geo_loc_name'],
+            'ww_population': row[1]['ww_population'],
+            'viral_load': row[1]['viral_load'],
+            'site_id': row[1]['site_id']
+        }
+        
+        json_row = json.dumps(json_row)
+        f.write(json_row+'\\n')
 
     """
 

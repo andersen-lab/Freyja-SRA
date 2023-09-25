@@ -48,7 +48,9 @@ workflow fetch_sra {
     GET_ACCESSIONS(input_ch)
         .splitCsv()
         .map { line -> line.join('') }
+        .take(200)
         .set { acc_ch }
+
 
     GET_AMPLICON_SCHEME(acc_ch, input)
         .set { primer_scheme_ch }
@@ -103,6 +105,8 @@ workflow freyja {
         .map { it[1] }
         .set { variants_ch }
 
+    variants_ch.view()
+
     FREYJA_DEMIX(FREYJA_VARIANTS.out, params.eps, params.depthCutoff)
         .collect()
         .set { demix_ch }
@@ -111,11 +115,11 @@ workflow freyja {
         .collect()
         .set { covariants_ch }
 
-    AGGREGATE_VARIANTS(variants_ch, baseDir)
+    //AGGREGATE_VARIANTS(variants_ch, baseDir)
     AGGREGATE_DEMIX(demix_ch, baseDir)
     AGGREGATE_COVARIANTS(covariants_ch, baseDir)
 
-    DEMIX_TO_JSON(AGGREGATE_DEMIX.out)
+    DEMIX_TO_JSON(AGGREGATE_DEMIX.out, input)
 }
 
 
@@ -128,5 +132,4 @@ workflow rerun_demix {
         .collect()
         .set { demix_ch }
 
-    FREYJA_AGGREGATE(demix_ch, baseDir)
 }
