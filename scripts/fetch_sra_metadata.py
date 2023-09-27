@@ -22,7 +22,7 @@ def main():
 
     returned_meta=str(string,'UTF-8')
 
-    with open("NCBI_metadata.xml", "w") as f:
+    with open("data/NCBI_metadata.xml", "w") as f:
         f.write(returned_meta)
     # #parse xml
     import xml.etree.ElementTree as ET
@@ -55,13 +55,10 @@ def main():
     metadata = metadata.sort_values(by='collection_date',ascending=False)
 
     metadata = metadata[metadata['collection_date'] >='2023-02-01']
-
-    # Select only samples where 'amplicon_PCR_primer_scheme' is not empty
-    metadata = metadata[metadata['amplicon_PCR_primer_scheme'].notna()]
-    print('Samples with amplicon_PCR_primer_scheme: ', len(metadata))
+    print('All samples: ', len(metadata))
     current_samples = pd.read_csv('outputs/aggregate/aggregate_demix.tsv', sep='\t')['Unnamed: 0'].apply(lambda x: x.split('.')[0]).values
 
-    print('Current samples: ', len(current_samples))
+    print('Processed samples: ', len(current_samples))
 
     new_samples = metadata[~metadata.index.isin(current_samples)]
 
