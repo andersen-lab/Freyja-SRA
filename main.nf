@@ -47,7 +47,7 @@ workflow fetch_sra {
     GET_ACCESSIONS(input_ch)
         .splitCsv()
         .map { line -> line.join('') }
-        .take(200)
+        .take(params.num_samples)
         .set { acc_ch }
 
 

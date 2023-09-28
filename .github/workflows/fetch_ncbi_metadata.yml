@@ -32,6 +32,7 @@ jobs:
         run: |
               nextflow run main.nf \
               --input data/new_samples.csv \
+              --num_samples 1 \
               -profile docker \
               -entry fetch_sra \
               -resume
