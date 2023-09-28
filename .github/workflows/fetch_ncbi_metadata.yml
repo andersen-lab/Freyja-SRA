@@ -25,9 +25,6 @@ jobs:
       - name: Fetch NCBI metadata
         run: python scripts/fetch_sra_metadata.py
 
-      - name: Find new samples
-        run: python scripts/find_new_samples.py
-
       - name: Run pipeline on new samples
         run: |
               nextflow run main.nf \
@@ -36,6 +33,7 @@ jobs:
               -profile docker \
               -entry fetch_sra \
               -resume
+              
       - name: Clean work and cache
         run: |
               nextflow clean -f

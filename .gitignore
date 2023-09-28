@@ -10,3 +10,6 @@ null
 # Singularity
 *.img
 *.sif
+
+# metadata
+*.xml
