@@ -63,7 +63,9 @@ process GET_AMPLICON_SCHEME {
 
 process FASTERQ_DUMP {
     container { params.profile == "docker" ? "ncbi/sra-tools" : "docker://ncbi/sra-tools" }
-
+    errorStrategy 'retry'
+    maxRetries 3
+    
     disk '1TB'
     input:
     val accession

@@ -36,7 +36,6 @@ include {
     AGGREGATE_VARIANTS
     AGGREGATE_DEMIX;
     AGGREGATE_COVARIANTS;
-    DEMIX_TO_JSON;
 } from "./modules/aggregate.nf"
 
 workflow fetch_sra {
@@ -62,7 +61,7 @@ workflow fetch_sra {
         }
         .set { fq_ch }
 
-    process_unknown_primer(fq_ch.unknown_primer)
+    //process_unknown_primer(fq_ch.unknown_primer)
     process_known_primer(fq_ch.known_primer)
 
 }
@@ -119,7 +118,6 @@ workflow freyja {
     AGGREGATE_DEMIX(demix_ch, baseDir)
     AGGREGATE_COVARIANTS(covariants_ch, baseDir)
 
-    DEMIX_TO_JSON(AGGREGATE_DEMIX.out, input)
 }
 
 
