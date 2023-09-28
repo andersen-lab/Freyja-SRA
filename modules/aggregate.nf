@@ -56,7 +56,6 @@ process AGGREGATE_DEMIX {
 
     output:
     path "aggregate_demix.tsv"
-    path "aggregate_demix.json"
 
     script:
     """
