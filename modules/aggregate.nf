@@ -82,7 +82,7 @@ process AGGREGATE_DEMIX {
 
     # Save to json
     agg_demix = pd.read_csv('aggregate_demix.tsv', sep='\\t')
-    metadata = pd.read_csv('${metadata}')
+    metadata = pd.read_csv('${baseDir}/data/wastewater_ncbi.csv')
 
     columns = ['accession', 'lineages', 'abundances', 'collection_date', 'geo_loc_name', 'ww_population', 'ww_surv_target_1_conc', 'collection_site_id']
 
