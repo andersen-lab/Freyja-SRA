@@ -147,6 +147,7 @@ process AGGREGATE_COVARIANTS {
     #!/usr/bin/env python3
     import subprocess
     import pandas as pd
+    import os
 
     paths_string = "${covariants_outputs}"
     paths_list = paths_string[1:-1].split(", ")
