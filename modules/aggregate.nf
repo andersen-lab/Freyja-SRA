@@ -56,7 +56,6 @@ process AGGREGATE_DEMIX {
 
     output:
     path "aggregate_demix.tsv"
-    path "aggregate_demix.json"
 
     script:
     """
@@ -113,7 +112,7 @@ process AGGREGATE_DEMIX {
 
     df.set_index('accession', inplace=True)
 
-    with open('outputs/aggregate/aggregate_demix.json', 'w') as f:
+    with open('${baseDir}/outputs/aggregate/aggregate_demix.json', 'w') as f:
         for row in df.iterrows():
             json_row = {
                 'sample_id': row[0],
