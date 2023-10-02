@@ -122,7 +122,7 @@ process AGGREGATE_DEMIX {
                 'geo_loc_name': row[1]['geo_loc_name'].values[0],
                 'ww_population': row[1]['ww_population'],
                 'viral_load': row[1]['viral_load'],
-                'site_id': row[1]['site_id']
+                'site_id': row[1]['site_id'].values[0]
             }
             
             json_row = json.dumps(json_row)

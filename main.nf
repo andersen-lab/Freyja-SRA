@@ -61,7 +61,7 @@ workflow fetch_sra {
         }
         .set { fq_ch }
 
-    //process_unknown_primer(fq_ch.unknown_primer)
+    process_unknown_primer(fq_ch.unknown_primer)
     process_known_primer(fq_ch.known_primer)
 
 }
