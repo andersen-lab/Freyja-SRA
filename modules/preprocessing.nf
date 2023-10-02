@@ -15,9 +15,9 @@ process BBDUK_TRIM {
     """
     if ${read1} == ${read2}
     then
-        bbduk.sh in=${read1} out=${sample_id}_trimmed.fastq ftl=30 ftr=119
+        /opt/conda/envs/freyja-sra/bin/bbduk.sh in=${read1} out=${sample_id}_trimmed.fastq ftl=30 ftr=119
     else
-        bbduk.sh in=${read1} in2=${read2} out=${sample_id}_1_trimmed.fastq out2=${sample_id}_2_trimmed.fastq ftl=30 ftr=119
+       /opt/conda/envs/freyja-sra/bin/bbduk.sh in=${read1} in2=${read2} out=${sample_id}_1_trimmed.fastq out2=${sample_id}_2_trimmed.fastq ftl=30 ftr=119
     fi
     """
 }

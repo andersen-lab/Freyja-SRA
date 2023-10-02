@@ -83,7 +83,7 @@ process AGGREGATE_DEMIX {
     agg_demix = pd.read_csv('aggregate_demix.tsv', sep='\\t')
     metadata = pd.read_csv('${baseDir}/data/wastewater_ncbi.csv')
 
-    columns = ['accession', 'lineages', 'abundances', 'collection_date', 'geo_loc_name', 'ww_population', 'ww_surv_target_1_conc', 'collection_site_id']
+    columns = ['accession', 'lineages', 'abundances', 'collection_date', 'geo_loc_name', 'ww_population', 'ww_surv_target_1_conc', 'site_id']
 
     df = pd.DataFrame(columns=columns)
 
@@ -96,19 +96,18 @@ process AGGREGATE_DEMIX {
     df['lineages'] = agg_demix['lineages']
     df['abundances'] = agg_demix['abundances']
 
-    for col in ['collection_date', 'geo_loc_name', 'ww_population','ww_surv_target_1_conc', 'collection_site_id']:
+    for col in ['collection_date', 'geo_loc_name', 'ww_population','ww_surv_target_1_conc', 'site_id']:
         df[col] = [metadata[metadata['Unnamed: 0'] == x][col] for x in df['accession']]
 
 
+    # Replace NaN with -1
+    df['ww_population'] = df['ww_population'].fillna(-1)
     df['ww_population'] = df['ww_population'].astype(float).astype(int)
     df['ww_surv_target_1_conc'] = df['ww_surv_target_1_conc'].astype(float)
     df = df.rename(columns={'ww_surv_target_1_conc':'viral_load'})
 
     merged = df['geo_loc_name']+df['ww_population'].fillna('').astype(str)
     merged = merged.apply(lambda x: str(x))
-
-    merged = merged.apply(lambda x: shortuuid.uuid(x)[0:12])
-    df['site_id'] = df['collection_site_id'].combine_first(merged)
 
     df.set_index('accession', inplace=True)
 
@@ -123,7 +122,7 @@ process AGGREGATE_DEMIX {
                 'geo_loc_name': row[1]['geo_loc_name'].values[0],
                 'ww_population': row[1]['ww_population'],
                 'viral_load': row[1]['viral_load'],
-                'site_id': row[1]['site_id'].values[0]
+                'site_id': row[1]['site_id']
             }
             
             json_row = json.dumps(json_row)
