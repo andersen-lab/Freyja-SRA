@@ -5,6 +5,7 @@ import os
 import pandas as pd
 from Bio import Entrez
 from Bio import SeqIO
+import shortuuid
 
 argparser = argparse.ArgumentParser(description='Fetch most recent SRA metadata')
 
@@ -53,6 +54,11 @@ def main():
     metadata = metadata[metadata['collection_date'].str.startswith('20')]
     metadata['collection_date'] = pd.to_datetime(metadata['collection_date'].apply(lambda x: x.split('/')[0] if '/' in x else x))
     metadata = metadata.sort_values(by='collection_date',ascending=False)
+
+    metadata = metadata.sort_values(by='collection_date',ascending=False)
+    merged = metadata['geo_loc_name']+metadata['ww_population'].fillna('').astype(str)
+    merged = merged.apply(lambda x:shortuuid.uuid(x)[0:12])
+    metadata['site_id'] = metadata['collection_site_id'].combine_first(merged)
 
     metadata = metadata[metadata['collection_date'] >='2023-02-01']
     print('All samples: ', len(metadata))
