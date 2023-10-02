@@ -16,6 +16,9 @@
             "ww_population": {
                 "type": "float"
             },
+            "viral_load": {
+                "type": "float"
+            },
             "site_id": {
                 "type": "keyword"
             }
