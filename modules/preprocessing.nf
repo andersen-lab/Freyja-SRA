@@ -13,8 +13,7 @@ process BBDUK_TRIM {
     def read1 = reads.first()
     def read2 = reads.last()
     """
-    if ${read1} == ${read2}
-    then
+    if ["${read1}" = "${read2}"]; then
         /opt/conda/envs/freyja-sra/bin/bbduk.sh in=${read1} out=${sample_id}_trimmed.fastq ftl=30 ftr=119
     else
        /opt/conda/envs/freyja-sra/bin/bbduk.sh in=${read1} in2=${read2} out=${sample_id}_1_trimmed.fastq out2=${sample_id}_2_trimmed.fastq ftl=30 ftr=119
