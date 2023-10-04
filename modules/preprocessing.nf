@@ -2,7 +2,7 @@
  *  Alignment and primer trimming
  */
 
-process BBDUK_TRIM {
+process CUTADAPT_TRIM {
     input:
     tuple val(sample_id), path(primer_scheme), path(reads)
 
@@ -13,11 +13,14 @@ process BBDUK_TRIM {
     def read1 = reads.first()
     def read2 = reads.last()
     """
-    if ["${read1}" = "${read2}"]; then
-        /opt/conda/envs/freyja-sra/bin/bbduk.sh in=${read1} out=${sample_id}_trimmed.fastq ftl=30 ftr=119
-    else
-       /opt/conda/envs/freyja-sra/bin/bbduk.sh in=${read1} in2=${read2} out=${sample_id}_1_trimmed.fastq out2=${sample_id}_2_trimmed.fastq ftl=30 ftr=119
-    fi
+    #!/usr/bin/env python3
+    import subprocess
+
+    if "${read1}" == "${read2}":
+        cmd = ['cutadapt', '-l', '+30', '-l', '-30', '-o', '${sample_id}_trimmed.fastq', '${read1}']
+    else:
+        cmd = ['cutadapt', '-l', '+30', '-l', '-30', '-o', '${sample_id}_1_trimmed.fastq', '-p', '${sample_id}_2_trimmed.fastq', '${read1}', '${read2}']
+    subprocess.run(cmd)
     """
 }
 

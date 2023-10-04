@@ -19,7 +19,7 @@ include {
 } from "./modules/sra.nf"
 
 include {
-    BBDUK_TRIM;
+    CUTADAPT_TRIM;
     MINIMAP2;
     SAMTOOLS_1;
     SAMTOOLS_2;
@@ -70,8 +70,8 @@ workflow process_unknown_primer {
     take: unknown_primer_fastq_ch
 
     main:
-    BBDUK_TRIM(unknown_primer_fastq_ch)
-    MINIMAP2(BBDUK_TRIM.out, ref)
+    CUTADAPT_TRIM(unknown_primer_fastq_ch)
+    MINIMAP2(CUTADAPT_TRIM.out, ref)
     SAMTOOLS_1(MINIMAP2.out)
 
     freyja(SAMTOOLS_1.out)
