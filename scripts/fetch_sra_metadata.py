@@ -67,6 +67,8 @@ def main():
     print('Processed samples: ', len(current_samples))
 
     new_samples = metadata[~metadata.index.isin(current_samples)]
+    # Select sample where amplicon_PCR_primer_scheme is not null
+    new_samples = new_samples[new_samples['amplicon_PCR_primer_scheme'].notnull()]
 
     metadata.to_csv('data/wastewater_ncbi.csv')
     new_samples.to_csv('data/new_samples.csv', index=True)
