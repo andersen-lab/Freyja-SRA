@@ -20,7 +20,8 @@ process AGGREGATE_VARIANTS {
     paths_list = paths_string[1:-1].split(", ")
 
     for file in os.listdir('${baseDir}/outputs/variants'):
-        paths_list.append(os.path.join('${baseDir}/outputs/variants', file))
+        if 'variants' in file:
+            paths_list.append(os.path.join('${baseDir}/outputs/variants', file))
 
     ct_thresh = 20
     j=0
