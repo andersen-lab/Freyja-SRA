@@ -11,7 +11,7 @@ argparser = argparse.ArgumentParser(description='Fetch most recent SRA metadata'
 
 def main():
     Entrez.email = "jolevy@scripps.edu"
-    handle = Entrez.esearch(db="sra", idtype='acc', retmax=2000,
+    handle = Entrez.esearch(db="sra", idtype='acc', retmax=3000,
                             sort='recently_added',
                             term="((wastewater metagenome[Organism] OR wastewater metagenome[All Fields]) AND SARS-CoV-2))") 
     record = Entrez.read(handle)

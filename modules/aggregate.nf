@@ -13,12 +13,6 @@ process AGGREGATE_VARIANTS {
     import pandas as pd 
     import os
 
-    paths_string = "${variants_outputs}"
-    if not paths_string.startswith('['):
-        paths_string = f'[{paths_string}]'
-    
-    paths_list = paths_string[1:-1].split(", ")
-
     for file in os.listdir('${baseDir}/outputs/variants'):
         if 'variants' in file:
             paths_list.append(os.path.join('${baseDir}/outputs/variants', file))
@@ -67,11 +61,6 @@ process AGGREGATE_DEMIX {
     import os
     import pandas as pd
     import shortuuid
-
-    paths_string = "${demix_outputs}"
-    paths_list = paths_string[1:-1].split(", ")
-    for file in os.listdir('${baseDir}/outputs/demix'):
-        paths_list.append(os.path.join('${baseDir}/outputs/demix', file))
 
     subprocess.run(["mkdir", "aggregate_dir"])
     for file in paths_list:
@@ -147,12 +136,6 @@ process AGGREGATE_COVARIANTS {
     import subprocess
     import pandas as pd
     import os
-
-    paths_string = "${covariants_outputs}"
-    paths_list = paths_string[1:-1].split(", ")
-
-    for file in os.listdir('${baseDir}/outputs/covariants'):
-        paths_list.append(os.path.join('${baseDir}/outputs/covariants', file))
 
     agg_df = pd.DataFrame(columns=['Covariants','Sample', 'Count', 'Max_count', 'Freq', 'Coverage_start', 'Coverage_end'])
 
