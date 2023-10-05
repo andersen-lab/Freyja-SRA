@@ -1,18 +1,13 @@
 import subprocess
 import pandas as pd
-
+import time
 new_samples = pd.read_csv('data/new_samples.csv', index_col=0)
 
-cmd = [
-    'nextflow run main.nf',
-    '--input data/new_samples.csv',
-    '--num_samples 5',
-    '-profile docker',
-    '-entry fetch_sra'
-]
+# Get the first 5 samples from new_samples, if there are less than 5 samples, get all of them
 
-sample_to_run = len(new_samples)
-samples_finished = 0
-while samples_finished < sample_to_run:
-    subprocess.run(cmd, shell=True)
-    subprocess.run('rm -rf work', shell=True)
+while new_samples.shape[0] > 0:
+    
+    subprocess.run(['bash', 'scripts/run_pipeline.sh'], shell=True)
+    time.sleep(3600) # sleep for 1 hour
+    new_samples = new_samples.iloc[5:]
+    new_samples.to_csv('data/new_samples.csv', index=True)

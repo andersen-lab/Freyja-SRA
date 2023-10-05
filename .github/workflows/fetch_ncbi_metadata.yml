@@ -26,7 +26,7 @@ jobs:
         run: python scripts/fetch_sra_metadata.py
 
       - name: Run pipeline on new samples
-        run: python scripts/run_new_samples.py
+        run: bash scripts/run_new_samples.py
 
               
       
