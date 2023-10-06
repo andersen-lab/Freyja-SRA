@@ -22,7 +22,6 @@ for col in ['collection_date', 'geo_loc_name', 'ww_population','ww_surv_target_1
     df[col] = [metadata[metadata['Unnamed: 0'] == x][col] for x in df['accession']]
 
 
-df['ww_population'] = df['ww_population'].astype(float).astype(int)
 df['ww_surv_target_1_conc'] = df['ww_surv_target_1_conc'].astype(float)
 df = df.rename(columns={'ww_surv_target_1_conc':'viral_load'})
 
@@ -44,9 +43,8 @@ df['site_id'] = pd.Series(site_id_list, index=df.index)
 
 df.set_index('accession', inplace=True)
 
-# Replace NaNs in viral_load with -1.0
 df['viral_load'] = df['viral_load'].fillna(-1.0)
-
+df['ww_population'] = df['ww_population'].fillna(-1.0)
 
 with open('outputs/aggregate/aggregate_demix.json', 'w') as f:
     for row in df.iterrows():
@@ -57,7 +55,7 @@ with open('outputs/aggregate/aggregate_demix.json', 'w') as f:
             ],
             'collection_date': row[1]['collection_date'].values[0],
             'geo_loc_name': row[1]['geo_loc_name'].values[0],
-            'ww_population': row[1]['ww_population'],
+            'ww_population': float(row[1]['ww_population'].values[0]),
             'viral_load': row[1]['viral_load'],
             'site_id': row[1]['site_id']
         }

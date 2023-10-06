@@ -104,8 +104,6 @@ workflow freyja {
         .map { it[1] }
         .set { variants_ch }
 
-    variants_ch.view()
-
     FREYJA_DEMIX(FREYJA_VARIANTS.out, params.eps, params.depthCutoff)
         .collect()
         .set { demix_ch }

@@ -13,6 +13,7 @@ process AGGREGATE_VARIANTS {
     import pandas as pd 
     import os
 
+    paths_list = []
     for file in os.listdir('${baseDir}/outputs/variants'):
         if 'variants' in file:
             paths_list.append(os.path.join('${baseDir}/outputs/variants', file))
@@ -60,11 +61,10 @@ process AGGREGATE_DEMIX {
     import json
     import os
     import pandas as pd
-    import shortuuid
 
     subprocess.run(["mkdir", "aggregate_dir"])
-    for file in paths_list:
-       subprocess.run(["cp", file, "aggregate_dir"])
+    for file in os.listdir('${baseDir}/outputs/demix'):
+       subprocess.run(["cp", '${baseDir}/outputs/demix/' + file, "aggregate_dir"])
 
     # Save to tsv
     subprocess.run(["freyja", "aggregate", "aggregate_dir/", "--output", "aggregate_demix.tsv"])
@@ -90,16 +90,15 @@ process AGGREGATE_DEMIX {
         df[col] = [metadata[metadata['Unnamed: 0'] == x][col] for x in df['accession']]
 
 
-    # Replace NaN with -1
-    df['ww_population'] = df['ww_population'].fillna(-1)
-    df['ww_population'] = df['ww_population'].astype(float).astype(int)
     df['ww_surv_target_1_conc'] = df['ww_surv_target_1_conc'].astype(float)
     df = df.rename(columns={'ww_surv_target_1_conc':'viral_load'})
 
-    merged = df['geo_loc_name']+df['ww_population'].fillna('').astype(str)
-    merged = merged.apply(lambda x: str(x))
+
 
     df.set_index('accession', inplace=True)
+
+    df['viral_load'] = df['viral_load'].fillna(-1.0)
+    df['ww_population'] = df['ww_population'].fillna(-1.0)
 
     with open('${baseDir}/outputs/aggregate/aggregate_demix.json', 'w') as f:
         for row in df.iterrows():
@@ -110,7 +109,7 @@ process AGGREGATE_DEMIX {
                 ],
                 'collection_date': row[1]['collection_date'].values[0],
                 'geo_loc_name': row[1]['geo_loc_name'].values[0],
-                'ww_population': row[1]['ww_population'],
+                'ww_population': float(row[1]['ww_population'].values[0]),
                 'viral_load': row[1]['viral_load'],
                 'site_id': row[1]['site_id'].values[0]
             }
@@ -139,13 +138,13 @@ process AGGREGATE_COVARIANTS {
 
     agg_df = pd.DataFrame(columns=['Covariants','Sample', 'Count', 'Max_count', 'Freq', 'Coverage_start', 'Coverage_end'])
 
-    for covar_path in paths_list:
-        df = pd.read_csv(covar_path,sep='\t')
+    for covar_path in os.listdir('${baseDir}/outputs/covariants'):
+        df = pd.read_csv('${baseDir}/outputs/covariants/' + covar_path,sep='\\t')
         sample_name = covar_path.split('/')[-1].split('.')[0]
         df['Sample'] = sample_name
         agg_df = pd.concat((agg_df,df), axis=0)
 
     agg_df = agg_df.set_index(['Covariants','Sample'])
-    agg_df.to_csv('aggregate_covariants.tsv',sep='\t')
+    agg_df.to_csv('aggregate_covariants.tsv',sep='\\t')
     """
 }
