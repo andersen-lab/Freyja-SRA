@@ -3,7 +3,7 @@ set -x
 nextflow run main.nf \
     --input data/new_samples.csv \
     --num_samples 5 \
-    -profile singularity \
+    -profile docker \
     -entry fetch_sra
 
 # Clean up
