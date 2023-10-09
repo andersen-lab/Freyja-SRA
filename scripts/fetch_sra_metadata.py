@@ -51,7 +51,9 @@ def main():
     metadata = pd.DataFrame(allDictVals).T
 
     metadata.columns = metadata.columns.str.replace(' ','_')
-    metadata = metadata[metadata['collection_date'].str.startswith('20')]
+    # Remove samples where the collection date is not of the form 20XX-XX-XX
+    metadata  = metadata[metadata['collection_date'].str.contains('20[0-9]{2}-[0-9]{2}-[0-9]{2}')]
+    
     metadata['collection_date'] = pd.to_datetime(metadata['collection_date'].apply(lambda x: x.split('/')[0] if '/' in x else x))
     metadata = metadata.sort_values(by='collection_date',ascending=False)
 
@@ -70,6 +72,7 @@ def main():
     # Select sample where amplicon_PCR_primer_scheme is not null
     new_samples = new_samples[new_samples['amplicon_PCR_primer_scheme'].notnull()]
 
+    print('New samples: ', len(new_samples))
     metadata.to_csv('data/wastewater_ncbi.csv')
     new_samples.to_csv('data/new_samples.csv', index=True)
 

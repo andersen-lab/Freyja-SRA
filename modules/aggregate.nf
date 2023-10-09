@@ -62,6 +62,26 @@ process AGGREGATE_DEMIX {
     import os
     import pandas as pd
 
+    def get_alias_key(lineages_yml='data/lineages.yml'):
+        with open(lineages_yml, 'r') as alias_key:
+            lineage_key = yaml.load(alias_key, Loader=yaml.Loader)
+        alias_key = dict([(lin['name'], lin['parent']) for lin in lineage_key if 'parent' in lin])
+        alias_key.update([(lin['name'], lin['alias']) for lin in lineage_key if lin['name'] != lin['alias']])
+        alias_key.update([r for lin in lineage_key for r in \
+            [(lin['name'], lin['name'].split('.')[0]), (lin['name'].split('.')[0], lin['alias'])] \
+            if (lin['name'] != lin['alias']) and len(lin['name'].split('.')) == 2 ])
+        for n in range(4):
+            alias_key.update([(alias, '.'.join(alias.split('.')[:-1])) for name, alias in alias_key.items() if not alias in alias_key and len(alias.split('.')) > 1])
+        alias_key.update({'A.1': 'A', 'B.1': 'B'})
+        return alias_key
+
+    def _crumbs(lin, alias_key):
+        return [lin] + ( _crumbs(alias_key[lin], alias_key) if lin in alias_key else [])
+
+    def crumbs(lin, alias_key):
+        lin = lin.upper()
+        return _crumbs(lin, alias_key) if lin in alias_key else crumbs(lin[:-1], alias_key) if len(lin.split('.')) > 1 else []
+
     subprocess.run(["mkdir", "aggregate_dir"])
     for file in os.listdir('${baseDir}/outputs/demix'):
        subprocess.run(["cp", '${baseDir}/outputs/demix/' + file, "aggregate_dir"])
@@ -73,7 +93,7 @@ process AGGREGATE_DEMIX {
     agg_demix = pd.read_csv('aggregate_demix.tsv', sep='\\t')
     metadata = pd.read_csv('${baseDir}/data/wastewater_ncbi.csv')
 
-    columns = ['accession', 'lineages', 'abundances', 'collection_date', 'geo_loc_name', 'ww_population', 'ww_surv_target_1_conc', 'site_id']
+    columns = ['accession', 'lineages', 'abundances', 'crumbs', 'collection_date', 'geo_loc_name', 'ww_population', 'ww_surv_target_1_conc', 'site_id']
 
     df = pd.DataFrame(columns=columns)
 
@@ -82,8 +102,12 @@ process AGGREGATE_DEMIX {
     # Drop samples that are not in the metadata
     agg_demix = agg_demix[agg_demix['Unnamed: 0'].isin(metadata['Unnamed: 0'])]
 
+    # Get parent lineage for all lineages
+    alias_key = get_alias_key()
+    
     df['accession'] = agg_demix['Unnamed: 0']
     df['lineages'] = agg_demix['lineages']
+    df['crumbs'] = [crumbs(lin, alias_key) for lin in agg_demix['lineages']]
     df['abundances'] = agg_demix['abundances']
 
     for col in ['collection_date', 'geo_loc_name', 'ww_population','ww_surv_target_1_conc', 'site_id']:
