@@ -63,7 +63,7 @@ process GET_AMPLICON_SCHEME {
 
 process FASTERQ_DUMP {
     container { params.profile == "docker" ? "ncbi/sra-tools" : "docker://ncbi/sra-tools" }
-    errorStrategy 'retry'
+    errorStrategy  { task.attempt <= maxRetries  ? 'retry' : 'ignore' }
     maxRetries 3
     
     disk '1TB'
