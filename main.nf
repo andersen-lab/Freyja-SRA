@@ -21,6 +21,7 @@ include {
 include {
     CUTADAPT_TRIM;
     MINIMAP2;
+    MINIMAP2_UNKNOWN_PRIMER;
     SAMTOOLS_1;
     SAMTOOLS_2;
     IVAR_TRIM;
@@ -71,8 +72,8 @@ workflow process_unknown_primer {
 
     main:
     CUTADAPT_TRIM(unknown_primer_fastq_ch)
-    MINIMAP2(CUTADAPT_TRIM.out, ref)
-    SAMTOOLS_1(MINIMAP2.out)
+    MINIMAP2_UNKNOWN_PRIMER(CUTADAPT_TRIM.out, ref)
+    SAMTOOLS_1(MINIMAP2_UNKNOWN_PRIMER.out)
 
     freyja(SAMTOOLS_1.out)
 }

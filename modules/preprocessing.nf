@@ -7,7 +7,7 @@ process CUTADAPT_TRIM {
     tuple val(sample_id), path(primer_scheme), path(reads)
 
     output:
-    tuple val(sample_id), val(primer_scheme), path("*_trimmed.fastq")
+    tuple val(sample_id), path("*_trimmed.fastq")
 
     script:
     def read1 = reads.first()
@@ -27,6 +27,20 @@ process CUTADAPT_TRIM {
 process MINIMAP2 {
     input:
     tuple val(sample_id), val(primer_scheme), path(reads)
+    path ref
+
+    output:
+    path "${sample_id}.bam"
+
+    script:
+    """
+    minimap2 -ax sr ${ref} ${reads} | samtools view -bS - > ${sample_id}.bam   
+    """
+}
+
+process MINIMAP2_UNKNOWN_PRIMER {
+    input:
+    tuple val(sample_id), path(reads)
     path ref
 
     output:

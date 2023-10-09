@@ -99,8 +99,6 @@ process AGGREGATE_DEMIX {
     df = pd.DataFrame(columns=columns)
 
     agg_demix['Unnamed: 0'] = agg_demix['Unnamed: 0'].apply(lambda x: x.split('.')[0])
-    
-    
 
     # Drop samples that are not in the metadata
     agg_demix = agg_demix[agg_demix['Unnamed: 0'].isin(metadata['Unnamed: 0'])]
@@ -116,12 +114,16 @@ process AGGREGATE_DEMIX {
     for col in ['collection_date', 'geo_loc_name', 'ww_population','ww_surv_target_1_conc', 'site_id']:
         df[col] = [metadata[metadata['Unnamed: 0'] == x][col] for x in df['accession']]
 
+
+
     df['ww_surv_target_1_conc'] = df['ww_surv_target_1_conc'].astype(float)
     df = df.rename(columns={'ww_surv_target_1_conc':'viral_load'})
 
     df.set_index('accession', inplace=True)
 
     df['viral_load'] = df['viral_load'].fillna(-1.0)
+
+    
     #df['ww_population'] = df['ww_population'].fillna(-1.0)
 
     with open('${baseDir}/outputs/aggregate/aggregate_demix.json', 'w') as f:
@@ -133,7 +135,7 @@ process AGGREGATE_DEMIX {
                 ],
                 'collection_date': row[1]['collection_date'].values[0],
                 'geo_loc_name': row[1]['geo_loc_name'].values[0],
-                'ww_population': float(row[1]['ww_population'].values[0]),
+                'ww_population': float(str(row[1]['ww_population'].values[0]).replace('<','')),
                 'viral_load': row[1]['viral_load'],
                 'site_id': row[1]['site_id'].values[0]
             }

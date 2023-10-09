@@ -11,7 +11,7 @@ argparser = argparse.ArgumentParser(description='Fetch most recent SRA metadata'
 
 def main():
     Entrez.email = "jolevy@scripps.edu"
-    handle = Entrez.esearch(db="sra", idtype='acc', retmax=1000,
+    handle = Entrez.esearch(db="sra", idtype='acc', retmax=3000,
                             sort='recently_added',
                             term="((wastewater metagenome[Organism] OR wastewater metagenome[All Fields]) AND SARS-CoV-2))") 
     record = Entrez.read(handle)
@@ -80,8 +80,6 @@ def main():
     print('Processed samples: ', len(current_samples))
 
     new_samples = metadata[~metadata.index.isin(current_samples)]
-    # Select sample where amplicon_PCR_primer_scheme is not null
-    new_samples = new_samples[new_samples['amplicon_PCR_primer_scheme'].notnull()]
 
     print('Samples to run: ', len(new_samples))
 
