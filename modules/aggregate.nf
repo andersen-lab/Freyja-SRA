@@ -60,9 +60,10 @@ process AGGREGATE_DEMIX {
     import subprocess
     import json
     import os
+    import yaml
     import pandas as pd
 
-    def get_alias_key(lineages_yml='data/lineages.yml'):
+    def get_alias_key(lineages_yml='${baseDir}/data/lineages.yml'):
         with open(lineages_yml, 'r') as alias_key:
             lineage_key = yaml.load(alias_key, Loader=yaml.Loader)
         alias_key = dict([(lin['name'], lin['parent']) for lin in lineage_key if 'parent' in lin])
@@ -98,6 +99,8 @@ process AGGREGATE_DEMIX {
     df = pd.DataFrame(columns=columns)
 
     agg_demix['Unnamed: 0'] = agg_demix['Unnamed: 0'].apply(lambda x: x.split('.')[0])
+    
+    
 
     # Drop samples that are not in the metadata
     agg_demix = agg_demix[agg_demix['Unnamed: 0'].isin(metadata['Unnamed: 0'])]
@@ -107,29 +110,26 @@ process AGGREGATE_DEMIX {
     
     df['accession'] = agg_demix['Unnamed: 0']
     df['lineages'] = agg_demix['lineages']
-    df['crumbs'] = [crumbs(lin, alias_key) for lin in agg_demix['lineages']]
+    df['crumbs'] = agg_demix['lineages'].apply(lambda x: ['|'.join(crumbs(lin, alias_key)) for lin in x.split(' ')])
     df['abundances'] = agg_demix['abundances']
 
     for col in ['collection_date', 'geo_loc_name', 'ww_population','ww_surv_target_1_conc', 'site_id']:
         df[col] = [metadata[metadata['Unnamed: 0'] == x][col] for x in df['accession']]
 
-
     df['ww_surv_target_1_conc'] = df['ww_surv_target_1_conc'].astype(float)
     df = df.rename(columns={'ww_surv_target_1_conc':'viral_load'})
-
-
 
     df.set_index('accession', inplace=True)
 
     df['viral_load'] = df['viral_load'].fillna(-1.0)
-    df['ww_population'] = df['ww_population'].fillna(-1.0)
+    #df['ww_population'] = df['ww_population'].fillna(-1.0)
 
     with open('${baseDir}/outputs/aggregate/aggregate_demix.json', 'w') as f:
         for row in df.iterrows():
             json_row = {
                 'sample_id': row[0],
                 'lineages': [
-                    {'name': lineage, 'abundance': float(abundance)} for lineage, abundance in zip(row[1]['lineages'].split(' '), row[1]['abundances'].split(' '))
+                    {'name': lineage, 'abundance': float(abundance), 'crumbs': crumbs} for lineage, abundance, crumbs in zip(row[1]['lineages'].split(' '), row[1]['abundances'].split(' '), row[1]['crumbs'])
                 ],
                 'collection_date': row[1]['collection_date'].values[0],
                 'geo_loc_name': row[1]['geo_loc_name'].values[0],

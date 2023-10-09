@@ -11,7 +11,7 @@ argparser = argparse.ArgumentParser(description='Fetch most recent SRA metadata'
 
 def main():
     Entrez.email = "jolevy@scripps.edu"
-    handle = Entrez.esearch(db="sra", idtype='acc', retmax=3000,
+    handle = Entrez.esearch(db="sra", idtype='acc', retmax=1000,
                             sort='recently_added',
                             term="((wastewater metagenome[Organism] OR wastewater metagenome[All Fields]) AND SARS-CoV-2))") 
     record = Entrez.read(handle)
@@ -63,16 +63,28 @@ def main():
     metadata['site_id'] = metadata['collection_site_id'].combine_first(merged)
 
     metadata = metadata[metadata['collection_date'] >='2023-02-01']
+    current_metadata = pd.read_csv('data/wastewater_ncbi.csv', index_col=0)
+
+    # Get the number of newly added samples
+
+    # Add samples that are not in the current metadata
+    metadata = metadata[~metadata.index.isin(current_metadata.index)]
+    num_new_samples = len(metadata)
+
+    # Concatenate the two metadata files
+    metadata = pd.concat([current_metadata, metadata], axis=0)
+
     print('All samples: ', len(metadata))
     current_samples = pd.read_csv('outputs/aggregate/aggregate_demix.tsv', sep='\t')['Unnamed: 0'].apply(lambda x: x.split('.')[0]).values
-
+    print('Newly added samples: ', num_new_samples)
     print('Processed samples: ', len(current_samples))
 
     new_samples = metadata[~metadata.index.isin(current_samples)]
     # Select sample where amplicon_PCR_primer_scheme is not null
     new_samples = new_samples[new_samples['amplicon_PCR_primer_scheme'].notnull()]
 
-    print('New samples: ', len(new_samples))
+    print('Samples to run: ', len(new_samples))
+
     metadata.to_csv('data/wastewater_ncbi.csv')
     new_samples.to_csv('data/new_samples.csv', index=True)
 
