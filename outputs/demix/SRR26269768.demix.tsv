@@ -1,0 +1,6 @@
+	SRR26269768.variants.tsv
+summarized	[('Other', 0.9799999999972686), ('XBB.1.5* [Omicron (XBB.1.5.X)]', 0.01999999999999312)]
+lineages	Misc(7) XBB.1.16-like GK.1-like EG.5.1.1-like XBB.1-like(2) HZ.1
+abundances	0.69058330 0.15346000 0.05595670 0.04071250 0.03928750 0.02000000
+resid	0.33421520202723815
+coverage	29.92007490887202
