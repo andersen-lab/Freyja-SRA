@@ -119,7 +119,7 @@ process AGGREGATE_DEMIX {
     metadata['geo_loc_country'] = metadata['geo_loc_name'].apply(lambda x: x.split(': ')[0])
     metadata['geo_loc_region'] = metadata['geo_loc_name'].apply(lambda x: x.split(': ')[1] if len(x.split(': ')) > 1 else '')
 
-    columns = ['accession', 'lineages', 'abundances', 'crumbs', 'collection_date', 'geo_loc_country', 'geo_loc_region, 'ww_population', 'ww_surv_target_1_conc', 'site_id']
+    columns = ['accession', 'lineages', 'abundances', 'crumbs', 'collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_population', 'ww_surv_target_1_conc', 'site_id']
 
     df = pd.DataFrame(columns=columns)
 
@@ -133,7 +133,7 @@ process AGGREGATE_DEMIX {
     
     df['accession'] = agg_demix['Unnamed: 0']
     df['lineages'] = agg_demix['lineages']
-    df['crumbs'] = agg_demix['lineages'].apply(lambda x: [';'.join(crumbs(lin, alias_key).reverse()).append(';') for lin in x.split(' ')])
+    df['crumbs'] = agg_demix['lineages'].apply(lambda x: [';'.join(crumbs(lin, alias_key)[::-1]) + ';' for lin in x.split(' ')])
     df['abundances'] = agg_demix['abundances']
 
     for col in ['collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_population','ww_surv_target_1_conc', 'site_id']:
@@ -159,7 +159,8 @@ process AGGREGATE_DEMIX {
                     {'name': lineage, 'abundance': float(abundance), 'crumbs': crumbs} for lineage, abundance, crumbs in zip(row[1]['lineages'].split(' '), row[1]['abundances'].split(' '), row[1]['crumbs'])
                 ],
                 'collection_date': row[1]['collection_date'].values[0],
-                'geo_loc_name': row[1]['geo_loc_name'].values[0],
+                'geo_loc_country': row[1]['geo_loc_country'].values[0],
+                'geo_loc_region': row[1]['geo_loc_region'].values[0],
                 'ww_population': float(str(row[1]['ww_population'].values[0]).replace('<','').replace('>','')),
                 'viral_load': row[1]['viral_load'],
                 'site_id': row[1]['site_id'].values[0]
