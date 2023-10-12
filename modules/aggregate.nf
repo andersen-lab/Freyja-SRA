@@ -135,7 +135,7 @@ process AGGREGATE_DEMIX {
                 ],
                 'collection_date': row[1]['collection_date'].values[0],
                 'geo_loc_name': row[1]['geo_loc_name'].values[0],
-                'ww_population': float(str(row[1]['ww_population'].values[0]).replace('<','')),
+                'ww_population': float(str(row[1]['ww_population'].values[0]).replace('<','').replace('>','')),
                 'viral_load': row[1]['viral_load'],
                 'site_id': row[1]['site_id'].values[0]
             }
