@@ -83,6 +83,21 @@ process AGGREGATE_DEMIX {
         lin = lin.upper()
         return _crumbs(lin, alias_key) if lin in alias_key else crumbs(lin[:-1], alias_key) if len(lin.split('.')) > 1 else []
 
+    def merge_collapsed(lin_dict):
+        new_dict = {}
+        for k in lin_dict.keys():
+            if '-like' in k:
+                true_lin = k.split('-')[0]
+                if true_lin in lin_dict:
+                    new_dict[true_lin] = lin_dict[k] + lin_dict[true_lin]
+                else:
+                    new_dict[true_lin] = lin_dict[k]
+            elif 'Misc' not in k:
+                new_dict[k] = lin_dict[k]
+        return new_dict
+
+    
+
     subprocess.run(["mkdir", "aggregate_dir"])
     for file in os.listdir('${baseDir}/outputs/demix'):
        subprocess.run(["cp", '${baseDir}/outputs/demix/' + file, "aggregate_dir"])
@@ -92,9 +107,19 @@ process AGGREGATE_DEMIX {
 
     # Save to json
     agg_demix = pd.read_csv('aggregate_demix.tsv', sep='\\t')
-    metadata = pd.read_csv('${baseDir}/data/wastewater_ncbi.csv')
 
-    columns = ['accession', 'lineages', 'abundances', 'crumbs', 'collection_date', 'geo_loc_name', 'ww_population', 'ww_surv_target_1_conc', 'site_id']
+
+    agg_demix['lin_dict'] = [dict(zip(row['lineages'].split(' '), map(float, row['abundances'].split(' ')))) for _, row in agg_demix.iterrows()]
+    agg_demix['lin_dict'] = agg_demix['lin_dict'].apply(merge_collapsed)
+    agg_demix['lineages'] = agg_demix['lin_dict'].apply(lambda x: ' '.join(list(x.keys())))
+    agg_demix['abundances'] = agg_demix['lin_dict'].apply(lambda x: ' '.join([str(v) for v in list(x.values())]))
+    agg_demix.drop('lin_dict', axis=1, inplace=True)
+
+    metadata = pd.read_csv('${baseDir}/data/wastewater_ncbi.csv')
+    metadata['geo_loc_country'] = metadata['geo_loc_name'].apply(lambda x: x.split(': ')[0])
+    metadata['geo_loc_region'] = metadata['geo_loc_name'].apply(lambda x: x.split(': ')[1] if len(x.split(': ')) > 1 else '')
+
+    columns = ['accession', 'lineages', 'abundances', 'crumbs', 'collection_date', 'geo_loc_country', 'geo_loc_region, 'ww_population', 'ww_surv_target_1_conc', 'site_id']
 
     df = pd.DataFrame(columns=columns)
 
@@ -108,13 +133,11 @@ process AGGREGATE_DEMIX {
     
     df['accession'] = agg_demix['Unnamed: 0']
     df['lineages'] = agg_demix['lineages']
-    df['crumbs'] = agg_demix['lineages'].apply(lambda x: ['|'.join(crumbs(lin, alias_key)) for lin in x.split(' ')])
+    df['crumbs'] = agg_demix['lineages'].apply(lambda x: [';'.join(crumbs(lin, alias_key).reverse()).append(';') for lin in x.split(' ')])
     df['abundances'] = agg_demix['abundances']
 
-    for col in ['collection_date', 'geo_loc_name', 'ww_population','ww_surv_target_1_conc', 'site_id']:
+    for col in ['collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_population','ww_surv_target_1_conc', 'site_id']:
         df[col] = [metadata[metadata['Unnamed: 0'] == x][col] for x in df['accession']]
-
-
 
     df['ww_surv_target_1_conc'] = df['ww_surv_target_1_conc'].astype(float)
     df = df.rename(columns={'ww_surv_target_1_conc':'viral_load'})
@@ -125,6 +148,8 @@ process AGGREGATE_DEMIX {
 
     
     #df['ww_population'] = df['ww_population'].fillna(-1.0)
+    df = df[df['lineages'] != ''] 
+
 
     with open('${baseDir}/outputs/aggregate/aggregate_demix.json', 'w') as f:
         for row in df.iterrows():

@@ -77,6 +77,7 @@ process FASTERQ_DUMP {
     script:
     """
     #!/bin/sh
+    prefetch ${accession}
     fasterq-dump --split-files ${accession} --disk-limit-tmp '64G'
     gzip *.fastq
     """
