@@ -2,7 +2,29 @@ import json
 import pandas as pd
 import shortuuid
 
+def merge_collapsed(lin_dict):
+    new_dict = {}
+    for k in lin_dict.keys():
+        if k.endswith('-like'):
+            true_lin = k.split('-')[0]
+            if true_lin in lin_dict:
+                new_dict[true_lin] = lin_dict[k] + lin_dict[true_lin]
+            else:
+                new_dict[true_lin] = lin_dict[k]
+        elif 'Misc' not in k and 'like' not in k:
+            new_dict[k] = lin_dict[k]
+    return new_dict
+
+# Merge collapsed lineages (*-like)
+
 agg_demix = pd.read_csv('outputs/aggregate/aggregate_demix.tsv', sep='\t')
+
+
+agg_demix['lin_dict'] = [dict(zip(row['lineages'].split(' '), map(float, row['abundances'].split(' ')))) for _, row in agg_demix.iterrows()]
+agg_demix['lin_dict'].apply(merge_collapsed)
+agg_demix['lineages'] = agg_demix['lin_dict'].apply(lambda x: ' '.join(list(x.keys())))
+agg_demix['abundances'] = agg_demix['lin_dict'].apply(lambda x: ' '.join([str(v) for v in list(x.values())]))
+agg_demix.drop('lin_dict', axis=1, inplace=True)
 metadata = pd.read_csv('data/wastewater_ncbi.csv')
 
 columns = ['accession', 'lineages', 'abundances', 'collection_date', 'geo_loc_name', 'ww_population', 'ww_surv_target_1_conc', 'collection_site_id']
