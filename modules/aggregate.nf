@@ -139,7 +139,12 @@ process AGGREGATE_DEMIX {
     for col in ['collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_population','ww_surv_target_1_conc', 'site_id']:
         df[col] = [metadata[metadata['Unnamed: 0'] == x][col] for x in df['accession']]
 
-    df['ww_surv_target_1_conc'] = df['ww_surv_target_1_conc'].astype(float)
+    # Remove rows where 'ww_surv_target_1_conc' is 'not provided' or 'missing'
+    df = df[df['ww_surv_target_1_conc'].astype(str) != 'not provided']
+    df = df[df['ww_surv_target_1_conc'].astype(str) != 'missing']
+
+
+    #df['ww_surv_target_1_conc'] = df['ww_surv_target_1_conc'].astype(float)
     df = df.rename(columns={'ww_surv_target_1_conc':'viral_load'})
 
     df.set_index('accession', inplace=True)
@@ -162,7 +167,7 @@ process AGGREGATE_DEMIX {
                 'geo_loc_country': row[1]['geo_loc_country'].values[0],
                 'geo_loc_region': row[1]['geo_loc_region'].values[0],
                 'ww_population': float(str(row[1]['ww_population'].values[0]).replace('<','').replace('>','')),
-                'viral_load': row[1]['viral_load'],
+                'viral_load': row[1]['viral_load'].values[0],
                 'site_id': row[1]['site_id'].values[0]
             }
             
