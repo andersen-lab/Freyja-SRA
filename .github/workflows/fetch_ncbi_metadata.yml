@@ -1,12 +1,12 @@
 name: Update NCBI metadata
 
-# on:
-#   schedule:
-#       - cron: "0 0 * * *"
+on:
+  schedule:
+      - cron: "0 * * * *"
 
 jobs:
   fetch_ncbi_metadata:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout main
@@ -18,6 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
               pip install pandas biopython shortuuid
+              nvm install 16.15.1
 
       - name: Fetch NCBI metadata
         run: python scripts/fetch_sra_metadata.py
