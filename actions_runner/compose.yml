@@ -1,0 +1,17 @@
+services:
+  runner:
+    image: dylanpilz/github-actions-runner:latest
+    restart: always
+    environment:
+      - REPO=dylanpilz/Freyja-SRA
+      - TOKEN=changeme
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
