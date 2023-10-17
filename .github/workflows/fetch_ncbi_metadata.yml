@@ -14,12 +14,6 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
 
-      - name: Setup java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '11'
-
       - name: Setup nextflow
         uses: nf-core/setup-nextflow@v1
 
@@ -27,11 +21,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-      - name: Setup docker
-        uses: docker-practice/actions-setup-docker@master
-      - run: |
-          set -x
-          docker version
 
       - name: Install dependencies
         run: |
@@ -43,13 +32,13 @@ jobs:
       - name: Run pipeline on new samples
         run: bash scripts/run_pipeline.sh
       
-      - name: Commit and push changes
-        run: |
-              git config --local user.name "$GITHUB_ACTOR"
-              git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-              git add -A
-              git commit -m "Update NCBI metadata"
-              git push
+      # - name: Commit and push changes
+      #   run: |
+      #         git config --local user.name "$GITHUB_ACTOR"
+      #         git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+      #         git add -A
+      #         git commit -m "Update NCBI metadata"
+      #         git push
 
 
               
