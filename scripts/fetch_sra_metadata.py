@@ -74,7 +74,8 @@ def main():
     metadata = pd.concat([current_metadata, metadata], axis=0)
 
     print('All samples: ', len(metadata))
-    current_samples = pd.read_csv('outputs/aggregate/aggregate_demix.tsv', sep='\t')['Unnamed: 0'].apply(lambda x: x.split('.')[0]).values
+    current_samples = pd.read_csv('outputs/aggregate/aggregate_variants.tsv', sep='\t')['sample'].values
+    current_samples = set(current_samples)
     print('Newly added samples: ', num_new_samples)
     print('Processed samples: ', len(current_samples))
 
