@@ -83,7 +83,7 @@ def main():
     print('Samples to run: ', len(new_samples))
 
     metadata.to_csv('data/wastewater_ncbi.csv')
-    new_samples.to_csv('data/new_samples.csv', index=True)
+    new_samples.to_csv('data/new_samples.csv', index=True, header=True)
 
 if __name__ == "__main__":
     main()
