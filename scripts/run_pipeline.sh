@@ -7,7 +7,7 @@ do
     nextflow run main.nf \
         --input data/new_samples.csv \
         --num_samples $BATCH_SIZE \
-        -profile singularity \
+        -profile docker \
         -entry fetch_sra &
     BACK_PID=$!
     wait $BACK_PID
