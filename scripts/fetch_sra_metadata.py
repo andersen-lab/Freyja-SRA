@@ -55,7 +55,7 @@ def main():
     metadata  = metadata[metadata['collection_date'].str.contains('20[0-9]{2}-[0-9]{2}-[0-9]{2}')]
     
     metadata['collection_date'] = pd.to_datetime(metadata['collection_date'].apply(lambda x: x.split('/')[0] if '/' in x else x))
-    metadata = metadata.sort_values(by='collection_date',ascending=True)
+    metadata = metadata.sort_values(by='collection_date',ascending=False)
 
     merged = metadata['geo_loc_name']+metadata['ww_population'].fillna('').astype(str)
     merged = merged.apply(lambda x:shortuuid.uuid(x)[0:12])
