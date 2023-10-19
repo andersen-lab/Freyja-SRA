@@ -1,7 +1,7 @@
 {
     "mappings": {
         "properties": {
-            "sample_id": {
+            "sra_accession": {
                 "type": "keyword"
             },
             "lineages": {
@@ -10,7 +10,10 @@
             "collection_date": {
                 "type": "date"
             },
-            "geo_loc_name": {
+            "geo_loc_country": {
+                "type": "keyword"
+            },
+            "geo_loc_region": {
                 "type": "keyword"
             },
             "ww_population": {

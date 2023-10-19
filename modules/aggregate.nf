@@ -143,23 +143,16 @@ process AGGREGATE_DEMIX {
     df = df[df['ww_surv_target_1_conc'].astype(str) != 'not provided']
     df = df[df['ww_surv_target_1_conc'].astype(str) != 'missing']
 
-
-    #df['ww_surv_target_1_conc'] = df['ww_surv_target_1_conc'].astype(float)
     df = df.rename(columns={'ww_surv_target_1_conc':'viral_load'})
 
     df.set_index('accession', inplace=True)
 
-    df['viral_load'] = df['viral_load'].fillna(-1.0)
-
-    
-    #df['ww_population'] = df['ww_population'].fillna(-1.0)
     df = df[df['lineages'] != ''] 
-
 
     with open('${baseDir}/outputs/aggregate/aggregate_demix.json', 'w') as f:
         for row in df.iterrows():
             json_row = {
-                'sample_id': row[0],
+                'sra_accession': row[0],
                 'lineages': [
                     {'name': lineage, 'abundance': float(abundance), 'crumbs': crumbs} for lineage, abundance, crumbs in zip(row[1]['lineages'].split(' '), row[1]['abundances'].split(' '), row[1]['crumbs'])
                 ],
@@ -170,6 +163,13 @@ process AGGREGATE_DEMIX {
                 'viral_load': row[1]['viral_load'].values[0],
                 'site_id': row[1]['site_id'].values[0]
             }
+
+            if json_row['viral_load'] == None or json_row['viral_load'] == 'not provided':
+                json_row['viral_load'] = -1.0
+            
+            if json_row['ww_population'] == None:
+                json_row['ww_population'] = -1.0
+                
             
             json_row = json.dumps(json_row)
             f.write(json_row+'\\n')
