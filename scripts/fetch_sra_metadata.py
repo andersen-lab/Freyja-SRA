@@ -38,6 +38,8 @@ def main():
         sampID =  [r.text for r in root0.findall('.//RUN_SET/RUN/IDENTIFIERS/PRIMARY_ID')]
         if len(sampID)>1:
             print('more than one experiment... add funcs')
+        elif len(sampID)==0:
+            continue
         else:
             sampID = sampID[0]
         ## write to dictionary form
@@ -79,6 +81,11 @@ def main():
     print('Processed samples: ', len(current_samples))
 
     new_samples = metadata[~metadata.index.isin(current_samples)]
+    
+    # Failed samples will produce variants output but fail in the demixing step
+    failed_samples = [file.split('.')[0] for file in os.listdir('outputs/variants') if f'{file.split(".")[0]}.demix.tsv' not in os.listdir('outputs/demix')]
+
+    new_samples = new_samples[~new_samples.index.isin(failed_samples)]
 
     print('Samples to run: ', len(new_samples))
 
