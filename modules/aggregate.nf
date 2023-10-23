@@ -164,10 +164,10 @@ process AGGREGATE_DEMIX {
                 'site_id': row[1]['site_id'].values[0]
             }
 
-            if json_row['viral_load'] == None or json_row['viral_load'] == 'not provided':
+            if str(json_row['viral_load']).lower() == 'nan' or json_row['viral_load'] == 'not provided':
                 json_row['viral_load'] = -1.0
             
-            if json_row['ww_population'] == None:
+            if json_row['ww_population'] == None or str(json_row['ww_population']).lower() == 'nan':
                 json_row['ww_population'] = -1.0
                 
             
