@@ -2,7 +2,7 @@
 set -x
 
 BATCH_SIZE=3
-for i in {1..10}
+for i in {1..8}
 do
     nextflow run main.nf \
         --input data/new_samples.csv \
