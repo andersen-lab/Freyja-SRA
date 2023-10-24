@@ -5,13 +5,14 @@ process AGGREGATE_VARIANTS {
     path baseDir
 
     output:
-    path "aggregate_variants.tsv"
+    path "aggregate_variants.tsv.gz"
 
     script:
     """
     #!/usr/bin/env python3
     import pandas as pd 
     import os
+    import subprocess
 
     paths_list = []
     for file in os.listdir('${baseDir}/outputs/variants'):
@@ -21,7 +22,7 @@ process AGGREGATE_VARIANTS {
     ct_thresh = 20
     j=0
     for var_path in paths_list:
-        df = pd.read_csv(var_path,sep='\t')
+        df = pd.read_csv(var_path,sep='\\t')
         df = df[df['ALT_DP']>=ct_thresh]
         #drop frame shifts
         sname=var_path.split('/')[-1].split('.')[0]
@@ -40,7 +41,10 @@ process AGGREGATE_VARIANTS {
 
     dfAll = dfAll.set_index(['mutName','sample'])
     
-    dfAll.to_csv('aggregate_variants.tsv',sep='\t')
+    dfAll.to_csv('aggregate_variants.tsv',sep='\\t')
+
+    subprocess.run(["gzip", "aggregate_variants.tsv"])
+    
     """
 }
 
@@ -184,7 +188,7 @@ process AGGREGATE_COVARIANTS {
     path baseDir
 
     output:
-    path "aggregate_covariants.tsv"
+    path "aggregate_covariants.tsv.gz"
 
     script:
     """
@@ -203,5 +207,6 @@ process AGGREGATE_COVARIANTS {
 
     agg_df = agg_df.set_index(['Covariants','Sample'])
     agg_df.to_csv('aggregate_covariants.tsv',sep='\\t')
+    subprocess.run(["gzip", "aggregate_covariants.tsv"])
     """
 }
