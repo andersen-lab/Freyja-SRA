@@ -137,7 +137,7 @@ process AGGREGATE_DEMIX {
     
     df['accession'] = agg_demix['Unnamed: 0']
     df['lineages'] = agg_demix['lineages']
-    df['crumbs'] = agg_demix['lineages'].apply(lambda x: [';'.join(crumbs(lin, alias_key)[::-1]) + ';' for lin in x.split(' ')])
+    df['crumbs'] = agg_demix['lineages'].apply(lambda x: [';' + ';'.join(crumbs(lin, alias_key)[::-1]) + ';' for lin in x.split(' ')])
     df['abundances'] = agg_demix['abundances']
 
     for col in ['collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_population','ww_surv_target_1_conc', 'site_id']:
