@@ -59,11 +59,16 @@ def main():
     metadata['collection_date'] = pd.to_datetime(metadata['collection_date'].apply(lambda x: x.split('/')[0] if '/' in x else x))
     metadata = metadata.sort_values(by='collection_date',ascending=False)
 
+    
+
+    print(metadata)
     merged = metadata['geo_loc_name']+metadata['ww_population'].fillna('').astype(str)
     merged = merged.apply(lambda x:shortuuid.uuid(x)[0:12])
     metadata['site_id'] = metadata['collection_site_id'].combine_first(merged)
 
-    metadata = metadata[metadata['collection_date'] >='2023-02-01']
+    metadata = metadata[metadata['collection_date'] >='2022-04-01']
+    metadata = metadata[metadata['collection_date'] <='2023-10-01']
+
     current_metadata = pd.read_csv('data/wastewater_ncbi.csv', index_col=0)
 
     # Get the number of newly added samples
@@ -75,16 +80,20 @@ def main():
     # Concatenate the two metadata files
     metadata = pd.concat([current_metadata, metadata], axis=0)
 
+    # Keep 5 samples per collection_date
+    metadata = metadata.groupby('collection_date').head(5)
+
+
     print('All samples: ', len(metadata))
     current_samples = pd.read_csv('outputs/aggregate/aggregate_demix.tsv', sep='\t')['Unnamed: 0'].apply(lambda x: x.split('.')[0]).values
     print('Newly added samples: ', num_new_samples)
     print('Processed samples: ', len(current_samples))
 
-    new_samples = metadata[~metadata.index.isin(current_samples)]
     
     # Failed samples will produce variants output but fail in the demixing step
     failed_samples = [file.split('.')[0] for file in os.listdir('outputs/variants') if f'{file.split(".")[0]}.demix.tsv' not in os.listdir('outputs/demix')]
 
+    new_samples = metadata[~metadata.index.isin(current_samples)]
     new_samples = new_samples[~new_samples.index.isin(failed_samples)]
 
     print('Samples to run: ', len(new_samples))
