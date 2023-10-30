@@ -120,8 +120,8 @@ process AGGREGATE_DEMIX {
     agg_demix.drop('lin_dict', axis=1, inplace=True)
 
     metadata = pd.read_csv('${baseDir}/data/wastewater_ncbi.csv')
-    metadata['geo_loc_country'] = metadata['geo_loc_name'].apply(lambda x: x.split(': ')[0])
-    metadata['geo_loc_region'] = metadata['geo_loc_name'].apply(lambda x: x.split(': ')[1] if len(x.split(': ')) > 1 else '')
+    metadata['geo_loc_country'] = metadata['geo_loc_name'].apply(lambda x: x.split(':')[0].strip())
+    metadata['geo_loc_region'] = metadata['geo_loc_name'].apply(lambda x: x.split(':')[1].strip() if len(x.split(':')) > 1 else '')
 
     columns = ['accession', 'lineages', 'abundances', 'crumbs', 'collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_population', 'ww_surv_target_1_conc', 'site_id']
 

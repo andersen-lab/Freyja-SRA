@@ -5,13 +5,14 @@ import os
 import pandas as pd
 from Bio import Entrez
 from Bio import SeqIO
+import xml.etree.ElementTree as ET
 import shortuuid
 
 argparser = argparse.ArgumentParser(description='Fetch most recent SRA metadata')
 
-def main():
+def get_metadata():
     Entrez.email = "jolevy@scripps.edu"
-    handle = Entrez.esearch(db="sra", idtype='acc', retmax=4000,
+    handle = Entrez.esearch(db="sra", idtype='acc', retmax=4500,
                             sort='recently_added',
                             term="((wastewater metagenome[Organism] OR wastewater metagenome[All Fields]) AND SARS-CoV-2))") 
     record = Entrez.read(handle)
@@ -25,8 +26,7 @@ def main():
 
     with open("data/NCBI_metadata.xml", "w") as f:
         f.write(returned_meta)
-    # #parse xml
-    import xml.etree.ElementTree as ET
+    
     root = ET.fromstring(returned_meta)
     allDictVals = {}
 
@@ -51,55 +51,58 @@ def main():
         allDictVals[sampID] =dictVals
 
     metadata = pd.DataFrame(allDictVals).T
-
     metadata.columns = metadata.columns.str.replace(' ','_')
-    # Remove samples where the collection date is not of the form 20XX-XX-XX
+
+    return metadata
+def main():
+    metadata = get_metadata()
+
+    # Convert collection date to datetime
     metadata  = metadata[metadata['collection_date'].str.contains('20[0-9]{2}-[0-9]{2}-[0-9]{2}')]
-    
     metadata['collection_date'] = pd.to_datetime(metadata['collection_date'].apply(lambda x: x.split('/')[0] if '/' in x else x))
     metadata = metadata.sort_values(by='collection_date',ascending=False)
 
+    # Filter to USA samples
+    metadata = metadata[metadata['geo_loc_name'].str.contains('USA')]
     
-
-    print(metadata)
+    # For samples with no site id, hash the location and population to create a unique id
     merged = metadata['geo_loc_name']+metadata['ww_population'].fillna('').astype(str)
     merged = merged.apply(lambda x:shortuuid.uuid(x)[0:12])
     metadata['site_id'] = metadata['collection_site_id'].combine_first(merged)
 
-    metadata = metadata[metadata['collection_date'] >='2022-04-01']
-    metadata = metadata[metadata['collection_date'] <='2023-10-01']
+    # Since Entrez returns the most recent samples, we need to concatenate the new metadata with the old metadata
+    current_metadata = pd.read_csv('data/all_metadata.csv', index_col=0)
+    new_metadata = metadata[~metadata.index.isin(current_metadata.index)]
+    all_metadata = pd.concat([current_metadata, metadata], axis=0)
 
-    current_metadata = pd.read_csv('data/wastewater_ncbi.csv', index_col=0)
-
-    # Get the number of newly added samples
-
-    # Add samples that are not in the current metadata
-    metadata = metadata[~metadata.index.isin(current_metadata.index)]
-    num_new_samples = len(metadata)
-
-    # Concatenate the two metadata files
-    metadata = pd.concat([current_metadata, metadata], axis=0)
-
-    # Keep 5 samples per collection_date
-    metadata = metadata.groupby('collection_date').head(5)
-
-
-    print('All samples: ', len(metadata))
-    current_samples = pd.read_csv('outputs/aggregate/aggregate_demix.tsv', sep='\t')['Unnamed: 0'].apply(lambda x: x.split('.')[0]).values
-    print('Newly added samples: ', num_new_samples)
-    print('Processed samples: ', len(current_samples))
+    demixed_samples = pd.read_csv('outputs/aggregate/aggregate_demix.tsv', sep='\t')['Unnamed: 0'].apply(lambda x: x.split('.')[0]).values
 
     
     # Failed samples will produce variants output but fail in the demixing step
     failed_samples = [file.split('.')[0] for file in os.listdir('outputs/variants') if f'{file.split(".")[0]}.demix.tsv' not in os.listdir('outputs/demix')]
 
-    new_samples = metadata[~metadata.index.isin(current_samples)]
-    new_samples = new_samples[~new_samples.index.isin(failed_samples)]
+    
+    samples_to_run = all_metadata.copy()
+    samples_to_run = samples_to_run[~samples_to_run.index.isin(failed_samples)]
+    samples_to_run = samples_to_run[~samples_to_run.index.isin(demixed_samples)]
+    samples_to_run = samples_to_run[~samples_to_run['ww_surv_target_1_conc'].isna()]
+    samples_to_run = samples_to_run[~samples_to_run['ww_population'].str.contains('<')]
+    samples_to_run = samples_to_run[~samples_to_run['ww_population'].str.contains('>')]
+    samples_to_run = samples_to_run[~samples_to_run['ww_population'].isna()]
 
-    print('Samples to run: ', len(new_samples))
+    samples_to_run = samples_to_run[samples_to_run['collection_date'] >='2022-04-01']
+    samples_to_run = samples_to_run[samples_to_run['collection_date'] <='2023-10-01']
 
-    metadata.to_csv('data/wastewater_ncbi.csv')
-    new_samples.to_csv('data/new_samples.csv', index=True, header=True)
+    # 10 samples per collection date
+    samples_to_run = samples_to_run.groupby('collection_date').head(10)
+
+    print('All samples: ', len(metadata))
+    print('Newly added samples: ', len(new_metadata))
+    print('Processed samples: ', len(demixed_samples))
+    print('Samples to run: ', len(samples_to_run))
+
+    all_metadata.to_csv('data/all_metadata.csv')
+    samples_to_run.to_csv('data/samples_to_run.csv', index=True, header=True)
 
 if __name__ == "__main__":
     main()

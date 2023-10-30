@@ -30,7 +30,7 @@ process FREYJA_DEMIX {
 
     script:
     """
-    freyja demix ${variants} ${depths} --eps ${eps} --depthcutoff ${depthCutoff + (5*task.attempt)} --output ${sample_id}.demix.tsv
+    freyja demix ${variants} ${depths} --eps ${eps} --output ${sample_id}.demix.tsv
     """
 }
 
