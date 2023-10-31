@@ -119,7 +119,7 @@ process AGGREGATE_DEMIX {
     agg_demix['abundances'] = agg_demix['lin_dict'].apply(lambda x: ' '.join([str(v) for v in list(x.values())]))
     agg_demix.drop('lin_dict', axis=1, inplace=True)
 
-    metadata = pd.read_csv('${baseDir}/data/wastewater_ncbi.csv')
+    metadata = pd.read_csv('${baseDir}/data/all_metadata.csv')
     metadata['geo_loc_country'] = metadata['geo_loc_name'].apply(lambda x: x.split(':')[0].strip())
     metadata['geo_loc_region'] = metadata['geo_loc_name'].apply(lambda x: x.split(':')[1].strip() if len(x.split(':')) > 1 else '')
 
