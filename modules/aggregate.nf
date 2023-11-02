@@ -55,7 +55,7 @@ process AGGREGATE_DEMIX {
     path baseDir
 
     output:
-    path "aggregate_demix.tsv"
+    path "aggregate_demix.json"
 
     script:
     """
@@ -168,16 +168,16 @@ process AGGREGATE_DEMIX {
                 'site_id': row[1]['site_id'].values[0]
             }
 
-            if str(json_row['viral_load']).lower() == 'nan' or json_row['viral_load'] == 'not provided':
+            if str(json_row['viral_load']).lower() == 'nan' or json_row['viral_load'] == 'not provided' or json_row['viral_load'] == 'missing':
                 json_row['viral_load'] = -1.0
             
             if json_row['ww_population'] == None or str(json_row['ww_population']).lower() == 'nan':
                 json_row['ww_population'] = -1.0
-                
             
             json_row = json.dumps(json_row)
             f.write(json_row+'\\n')
 
+    subprocess.run(["rm", "aggregate_demix.tsv"])
     """
 }
 

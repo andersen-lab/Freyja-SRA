@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import json
 import pandas as pd
 from Bio import Entrez
 from Bio import SeqIO
@@ -75,7 +76,12 @@ def main():
     new_metadata = metadata[~metadata.index.isin(current_metadata.index)]
     all_metadata = pd.concat([current_metadata, metadata], axis=0)
 
-    demixed_samples = pd.read_csv('outputs/aggregate/aggregate_demix.tsv', sep='\t')['Unnamed: 0'].apply(lambda x: x.split('.')[0]).values
+    data = []
+    with open('outputs/aggregate/aggregate_demix.json') as f:
+        for line in f:
+            data.append(json.loads(line))
+
+    demixed_samples = [d['sra_accession'] for d in data]
 
     
     # Failed samples will produce variants output but fail in the demixing step
@@ -89,6 +95,8 @@ def main():
     samples_to_run = samples_to_run[~samples_to_run['ww_population'].str.contains('<')]
     samples_to_run = samples_to_run[~samples_to_run['ww_population'].str.contains('>')]
     samples_to_run = samples_to_run[~samples_to_run['ww_population'].isna()]
+
+    samples_to_run['collection_date'] = pd.to_datetime(samples_to_run['collection_date'], format='mixed')
 
     samples_to_run = samples_to_run[samples_to_run['collection_date'] >='2022-04-01']
     samples_to_run = samples_to_run[samples_to_run['collection_date'] <='2023-10-01']

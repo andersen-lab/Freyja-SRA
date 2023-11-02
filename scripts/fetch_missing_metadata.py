@@ -2,26 +2,25 @@ import pandas as pd
 
 import argparse
 import os
+import json
 import pandas as pd
 from Bio import Entrez
-from Bio import SeqIO
 import xml.etree.ElementTree as ET
 import shortuuid
 
 
-
 Entrez.email = "jolevy@scripps.edu"
+data = []
+with open('outputs/aggregate/aggregate_demix.json') as f:
+    for line in f:
+        data.append(json.loads(line))
 
-finished_samples = pd.read_csv('outputs/aggregate/aggregate_demix.tsv', sep='\t')['Unnamed: 0'].apply(lambda x: x.split('.')[0]).values
-# TODO: Handle failed samples (samples that have variants output but not demix output)
-
-# Get the SRA ids of the finished samples
-sra_ids = [file.split('.')[0] for file in os.listdir('outputs/variants') if f'{file.split(".")[0]}.demix.tsv' in os.listdir('outputs/demix')]
+finished_samples = [d['sra_accession'] for d in data]
 
 all_metadata = pd.read_csv('data/all_metadata.csv', index_col=0)
 
 # Get the SRA ids of the finished samples that are missing from the metadata
-missing_sra_ids = set(sra_ids) - set(all_metadata.index)
+missing_sra_ids = set(finished_samples) - set(all_metadata.index)
 
 print('Missing SRA ids: ', len(missing_sra_ids))
 

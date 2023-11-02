@@ -13,3 +13,6 @@ null
 
 # metadata
 *.xml
+
+# macOS
+.DS_Store
