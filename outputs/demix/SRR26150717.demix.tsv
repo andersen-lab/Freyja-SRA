@@ -1,6 +1,6 @@
 	SRR26150717.variants.tsv
-summarized	[('Other', 0.9999999999950753)]
-lineages	Misc(6)
-abundances	1.00000000
-resid	0.11837011871953373
-coverage	17.229040564491857
+summarized	[('XBB* (XBB.X)', 0.9999999829932752)]
+lineages	XBB.1.42.1 XBB.1.42
+abundances	0.49999999 0.49999999
+resid	6.970499647817043
+coverage	63.04718590108016
