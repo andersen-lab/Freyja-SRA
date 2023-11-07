@@ -67,8 +67,8 @@ def main():
     metadata = metadata[metadata['geo_loc_name'].str.contains('USA')]
     
     # For samples with no site id, hash the location and population to create a unique id
-    merged = metadata['geo_loc_name']+metadata['ww_population'].fillna('').astype(str)
-    merged = merged.apply(lambda x:shortuuid.uuid(x)[0:12])
+    merged = metadata['geo_loc_name'] + '-' + metadata['ww_population'].fillna('').astype(str)
+    #merged = merged.apply(lambda x:shortuuid.uuid(x)[0:12])
     metadata['site_id'] = metadata['collection_site_id'].combine_first(merged)
 
     # Since Entrez returns the most recent samples, we need to concatenate the new metadata with the old metadata
@@ -97,6 +97,7 @@ def main():
     samples_to_run = samples_to_run[~samples_to_run['ww_population'].isna()]
 
     samples_to_run['collection_date'] = pd.to_datetime(samples_to_run['collection_date'], format='mixed')
+    all_metadata['collection_date'] = pd.to_datetime(all_metadata['collection_date'], format='mixed')
 
     samples_to_run = samples_to_run[samples_to_run['collection_date'] >='2022-04-01']
     samples_to_run = samples_to_run[samples_to_run['collection_date'] <='2023-10-01']
@@ -108,6 +109,10 @@ def main():
     print('Newly added samples: ', len(new_metadata))
     print('Processed samples: ', len(demixed_samples))
     print('Samples to run: ', len(samples_to_run))
+
+    # Sort both dataframes by collection date
+    samples_to_run = samples_to_run.sort_values(by='collection_date', ascending=False)
+    all_metadata = all_metadata.sort_values(by='collection_date', ascending=False)
 
     all_metadata.to_csv('data/all_metadata.csv')
     samples_to_run.to_csv('data/samples_to_run.csv', index=True, header=True)
