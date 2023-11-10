@@ -8,6 +8,8 @@ from Bio import Entrez
 from Bio import SeqIO
 import xml.etree.ElementTree as ET
 import http.client
+import urllib.error
+import time
 
 us_state_to_abbrev = {
     "Alabama": "AL",
@@ -94,7 +96,13 @@ def get_metadata():
         record = Entrez.read(handle)
         handle.close()
 
-        handle = Entrez.efetch(db="sra", id=record['IdList'], rettype="gb",retmode='text')
+        try:
+            handle = Entrez.efetch(db="sra", id=record['IdList'], rettype="gb",retmode='text')
+        except urllib.error.HTTPError as e:
+            # Retry once
+            print('HTTPError, retrying')
+            time.sleep(10)
+            handle = Entrez.efetch(db="sra", id=record['IdList'], rettype="gb",retmode='text')
 
         try:
             string= handle.read()
