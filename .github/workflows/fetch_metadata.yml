@@ -2,7 +2,7 @@ name: Update NCBI metadata
 
 on:
   schedule:
-      - cron:  '0 */4 * * *'
+      - cron:  '0 0 * * *'
 
 jobs:
   fetch_ncbi_metadata:
@@ -11,9 +11,6 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
-
-      - name: Setup nextflow
-        uses: nf-core/setup-nextflow@v1
 
       - name: Install python
         uses: actions/setup-python@v4
@@ -27,20 +24,11 @@ jobs:
       - name: Fetch NCBI metadata
         run: python scripts/fetch_sra_metadata.py
 
-      - name: Run pipeline on new samples
-        run: bash scripts/run_pipeline.sh
-      
       - name: Commit and push changes
         run: |
               git config --local user.name "$GITHUB_ACTOR"
               git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
               git pull
               git add -A
-              git commit -m "Update NCBI metadata"
+              git commit -m "Update metadata"
               git push
-
-
-              
-      
-
-
