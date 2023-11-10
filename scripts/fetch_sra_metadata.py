@@ -7,20 +7,97 @@ import pandas as pd
 from Bio import Entrez
 from Bio import SeqIO
 import xml.etree.ElementTree as ET
-import shortuuid
+import http.client
+
+us_state_to_abbrev = {
+    "Alabama": "AL",
+    "Alaska": "AK",
+    "Arizona": "AZ",
+    "Arkansas": "AR",
+    "California": "CA",
+    "Colorado": "CO",
+    "Connecticut": "CT",
+    "Delaware": "DE",
+    "Florida": "FL",
+    "Georgia": "GA",
+    "Hawaii": "HI",
+    "Idaho": "ID",
+    "Illinois": "IL",
+    "Indiana": "IN",
+    "Iowa": "IA",
+    "Kansas": "KS",
+    "Kentucky": "KY",
+    "Louisiana": "LA",
+    "Maine": "ME",
+    "Maryland": "MD",
+    "Massachusetts": "MA",
+    "Michigan": "MI",
+    "Minnesota": "MN",
+    "Mississippi": "MS",
+    "Missouri": "MO",
+    "Montana": "MT",
+    "Nebraska": "NE",
+    "Nevada": "NV",
+    "New Hampshire": "NH",
+    "New Jersey": "NJ",
+    "New Mexico": "NM",
+    "New York": "NY",
+    "North Carolina": "NC",
+    "North Dakota": "ND",
+    "Ohio": "OH",
+    "Oklahoma": "OK",
+    "Oregon": "OR",
+    "Pennsylvania": "PA",
+    "Rhode Island": "RI",
+    "South Carolina": "SC",
+    "South Dakota": "SD",
+    "Tennessee": "TN",
+    "Texas": "TX",
+    "Utah": "UT",
+    "Vermont": "VT",
+    "Virginia": "VA",
+    "Washington": "WA",
+    "West Virginia": "WV",
+    "Wisconsin": "WI",
+    "Wyoming": "WY",
+    "District of Columbia": "DC",
+    "American Samoa": "AS",
+    "Guam": "GU",
+    "Northern Mariana Islands": "MP",
+    "Puerto Rico": "PR",
+    "United States Minor Outlying Islands": "UM",
+    "U.S. Virgin Islands": "VI",
+}
 
 argparser = argparse.ArgumentParser(description='Fetch most recent SRA metadata')
 
 def get_metadata():
+
+    date_ranges = [
+        ('2023-07-01', '2023-10-01'),
+        ('2023-04-01' ,'2023-07-01'),
+        ('2023-01-01', '2023-04-01'),
+        ('2022-10-01', '2023-01-01'),
+        ('2022-07-01', '2022-03-01') 
+    ]
+
+    metadata = pd.DataFrame()
+
     Entrez.email = "jolevy@scripps.edu"
-    handle = Entrez.esearch(db="sra", idtype='acc', retmax=4500,
+    handle = Entrez.esearch(db="sra", idtype='acc', retmax=4000,
                             sort='recently_added',
-                            term="((wastewater metagenome[Organism] OR wastewater metagenome[All Fields]) AND SARS-CoV-2))") 
+                            term=f'((wastewater metagenome[Organism] OR wastewater metagenome[All Fields]) \
+                            AND SARS-CoV-2 \
+                            AND ("2022-04-01"[Publication Date] : "2022-09-01"[Publication Date]))') 
     record = Entrez.read(handle)
     handle.close()
 
     handle = Entrez.efetch(db="sra", id=record['IdList'], rettype="gb",retmode='text')
-    string= handle.read()
+
+    try:
+        string= handle.read()
+    except (http.client.IncompleteRead) as e:
+        string = e.partial
     handle.close()
 
     returned_meta=str(string,'UTF-8')
@@ -51,8 +128,8 @@ def get_metadata():
         dictVals['SRA_id'] = root0[0].attrib['accession']
         allDictVals[sampID] =dictVals
 
+
     metadata = pd.DataFrame(allDictVals).T
-    metadata.columns = metadata.columns.str.replace(' ','_')
 
     return metadata
 def main():
@@ -67,7 +144,8 @@ def main():
     metadata = metadata[metadata['geo_loc_name'].str.contains('USA')]
     
     # For samples with no site id, hash the location and population to create a unique id
-    merged = metadata['geo_loc_name'] + '-' + metadata['ww_population'].fillna('').astype(str)
+    states = pd.Series(metadata['geo_loc_name'].str.split(': ').apply(lambda x: x[1].split(',')[0] if len(x) > 1 else x[0]))
+    merged = (states.apply(lambda x : us_state_to_abbrev[x])) + metadata['ww_population'].fillna('').astype(str)
     #merged = merged.apply(lambda x:shortuuid.uuid(x)[0:12])
     metadata['site_id'] = metadata['collection_site_id'].combine_first(merged)
 
@@ -92,6 +170,7 @@ def main():
     samples_to_run = samples_to_run[~samples_to_run.index.isin(failed_samples)]
     samples_to_run = samples_to_run[~samples_to_run.index.isin(demixed_samples)]
     samples_to_run = samples_to_run[~samples_to_run['ww_surv_target_1_conc'].isna()]
+    samples_to_run['ww_population'] = samples_to_run['ww_population'].astype(str)
     samples_to_run = samples_to_run[~samples_to_run['ww_population'].str.contains('<')]
     samples_to_run = samples_to_run[~samples_to_run['ww_population'].str.contains('>')]
     samples_to_run = samples_to_run[~samples_to_run['ww_population'].isna()]
