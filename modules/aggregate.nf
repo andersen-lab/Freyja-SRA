@@ -54,9 +54,6 @@ process AGGREGATE_DEMIX {
     val demix_outputs
     path baseDir
 
-    output:
-    path "aggregate_demix.json"
-
     script:
     """
     #!/usr/bin/env python3

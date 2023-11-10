@@ -2,7 +2,7 @@ name: Update NCBI metadata
 
 on:
   schedule:
-      - cron:  '0 * * * *'
+      - cron:  '0 */4 * * *'
 
 jobs:
   fetch_ncbi_metadata:
