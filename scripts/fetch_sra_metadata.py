@@ -90,7 +90,7 @@ def get_metadata():
                                 sort='recently_added',
                                 term=f'((wastewater metagenome[Organism] OR wastewater metagenome[All Fields]) \
                                 AND SARS-CoV-2 \
-                                AND ("2022-04-01"[Publication Date] : "2022-09-01"[Publication Date]))') 
+                                AND ("{date_range[0]}"[Publication Date] : "{date_range[1]}"[Publication Date]))') 
         record = Entrez.read(handle)
         handle.close()
 
