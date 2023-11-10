@@ -82,54 +82,57 @@ def get_metadata():
     ]
 
     metadata = pd.DataFrame()
+    for date_range in date_ranges:
+        print(date_range)
 
-    Entrez.email = "jolevy@scripps.edu"
-    handle = Entrez.esearch(db="sra", idtype='acc', retmax=4000,
-                            sort='recently_added',
-                            term=f'((wastewater metagenome[Organism] OR wastewater metagenome[All Fields]) \
-                            AND SARS-CoV-2 \
-                            AND ("2022-04-01"[Publication Date] : "2022-09-01"[Publication Date]))') 
-    record = Entrez.read(handle)
-    handle.close()
+        Entrez.email = "jolevy@scripps.edu"
+        handle = Entrez.esearch(db="sra", idtype='acc', retmax=4000,
+                                sort='recently_added',
+                                term=f'((wastewater metagenome[Organism] OR wastewater metagenome[All Fields]) \
+                                AND SARS-CoV-2 \
+                                AND ("2022-04-01"[Publication Date] : "2022-09-01"[Publication Date]))') 
+        record = Entrez.read(handle)
+        handle.close()
 
-    handle = Entrez.efetch(db="sra", id=record['IdList'], rettype="gb",retmode='text')
+        handle = Entrez.efetch(db="sra", id=record['IdList'], rettype="gb",retmode='text')
 
-    try:
-        string= handle.read()
-    except (http.client.IncompleteRead) as e:
-        string = e.partial
-    handle.close()
+        try:
+            string= handle.read()
+        except (http.client.IncompleteRead) as e:
+            string = e.partial
+        handle.close()
 
-    returned_meta=str(string,'UTF-8')
+        returned_meta=str(string,'UTF-8')
 
-    with open("data/NCBI_metadata.xml", "w") as f:
-        f.write(returned_meta)
-    
-    root = ET.fromstring(returned_meta)
-    allDictVals = {}
+        with open("data/NCBI_metadata.xml", "w") as f:
+            f.write(returned_meta)
+        
+        root = ET.fromstring(returned_meta)
+        allDictVals = {}
 
-    for root0 in root:
-        ### pull all sample attributes
-        vals = [r.text for r in root0.findall('.//SAMPLE_ATTRIBUTE/')]
-        sampExp = [r.text for r in root0.findall('.//EXPERIMENT/IDENTIFIERS/PRIMARY_ID')]
-        seq_meta = [r.text for r in root0.findall('.//RUN_SET/RUN/RUN_ATTRIBUTES/RUN_ATTRIBUTE/')]
-        sampID =  [r.text for r in root0.findall('.//RUN_SET/RUN/IDENTIFIERS/PRIMARY_ID')]
-        if len(sampID)>1:
-            print('more than one experiment... add funcs')
-        elif len(sampID)==0:
-            continue
-        else:
-            sampID = sampID[0]
-        ## write to dictionary form
-        dictVals = {vals[i].replace(' ','_'):vals[i+1] for i in range(0,len(vals),2)}
-        for i in range(0,len(seq_meta),2):
-            dictVals[seq_meta[i].replace(' ','')] = seq_meta[i+1]
-        dictVals['experiment_id'] = sampID
-        dictVals['SRA_id'] = root0[0].attrib['accession']
-        allDictVals[sampID] =dictVals
+        for root0 in root:
+            ### pull all sample attributes
+            vals = [r.text for r in root0.findall('.//SAMPLE_ATTRIBUTE/')]
+            sampExp = [r.text for r in root0.findall('.//EXPERIMENT/IDENTIFIERS/PRIMARY_ID')]
+            seq_meta = [r.text for r in root0.findall('.//RUN_SET/RUN/RUN_ATTRIBUTES/RUN_ATTRIBUTE/')]
+            sampID =  [r.text for r in root0.findall('.//RUN_SET/RUN/IDENTIFIERS/PRIMARY_ID')]
+            if len(sampID)>1:
+                print('more than one experiment... add funcs')
+            elif len(sampID)==0:
+                continue
+            else:
+                sampID = sampID[0]
+            ## write to dictionary form
+            dictVals = {vals[i].replace(' ','_'):vals[i+1] for i in range(0,len(vals),2)}
+            for i in range(0,len(seq_meta),2):
+                dictVals[seq_meta[i].replace(' ','')] = seq_meta[i+1]
+            dictVals['experiment_id'] = sampID
+            dictVals['SRA_id'] = root0[0].attrib['accession']
+            allDictVals[sampID] =dictVals
 
+        metadata = pd.concat([metadata, pd.DataFrame(allDictVals).T], axis=0)
 
-    metadata = pd.DataFrame(allDictVals).T
+    metadata = metadata.drop_duplicates()
 
     return metadata
 def main():
@@ -182,9 +185,9 @@ def main():
     samples_to_run = samples_to_run[samples_to_run['collection_date'] <='2023-10-01']
 
     # 10 samples per collection date
-    samples_to_run = samples_to_run.groupby('collection_date').head(10)
+    #samples_to_run = samples_to_run.groupby('collection_date').head(10)
 
-    print('All samples: ', len(metadata))
+    print('All samples: ', len(all_metadata))
     print('Newly added samples: ', len(new_metadata))
     print('Processed samples: ', len(demixed_samples))
     print('Samples to run: ', len(samples_to_run))
