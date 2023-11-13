@@ -15,11 +15,6 @@ jobs:
       - name: Setup nextflow
         uses: nf-core/setup-nextflow@v1
 
-      - name: Install python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
       - name: Install dependencies
         run: |
               pip install pandas biopython shortuuid
