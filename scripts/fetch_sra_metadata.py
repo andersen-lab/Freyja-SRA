@@ -76,7 +76,7 @@ argparser = argparse.ArgumentParser(description='Fetch most recent SRA metadata'
 def get_metadata():
 
     date_ranges = [
-        ('2023-07-01', '2023-10-01'),
+        ('2023-07-01', '2023-10-01')
         ('2023-04-01' ,'2023-07-01'),
         ('2023-01-01', '2023-04-01'),
         ('2022-10-01', '2023-01-01'),
@@ -154,6 +154,8 @@ def main():
     # Filter to USA samples
     metadata = metadata[metadata['geo_loc_name'].str.contains('USA')]
     
+    if 'collection_site_id' not in metadata.columns:
+        metadata['collection_site_id'] = pd.NA
     # For samples with no site id, hash the location and population to create a unique id
     states = pd.Series(metadata['geo_loc_name'].str.split(': ').apply(lambda x: x[1].split(',')[0] if len(x) > 1 else x[0]))
     merged = (states.apply(lambda x : us_state_to_abbrev[x])) + metadata['ww_population'].fillna('').astype(str)
@@ -186,8 +188,8 @@ def main():
     samples_to_run = samples_to_run[~samples_to_run['ww_population'].str.contains('>')]
     samples_to_run = samples_to_run[~samples_to_run['ww_population'].isna()]
 
-    samples_to_run['collection_date'] = pd.to_datetime(samples_to_run['collection_date'], format='mixed')
-    all_metadata['collection_date'] = pd.to_datetime(all_metadata['collection_date'], format='mixed')
+    samples_to_run['collection_date'] = pd.to_datetime(samples_to_run['collection_date'], format='%Y-%m-%d')
+    all_metadata['collection_date'] = pd.to_datetime(all_metadata['collection_date'], format='%Y-%m-%d')
 
     samples_to_run = samples_to_run[samples_to_run['collection_date'] >='2022-04-01']
     samples_to_run = samples_to_run[samples_to_run['collection_date'] <='2023-10-01']
