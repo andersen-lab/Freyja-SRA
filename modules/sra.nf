@@ -61,15 +61,28 @@ process GET_AMPLICON_SCHEME {
 }
 
 
-process FASTERQ_DUMP {
-    container { params.profile == "docker" ? "ncbi/sra-tools" : "docker://ncbi/sra-tools" }
-    errorStrategy  { task.attempt <= maxRetries  ? 'retry' : 'ignore' }
-    maxRetries 3
-    
+process SRA_PREFETCH {
+
     disk '1TB'
     input:
     val accession
     path primer_scheme
+
+    output:
+    tuple val(accession), path(primer_scheme), path("*")
+
+    script:
+    """
+    #!/bin/sh
+    aws s3 sync s3://sra-pub-run-odp/sra/${accession} ${accession} --no-sign-request
+    """
+}
+
+process FASTERQ_DUMP {
+    container { params.profile == "docker" ? "ncbi/sra-tools" : "docker://ncbi/sra-tools" }
+
+    input:
+    tuple val(accession), path(primer_scheme), path(sra_data)
 
     output:
     tuple val(accession), path(primer_scheme), path("*.fastq.gz")
@@ -77,8 +90,7 @@ process FASTERQ_DUMP {
     script:
     """
     #!/bin/sh
-    prefetch ${accession}
-    fasterq-dump --split-files ${accession} --disk-limit-tmp '64G'
+    fasterq-dump ./${sra_data}/${accession} --progress --threads 8 --split-files
     gzip *.fastq
     """
 }

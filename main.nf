@@ -15,6 +15,7 @@ annot = file(params.annot)
 include {
     GET_ACCESSIONS;
     GET_AMPLICON_SCHEME;
+    SRA_PREFETCH;
     FASTERQ_DUMP;
 } from "./modules/sra.nf"
 
@@ -55,7 +56,9 @@ workflow fetch_sra {
     GET_AMPLICON_SCHEME(acc_ch, input)
         .set { primer_scheme_ch }
 
-    FASTERQ_DUMP(primer_scheme_ch)
+    SRA_PREFETCH(primer_scheme_ch)
+
+    FASTERQ_DUMP(SRA_PREFETCH.out)
         .branch {
             unknown_primer: it[1].text == 'unknown'
             known_primer: it[1].text != 'unknown'
