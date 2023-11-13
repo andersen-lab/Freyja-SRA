@@ -76,7 +76,7 @@ argparser = argparse.ArgumentParser(description='Fetch most recent SRA metadata'
 def get_metadata():
 
     date_ranges = [
-        ('2023-07-01', '2023-10-01')
+        ('2023-07-01', '2023-10-01'),
         ('2023-04-01' ,'2023-07-01'),
         ('2023-01-01', '2023-04-01'),
         ('2022-10-01', '2023-01-01'),
