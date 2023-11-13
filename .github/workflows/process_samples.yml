@@ -19,9 +19,7 @@ jobs:
         uses: nf-core/setup-nextflow@v1
 
       - name: Install python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9.18'
+        run: dnf install python3 -y
 
       - name: Install dependencies
         run: |
