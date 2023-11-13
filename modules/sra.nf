@@ -91,6 +91,5 @@ process FASTERQ_DUMP {
     """
     #!/bin/sh
     fasterq-dump ./${sra_data}/${accession} --progress --threads 8 --split-files
-    gzip *.fastq
     """
 }
