@@ -1,8 +1,8 @@
 #!/bin/bash
 set -x
 
-BATCH_SIZE=30
-for i in {1..2}
+BATCH_SIZE=50
+for i in {1..20}
 do
     nextflow run main.nf \
         --input data/samples_to_run.csv \
