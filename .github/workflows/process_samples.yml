@@ -19,11 +19,13 @@ jobs:
         uses: nf-core/setup-nextflow@v1
 
       - name: Install python
-        run: dnf install python3 -y
+        run: |
+              dnf install python3 -y
+              dnf install python3-pip -y
 
       - name: Install dependencies
         run: |
-              pip3 install pandas biopython shortuuid
+              pip install pandas biopython shortuuid
 
       - name: Run pipeline on new samples
         run: bash scripts/run_pipeline.sh
