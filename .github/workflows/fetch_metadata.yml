@@ -13,9 +13,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
+        run: |
+              dnf install python3 -y
+              dnf install python3-pip -y
 
       - name: Install dependencies
         run: |
