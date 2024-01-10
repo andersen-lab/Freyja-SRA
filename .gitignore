@@ -1,0 +1,22 @@
+# nextflow
+.nextflow*
+work
+log
+null
+
+# Pipeline results
+outputs
+variants_rerun
+
+# vscode
+.vscode
+
+# Singularity
+*.img
+*.sif
+
+# metadata
+*.xml
+
+# macOS
+.DS_Store

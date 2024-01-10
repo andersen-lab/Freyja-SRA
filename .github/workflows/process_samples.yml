@@ -1,0 +1,43 @@
+name: Process samples
+
+on:
+  # schedule:
+  #     - cron:  '0 * * * *'
+
+jobs:
+  run_samples:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Setup nextflow
+        uses: nf-core/setup-nextflow@v1
+
+      - name: Install python
+        run: |
+              dnf install python3 -y
+              dnf install python3-pip -y
+
+      - name: Install dependencies
+        run: |
+              pip install pandas biopython shortuuid
+
+      - name: Run pipeline on new samples
+        run: bash scripts/run_pipeline.sh
+
+      - name: Commit and push changes
+        run: |
+              git config --local user.name "$GITHUB_ACTOR"
+              git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+              git config --global http.postBuffer 164012661
+              git add -A
+              git commit -m "Data dump"
+              git push --force
+
+
+              
+      
+
+
