@@ -52,7 +52,7 @@ jobs:
       - id: 'compose-aggregated-outputs'
         name: 'Concatenate aggregated outputs'
         run: |
-        gcloud storage compose gs://outbreak-ww/aggregate/aggregate_demix.json gs://outbreak-ww/outputs/aggregate/aggregate_demix_new.json gs://outbreak-ww/outputs/aggregate/aggregate_demix.json
+              gcloud storage compose gs://outbreak-ww/aggregate/aggregate_demix.json gs://outbreak-ww/outputs/aggregate/aggregate_demix_new.json gs://outbreak-ww/outputs/aggregate/aggregate_demix.json
 
 
               
