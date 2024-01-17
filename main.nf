@@ -117,7 +117,7 @@ workflow aggregate {
     take: demix_ch
 
     main:
-    AGGREGATE_DEMIX(baseDirm, demix_ch)
+    AGGREGATE_DEMIX(baseDir, demix_ch)
 }
 
 
