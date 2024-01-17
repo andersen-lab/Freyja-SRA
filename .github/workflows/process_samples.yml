@@ -9,6 +9,7 @@ jobs:
   run_samples:
     permissions:
       contents: read
+      id-token: write
       packages: write
 
     runs-on: self-hosted
