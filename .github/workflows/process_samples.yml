@@ -1,11 +1,15 @@
 name: Process samples
 
 on:
-  # schedule:
-  #     - cron:  '0 * * * *'
+  schedule:
+      - cron:  '0 * * * *'
 
 jobs:
   run_samples:
+    permissions:
+      contents: read
+      packages: write
+
     runs-on: self-hosted
 
     steps:
@@ -22,19 +26,35 @@ jobs:
 
       - name: Install dependencies
         run: |
-              pip install pandas biopython shortuuid
+              pip install pandas biopython
 
       - name: Run pipeline on new samples
         run: bash scripts/run_pipeline.sh
 
-      - name: Commit and push changes
+      - name: Aggregate outputs
         run: |
-              git config --local user.name "$GITHUB_ACTOR"
-              git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-              git config --global http.postBuffer 164012661
-              git add -A
-              git commit -m "Data dump"
-              git push --force
+              python scripts/aggregate_demix.py
+
+      - id: 'auth'
+        name: 'Authenticate with gcloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
+          service_account: '12767718289-compute@developer.gserviceaccount.com'
+      
+      - id: 'upload-outputs'
+        name: 'Upload Outputs to Cloud Storage'
+        uses: 'google-github-actions/upload-cloud-storage@v2'
+        with:
+          path: '~/dpilz/Freyja-SRA/outputs/*'
+          destination: 'gs://outbreak-ww/'
+
+      - id: 'compose-aggregated-outputs'
+        name: 'Concatenate aggregated outputs'
+        run: |
+        for file in demix variants_by_acc variants_by_acc; do
+          gcloud storage compose gs://outbreak-ww/aggregate/aggregate_${file}.json gs://outbreak-ww/outputs/aggregate/aggregate_${file}_new.json gs://outbreak-ww/outputs/aggregate/aggregate_${file}.json
+        done
 
 
               

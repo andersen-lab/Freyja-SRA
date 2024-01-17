@@ -95,7 +95,7 @@ def main():
 
     df = df[~df['site_id'].isna()]
 
-    with open('outputs/aggregate/aggregate_demix.json', 'w') as f:
+    with open('outputs/aggregate/aggregate_demix_new.json', 'w') as f:
         for row in df.iterrows():
 
             json_row = {

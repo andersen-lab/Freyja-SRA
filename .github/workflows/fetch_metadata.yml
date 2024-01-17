@@ -19,10 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-              pip install pandas biopython shortuuid numpy
-
-      - name: Install Freyja
-        run: |
+              pip install pandas biopython numpy
               git clone https://github.com/andersen-lab/Freyja.git
               cd Freyja
               pip install -e .
