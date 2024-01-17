@@ -35,9 +35,9 @@ jobs:
       - name: Run pipeline on new samples
         run: bash scripts/run_pipeline.sh
 
-      - name: Aggregate outputs
-        run: |
-              python scripts/aggregate_demix.py
+      # - name: Aggregate outputs
+      #   run: |
+      #         python scripts/aggregate_demix.py
 
       - id: 'auth'
         name: 'Authenticate with gcloud'
