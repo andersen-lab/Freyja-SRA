@@ -1,5 +1,7 @@
 process AGGREGATE_DEMIX {
     publishDir "${params.output}/aggregate", mode: 'copy'
+    input:
+    val baseDir
 
     script:
     """
