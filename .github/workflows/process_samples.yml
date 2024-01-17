@@ -1,8 +1,9 @@
 name: Process samples
 
 on:
-  schedule:
-      - cron:  '0 * * * *'
+  push:
+    branches:
+      - gcloud
 
 jobs:
   run_samples:
@@ -49,10 +50,10 @@ jobs:
           path: '~/dpilz/Freyja-SRA/outputs/*'
           destination: 'gs://outbreak-ww/'
 
-      - id: 'compose-aggregated-outputs'
-        name: 'Concatenate aggregated outputs'
-        run: |
-              gcloud storage compose gs://outbreak-ww/aggregate/aggregate_demix.json gs://outbreak-ww/outputs/aggregate/aggregate_demix_new.json gs://outbreak-ww/outputs/aggregate/aggregate_demix.json
+      # - id: 'compose-aggregated-outputs'
+      #   name: 'Concatenate aggregated outputs'
+      #   run: |
+      #         gcloud storage compose gs://outbreak-ww/aggregate/aggregate_demix.json gs://outbreak-ww/outputs/aggregate/aggregate_demix_new.json gs://outbreak-ww/outputs/aggregate/aggregate_demix.json
 
 
               
