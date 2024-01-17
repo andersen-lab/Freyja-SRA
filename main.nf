@@ -117,7 +117,7 @@ workflow aggregate {
     take: demix_ch
 
     main:
-    AGGREGATE_DEMIX(params.baseDir)
+    AGGREGATE_DEMIX(baseDir)
 }
 
 
