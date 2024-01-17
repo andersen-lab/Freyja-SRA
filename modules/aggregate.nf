@@ -6,6 +6,6 @@ process AGGREGATE_DEMIX {
 
     script:
     """
-    python ${baseDir}/scripts/aggregate_demix.py
+    python ${baseDir}/scripts/aggregate_demix.py ${baseDir}/outputs/demix
     """
 }

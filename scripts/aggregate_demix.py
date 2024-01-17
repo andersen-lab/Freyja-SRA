@@ -3,9 +3,12 @@
 import subprocess
 import json
 import os
+import sys
 import numpy as np
 import yaml
 import pandas as pd
+
+demix_dir = sys.argv[1]
 
 def isnumber(x):
     try:
@@ -50,7 +53,7 @@ def merge_collapsed(lin_dict):
 def main():
 
     # Create intermediate tsv
-    subprocess.run(["freyja", "aggregate", "outputs/demix/", "--output", "aggregate_demix.tsv"])
+    subprocess.run(["freyja", "aggregate", demix_dir, "--output", "aggregate_demix.tsv"])
     
     # Save to json
     agg_demix = pd.read_csv('aggregate_demix.tsv', sep='\t')
