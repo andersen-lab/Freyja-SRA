@@ -10,7 +10,6 @@ jobs:
     permissions:
       contents: read
       id-token: write
-      packages: write
 
     runs-on: self-hosted
 
@@ -21,24 +20,20 @@ jobs:
       - name: Setup nextflow
         uses: nf-core/setup-nextflow@v1
 
-      - name: Install python
-        run: |
-              dnf install python3 -y
-              dnf install python3-pip -y
-
-      - name: Install dependencies
-        run: |
-              pip install pandas biopython
-              git clone https://github.com/andersen-lab/Freyja.git
-              cd Freyja
-              pip install -e .
-
       - name: Run pipeline on new samples
-        run: bash scripts/run_pipeline.sh
+        run: |
+              BATCH_SIZE=50
 
-      # - name: Aggregate outputs
-      #   run: |
-      #         python scripts/aggregate_demix.py
+              nextflow run main.nf \
+                  --accession_list data/samples_to_run.csv \
+                  --num_samples $BATCH_SIZE \
+                  -profile docker \
+                  -entry sra &
+              BACK_PID=$!
+              wait $BACK_PID
+
+              rm -rf work
+              sed -i '2,51d' data/samples_to_run.csv
 
       - id: 'auth'
         name: 'Authenticate with gcloud'
@@ -46,21 +41,20 @@ jobs:
         with:
           workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
           service_account: '12767718289-compute@developer.gserviceaccount.com'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          version: '>= 363.0.0'
       
       - id: 'upload-outputs'
         name: 'Upload Outputs to Cloud Storage'
         uses: 'google-github-actions/upload-cloud-storage@v2'
         with:
-          path: '~/dpilz/Freyja-SRA/outputs/*'
+          path: 'outputs/*'
           destination: 'gs://outbreak-ww/'
 
-      # - id: 'compose-aggregated-outputs'
-      #   name: 'Concatenate aggregated outputs'
-      #   run: |
-      #         gcloud storage compose gs://outbreak-ww/aggregate/aggregate_demix.json gs://outbreak-ww/outputs/aggregate/aggregate_demix_new.json gs://outbreak-ww/outputs/aggregate/aggregate_demix.json
-
-
-              
-      
-
-
+      - id: 'compose-aggregated-outputs'
+        name: 'Concatenate aggregated outputs'
+        run: |
+              gcloud storage compose gs://outbreak-ww/aggregate/aggregate_demix.json gs://outbreak-ww/outputs/aggregate/aggregate_demix_new.json gs://outbreak-ww/outputs/aggregate/aggregate_demix.json
