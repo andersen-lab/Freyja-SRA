@@ -52,7 +52,7 @@ jobs:
         uses: 'google-github-actions/upload-cloud-storage@v2'
         with:
           path: 'outputs/'
-          destination: 'gs://outbreak-ww/'
+          destination: 'outbreak-ww/'
 
       - id: 'compose-aggregated-outputs'
         name: 'Concatenate aggregated outputs'
