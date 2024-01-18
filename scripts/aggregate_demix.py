@@ -99,9 +99,7 @@ def main():
 
     df = df[~df['site_id'].isna()]
 
-    # Create aggregate directory
-    subprocess.run(['mkdir', f'{base_dir}/outputs/aggregate'])
-    with open(f'{base_dir}/outputs/aggregate/aggregate_demix_new.json', 'w') as f:
+    with open('aggregate_demix_new.json', 'w') as f:
         for row in df.iterrows():
 
             json_row = {

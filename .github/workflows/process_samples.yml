@@ -5,6 +5,9 @@ on:
     branches:
       - gcloud
 
+env:
+  BATCH_SIZE: 50
+
 jobs:
   run_samples:
     permissions:
@@ -22,18 +25,11 @@ jobs:
 
       - name: Run pipeline on new samples
         run: |
-              BATCH_SIZE=50
-
               nextflow run main.nf \
                   --accession_list data/samples_to_run.csv \
                   --num_samples $BATCH_SIZE \
                   -profile docker \
                   -entry sra &
-              BACK_PID=$!
-              wait $BACK_PID
-
-              rm -rf work
-              sed -i '2,51d' data/samples_to_run.csv
 
       - id: 'auth'
         name: 'Authenticate with gcloud'
@@ -59,3 +55,17 @@ jobs:
         name: 'Concatenate aggregated outputs'
         run: |
               gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_demix.json gs://outbreak-ww-data/outputs/aggregate/aggregate_demix_new.json gs://outbreak-ww-data/outputs/aggregate/aggregate_demix.json
+     
+      - name: 'Update processed samples'
+        run: |
+              (cut -d, -f1 data/samples_to_run.csv | head -n $((BATCH_SIZE+1)) | tail -n $((BATCH_SIZE))) >> data/processed_samples.txt
+              sed -i "2,$((BATCH_SIZE+1))d" data/samples_to_run.csv
+      
+      - name: 'Commit and push changes'
+        run: |
+              git config --local user.name "$GITHUB_ACTOR"
+              git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+              git add data/processed_samples.txt
+              git add data/samples_to_run.csv
+              git commit -m "Update processed samples"
+              git push --force
