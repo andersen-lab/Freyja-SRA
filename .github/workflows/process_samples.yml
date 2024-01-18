@@ -40,7 +40,7 @@ jobs:
         uses: 'google-github-actions/auth@v2'
         with:
           workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
-          service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
+          service_account: 'outbreak-ww-data@andersen-lab-primary.iam.gserviceaccount.com'
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
@@ -52,10 +52,10 @@ jobs:
         uses: 'google-github-actions/upload-cloud-storage@v2'
         with:
           path: 'outputs/'
-          destination: 'outbreak-ww/'
+          destination: 'outbreak-ww-data/'
           parent: false
 
       - id: 'compose-aggregated-outputs'
         name: 'Concatenate aggregated outputs'
         run: |
-              gcloud storage compose gs://outbreak-ww/aggregate/aggregate_demix.json gs://outbreak-ww/outputs/aggregate/aggregate_demix_new.json gs://outbreak-ww/outputs/aggregate/aggregate_demix.json
+              gcloud storage compose gs://outbreak-ww-data/aggregate/aggregate_demix.json gs://outbreak-ww-data/outputs/aggregate/aggregate_demix_new.json gs://outbreak-ww-data/outputs/aggregate/aggregate_demix.json
