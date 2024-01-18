@@ -30,6 +30,8 @@ jobs:
                   --num_samples $BATCH_SIZE \
                   -profile docker \
                   -entry sra &
+              BG_PID=$!
+              wait $BG_PID
 
       - id: 'auth'
         name: 'Authenticate with gcloud'
