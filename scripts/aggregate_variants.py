@@ -5,8 +5,6 @@ import os
 import json
 import pandas as pd 
 
-
-
 def md5hash(s: str): 
     return hashlib.md5(s.encode('utf-8')).hexdigest()[:64]
 
@@ -17,6 +15,7 @@ for file in os.listdir('outputs/variants'):
 
 # Aggregate variants to one dataframe
 depth_thresh = 20
+freq_thresh = 0.01
 j=0
 for var_path in paths_list:
     try:
@@ -25,6 +24,8 @@ for var_path in paths_list:
         continue
 
     df = df[df['ALT_DP']>=depth_thresh]
+    df = df[df['ALT_FREQ']>=freq_thresh]
+
     #drop frame shifts
     sname=var_path.split('/')[-1].split('.')[0]
     df = df[df['ALT'].apply(lambda x: True if (('+' not in x and '-' not in x) or ((len(x)-1)%3==0)) else False)]
@@ -42,6 +43,9 @@ for var_path in paths_list:
 # Load in metadata
 metadata = pd.read_csv('data/all_metadata.csv')
 metadata.set_index('accession', inplace=True)
+
+# Remove samples that are not in metadata
+variants = variants[variants['sample'].isin(metadata.index)]
 
 variants = variants.rename(columns={'ALT_FREQ':'frequency', 'ALT_DP':'depth'})
 
@@ -62,7 +66,7 @@ with open(variants_by_acc_path, 'w') as output_file:
 
         mutations = [{'mut_name': mut_name, 'frequency': frequency, 'depth': depth}
                      for mut_name, frequency, depth in zip(mut_names, frequencies, depths)]
-
+        
         row_dict = {
             'sra_accession': row['sample'],
             'mutations': mutations,
@@ -116,4 +120,3 @@ with open(variants_by_mut_path, 'w') as output_file:
         }
 
         output_file.write(f'{json.dumps(row_dict)}\n')
-
