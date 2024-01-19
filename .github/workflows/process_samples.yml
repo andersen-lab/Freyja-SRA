@@ -1,9 +1,8 @@
 name: Process samples
 
 on:
-  push:
-    branches:
-      - gcloud
+  cron:
+    - '0 * * * *'
 
 env:
   BATCH_SIZE: 50
@@ -56,7 +55,7 @@ jobs:
       - id: 'compose-aggregated-outputs'
         name: 'Concatenate aggregated outputs'
         run: |
-              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_demix.json gs://outbreak-ww-data/outputs/aggregate/aggregate_demix_new.json gs://outbreak-ww-data/outputs/aggregate/aggregate_demix.json
+              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_demix.json gs://outbreak-ww-data/aggregate/aggregate_demix_new.json gs://outbreak-ww-data/outputs/aggregate/aggregate_demix.json
      
       - name: 'Update processed samples'
         run: |
