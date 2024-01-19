@@ -32,13 +32,10 @@ include {
 include {
     FREYJA_VARIANTS;
     FREYJA_DEMIX;
-    FREYJA_COVARIANTS;
 } from "./modules/freyja.nf"
 
 include {
-    AGGREGATE_VARIANTS
     AGGREGATE_DEMIX;
-    AGGREGATE_COVARIANTS;
 } from "./modules/aggregate.nf"
 
 workflow sra {
@@ -111,11 +108,16 @@ workflow freyja {
 
     FREYJA_DEMIX(FREYJA_VARIANTS.out, params.eps, params.depthCutoff)
         .collect()
-        .set { demix_ch }
+        .set { demix_ch }   
+    
+    aggregate(demix_ch)
+}
 
-    // FREYJA_COVARIANTS(sra_accession, input_bam, bam_index, ref, annot)
-    //     .collect()
-    //     .set { covariants_ch }
+workflow aggregate {
+    take: demix_ch
+
+    main:
+    AGGREGATE_DEMIX(baseDir, demix_ch)
 }
 
 

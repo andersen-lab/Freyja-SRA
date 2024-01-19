@@ -33,3 +33,6 @@ nextflow run main.nf -entry [sra|rerun_demix] -profile [docker|singularity] --ac
 ## Configuration
 
 Addtional configuration options can be found in `nextflow.config`
+
+## Data Availability
+All currently processed data (see `data/processed_samples.csv`) is publicly available on google cloud storage at `gs://outbreak-ww-data/`
