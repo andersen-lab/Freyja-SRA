@@ -1,8 +1,8 @@
 name: Process samples
 
 on:
-  cron:
-    - '0 * * * *'
+  schedule:
+    - cron: '0 * * * *'
 
 env:
   BATCH_SIZE: 50
