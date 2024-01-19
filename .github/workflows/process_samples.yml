@@ -6,6 +6,8 @@ on:
 
 env:
   BATCH_SIZE: 50
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
 
 jobs:
   run_samples:
@@ -55,8 +57,10 @@ jobs:
       - id: 'compose-aggregated-outputs'
         name: 'Concatenate aggregated outputs'
         run: |
-              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_demix.json gs://outbreak-ww-data/aggregate/aggregate_demix_new.json gs://outbreak-ww-data/outputs/aggregate/aggregate_demix.json
-     
+              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_demix.json gs://outbreak-ww-data/aggregate/aggregate_demix_new.json gs://outbreak-ww-data/aggregate/aggregate_demix.json
+              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_variants_by_acc.json gs://outbreak-ww-data/aggregate/aggregate_variants_by_acc_new.json gs://outbreak-ww-data/aggregate/aggregate_variants_by_acc.json
+              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_variants_by_mut.json gs://outbreak-ww-data/aggregate/aggregate_variants_by_mut_new.json gs://outbreak-ww-data/aggregate/aggregate_variants_by_mut.json
+
       - name: 'Update processed samples'
         run: |
               (cut -d, -f1 data/samples_to_run.csv | head -n $((BATCH_SIZE+1)) | tail -n $((BATCH_SIZE))) >> data/processed_samples.csv
@@ -66,6 +70,7 @@ jobs:
         run: |
               git config --local user.name "$GITHUB_ACTOR"
               git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+              git remote set-url origin http://
               git add data/processed_samples.csv
               git add data/samples_to_run.csv
               git commit -m "Update processed samples"

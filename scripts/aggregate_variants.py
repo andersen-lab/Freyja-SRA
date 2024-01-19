@@ -2,16 +2,19 @@
 
 import hashlib
 import os
+import sys
 import json
 import pandas as pd 
+
+base_dir = sys.argv[1]
 
 def md5hash(s: str): 
     return hashlib.md5(s.encode('utf-8')).hexdigest()[:64]
 
 paths_list = []
-for file in os.listdir('outputs/variants'):
+for file in os.listdir(f'{base_dir}outputs/variants'):
     if 'variants' in file:
-        paths_list.append(os.path.join('outputs/variants', file))
+        paths_list.append(os.path.join(f'{base_dir}outputs/variants', file))
 
 # Aggregate variants to one dataframe
 depth_thresh = 20
@@ -41,7 +44,7 @@ for var_path in paths_list:
     j+=1
 
 # Load in metadata
-metadata = pd.read_csv('data/all_metadata.csv')
+metadata = pd.read_csv(f'{base_dir}data/all_metadata.csv')
 metadata.set_index('accession', inplace=True)
 
 # Remove samples that are not in metadata
@@ -56,7 +59,7 @@ for col in ['collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_populati
     variants[col] = variants['sample'].map(metadata[col])
 
 
-variants_by_acc_path = 'outputs/aggregate/aggregate_variants_by_acc_new.json'
+variants_by_acc_path = '/aggregate_variants_by_acc_new.json'
 
 with open(variants_by_acc_path, 'w') as output_file:
     for _, row in acc_df.iterrows():
@@ -80,7 +83,7 @@ with open(variants_by_acc_path, 'w') as output_file:
 
         output_file.write(f'{json.dumps(row_dict)}\n')
 
-variants_by_mut_path = 'outputs/aggregate/aggregate_variants_by_mut_new.json'
+variants_by_mut_path = 'aggregate_variants_by_mut_new.json'
 
 mut_df = variants.groupby('mutName').agg({'sample': lambda x: ' '.join(x), 'frequency': lambda x: ' '.join([str(v) for v in x]), 'depth': lambda x: ' '.join([str(v) for v in x]), 'collection_date': lambda x: ' '.join([str(v) for v in x]), 'geo_loc_country': lambda x: ' '.join([str(v) for v in x]), 'geo_loc_region': lambda x: ':'.join([str(v) for v in x]), 'ww_population': lambda x: ' '.join([str(v) for v in x]), 'ww_surv_target_1_conc': lambda x: ' '.join([str(v) for v in x]), 'site_id': lambda x: ' '.join([str(v) for v in x])}).reset_index()
 mut_df['mut_hash'] = mut_df['mutName'].apply(md5hash)
