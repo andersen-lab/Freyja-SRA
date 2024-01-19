@@ -63,6 +63,9 @@ jobs:
               sed -i "2,$((BATCH_SIZE+1))d" data/samples_to_run.csv
       
       - name: 'Commit and push changes'
+        uses: 'actions/checkout@v4'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
         run: |
               git config --local user.name "$GITHUB_ACTOR"
               git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
