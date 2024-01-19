@@ -81,10 +81,10 @@ def isnumber(x):
 def get_metadata():
 
     # Get n most recent 3-month periods
-    n = 7
-    start_date = datetime(2024, 1, 1)
+    n = 2
+    start_date = datetime(2023, 8, 1)
     date_ranges = [((start_date - timedelta(days=i*92)).strftime('%Y-%m-%d'), (start_date - timedelta(days=(i-1)*92)).strftime('%Y-%m-%d')) for i in range(n, 0, -1)] 
-                
+
     metadata = pd.DataFrame()
     for date_range in date_ranges:
         print(date_range)
@@ -176,7 +176,7 @@ def main():
     new_metadata = metadata[~metadata.index.isin(current_metadata.index)]
     all_metadata = pd.concat([current_metadata, metadata], axis=0)
 
-    all_metadata = all_metadata.rename(columns={'Unnamed: 0': 'accession'})
+    
     all_metadata['ww_population'] = all_metadata['ww_population'].apply(lambda x: x if isnumber(x) else -1.0)
     all_metadata['ww_surv_target_1_conc'] = all_metadata['ww_surv_target_1_conc'].apply(lambda x: x if isnumber(x) else -1.0)
 
@@ -186,6 +186,7 @@ def main():
     all_metadata['geo_loc_country'] = all_metadata['geo_loc_name'].apply(lambda x: x.split(':')[0].strip())
     all_metadata['geo_loc_region'] = all_metadata['geo_loc_name'].apply(lambda x: x.split(':')[1].strip() if len(x.split(':')) > 1 else '')
     all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].apply(lambda x: x.split(',')[0].strip() if len(x.split(',')) > 1 else x)
+    all_metadata = all_metadata[~all_metadata['geo_loc_region'].isna()]
 
     if 'US Virgin Islands' in all_metadata['geo_loc_region'].unique():
         all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].replace('US Virgin Islands', 'U.S. Virgin Islands')
@@ -195,8 +196,9 @@ def main():
     all_metadata['site_id'] = all_metadata['site_id'].apply(lambda x: x.replace('.0', ''))
     all_metadata = all_metadata[~all_metadata['site_id'].isna()]
 
-    
+    all_metadata = all_metadata[~all_metadata['collection_date'].isna()]
     all_metadata = all_metadata[~all_metadata.index.duplicated(keep='first')]
+    all_metadata.index.name = 'accession'
 
     finished_samples = pd.read_csv('data/processed_samples.txt', header=None)[0].values
     samples_to_run = all_metadata.copy()
@@ -208,9 +210,10 @@ def main():
     samples_to_run['collection_date'] = pd.to_datetime(samples_to_run['collection_date'], format='%Y-%m-%d')
     all_metadata['collection_date'] = pd.to_datetime(all_metadata['collection_date'], format='%Y-%m-%d')
 
+    samples_to_run = samples_to_run[samples_to_run['collection_date'] > datetime(2023, 1, 1)]
+    samples_to_run = samples_to_run[samples_to_run['collection_date'] < datetime(2023, 8, 1)]
 
     print('All samples: ', len(all_metadata))
-    print('Newly added samples: ', len(new_metadata))
     print('Processed samples: ', len(finished_samples))
     print('Samples to run: ', len(samples_to_run))
 
@@ -219,7 +222,7 @@ def main():
     all_metadata = all_metadata.sort_values(by='collection_date', ascending=False)
 
     all_metadata.to_csv('data/all_metadata.csv')
-    samples_to_run.to_csv('data/samples_to_run.csv', index=True, header=True)
+    samples_to_run['accession'].to_csv('data/samples_to_run.csv', index=True, header=False)
 
 if __name__ == "__main__":
     main()
