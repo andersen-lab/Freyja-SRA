@@ -3,9 +3,12 @@
 import subprocess
 import json
 import os
+import sys
 import numpy as np
 import yaml
 import pandas as pd
+
+base_dir = sys.argv[1]
 
 def isnumber(x):
     try:
@@ -14,7 +17,7 @@ def isnumber(x):
     except:
         return False
 
-def get_alias_key(lineages_yml='data/lineages.yml'):
+def get_alias_key(lineages_yml=f'{base_dir}/data/lineages.yml'):
     with open(lineages_yml, 'r') as alias_key:
         lineage_key = yaml.load(alias_key, Loader=yaml.Loader)
     alias_key = dict([(lin['name'], lin['parent']) for lin in lineage_key if 'parent' in lin])
@@ -50,7 +53,7 @@ def merge_collapsed(lin_dict):
 def main():
 
     # Create intermediate tsv
-    subprocess.run(["freyja", "aggregate", "outputs/demix/", "--output", "aggregate_demix.tsv"])
+    subprocess.run(["freyja", "aggregate", f'{base_dir}/outputs/demix/', "--output", "aggregate_demix.tsv"])
     
     # Save to json
     agg_demix = pd.read_csv('aggregate_demix.tsv', sep='\t')
@@ -61,7 +64,8 @@ def main():
     agg_demix['abundances'] = agg_demix['lin_dict'].apply(lambda x: ' '.join([str(v) for v in list(x.values())]))
     agg_demix.drop('lin_dict', axis=1, inplace=True)
 
-    metadata = pd.read_csv('data/all_metadata.csv')
+    agg_demix = agg_demix.rename(columns={'Unnamed: 0': 'accession'})
+    metadata = pd.read_csv(f'{base_dir}/data/all_metadata.csv')
 
     columns = ['accession', 'lineages', 'abundances', 'crumbs', 'collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_population', 'ww_surv_target_1_conc', 'site_id', 'coverage']
 
@@ -95,7 +99,7 @@ def main():
 
     df = df[~df['site_id'].isna()]
 
-    with open('outputs/aggregate/aggregate_demix.json', 'w') as f:
+    with open('aggregate_demix_new.json', 'w') as f:
         for row in df.iterrows():
 
             json_row = {

@@ -200,7 +200,7 @@ def main():
     all_metadata = all_metadata[~all_metadata.index.duplicated(keep='first')]
     all_metadata.index.name = 'accession'
 
-    finished_samples = pd.read_csv('data/processed_samples.txt', header=None)[0].values
+    finished_samples = pd.read_csv('data/processed_samples.csv', header=None)[0].values
     samples_to_run = all_metadata.copy()
     samples_to_run = samples_to_run[~samples_to_run.index.isin(finished_samples)]
 

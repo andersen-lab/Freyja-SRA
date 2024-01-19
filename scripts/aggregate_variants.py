@@ -56,7 +56,7 @@ for col in ['collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_populati
     variants[col] = variants['sample'].map(metadata[col])
 
 
-variants_by_acc_path = 'outputs/aggregate/aggregate_variants_by_acc.json'
+variants_by_acc_path = 'outputs/aggregate/aggregate_variants_by_acc_new.json'
 
 with open(variants_by_acc_path, 'w') as output_file:
     for _, row in acc_df.iterrows():
@@ -80,7 +80,7 @@ with open(variants_by_acc_path, 'w') as output_file:
 
         output_file.write(f'{json.dumps(row_dict)}\n')
 
-variants_by_mut_path = 'outputs/aggregate/aggregate_variants_by_mut.json'
+variants_by_mut_path = 'outputs/aggregate/aggregate_variants_by_mut_new.json'
 
 mut_df = variants.groupby('mutName').agg({'sample': lambda x: ' '.join(x), 'frequency': lambda x: ' '.join([str(v) for v in x]), 'depth': lambda x: ' '.join([str(v) for v in x]), 'collection_date': lambda x: ' '.join([str(v) for v in x]), 'geo_loc_country': lambda x: ' '.join([str(v) for v in x]), 'geo_loc_region': lambda x: ':'.join([str(v) for v in x]), 'ww_population': lambda x: ' '.join([str(v) for v in x]), 'ww_surv_target_1_conc': lambda x: ' '.join([str(v) for v in x]), 'site_id': lambda x: ' '.join([str(v) for v in x])}).reset_index()
 mut_df['mut_hash'] = mut_df['mutName'].apply(md5hash)
