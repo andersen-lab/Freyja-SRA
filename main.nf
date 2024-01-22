@@ -111,7 +111,7 @@ workflow freyja {
         .collect()
         .set { demix_ch }   
     
-    aggregate(demix_ch)
+    aggregate(demix_ch, variants_ch)
 }
 
 workflow aggregate {
