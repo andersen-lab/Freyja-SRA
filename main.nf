@@ -115,7 +115,9 @@ workflow freyja {
 }
 
 workflow aggregate {
-    take: demix_ch, variants_ch
+    take:
+    demix_ch 
+    variants_ch
 
     main:
     AGGREGATE_DEMIX(baseDir, demix_ch)
