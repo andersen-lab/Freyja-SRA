@@ -12,9 +12,9 @@ def md5hash(s: str):
     return hashlib.md5(s.encode('utf-8')).hexdigest()[:64]
 
 paths_list = []
-for file in os.listdir(f'{base_dir}outputs/variants'):
+for file in os.listdir(f'{base_dir}/outputs/variants'):
     if 'variants' in file:
-        paths_list.append(os.path.join(f'{base_dir}outputs/variants', file))
+        paths_list.append(os.path.join(f'{base_dir}/outputs/variants', file))
 
 # Aggregate variants to one dataframe
 depth_thresh = 20
@@ -44,7 +44,7 @@ for var_path in paths_list:
     j+=1
 
 # Load in metadata
-metadata = pd.read_csv(f'{base_dir}data/all_metadata.csv')
+metadata = pd.read_csv(f'{base_dir}/data/all_metadata.csv')
 metadata.set_index('accession', inplace=True)
 
 # Remove samples that are not in metadata
@@ -64,6 +64,8 @@ variants_by_acc_path = '/aggregate_variants_by_acc_new.json'
 with open(variants_by_acc_path, 'w') as output_file:
     for _, row in acc_df.iterrows():
         mut_names = row['mutName'].split(' ')
+        # if len(mut_names) >= 10000: # ES nested document limit
+        #     continue
         frequencies = [float(i) for i in row['frequency'].split(' ')]
         depths = [float(i) for i in row['depth'].split(' ')]
 
@@ -91,6 +93,8 @@ mut_df['mut_hash'] = mut_df['mutName'].apply(md5hash)
 with open(variants_by_mut_path, 'w') as output_file:
     for _, row in mut_df.iterrows():
         sample_names = row['sample'].split(' ')
+        # if len(sample_names) >= 10000: # ES nested document limit
+        #     continue
         frequencies = [float(i) for i in row['frequency'].split(' ')]
         depths = [float(i) for i in row['depth'].split(' ')]
         collection_dates = row['collection_date'].split(' ')

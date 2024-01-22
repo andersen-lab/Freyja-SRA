@@ -36,6 +36,7 @@ include {
 
 include {
     AGGREGATE_DEMIX;
+    AGGREGATE_VARIANTS
 } from "./modules/aggregate.nf"
 
 workflow sra {
@@ -114,10 +115,11 @@ workflow freyja {
 }
 
 workflow aggregate {
-    take: demix_ch
+    take: demix_ch, variants_ch
 
     main:
     AGGREGATE_DEMIX(baseDir, demix_ch)
+    AGGREGATE_VARIANTS(baseDir, variants_ch)
 }
 
 
