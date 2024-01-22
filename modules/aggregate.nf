@@ -2,8 +2,8 @@ process AGGREGATE_DEMIX {
     publishDir "${params.output}/aggregate", mode: 'copy'
 
     input:
-    path baseDir
     path demix_ch
+    path baseDir
 
     output:
     path "aggregate_demix_new.json"
@@ -18,8 +18,8 @@ process AGGREGATE_VARIANTS {
     publishDir "${params.output}/aggregate", mode: 'copy'
 
     input:
-    path baseDir
     path variants_ch
+    path baseDir
 
     output:
     path "aggregate_variants_by_acc_new.json"

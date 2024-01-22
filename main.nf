@@ -111,17 +111,8 @@ workflow freyja {
         .collect()
         .set { demix_ch }   
     
-    aggregate(demix_ch, variants_ch)
-}
-
-workflow aggregate {
-    take:
-    demix_ch 
-    variants_ch
-
-    main:
-    AGGREGATE_DEMIX(baseDir, demix_ch)
-    AGGREGATE_VARIANTS(baseDir, variants_ch)
+    AGGREGATE_VARIANTS(variants_ch, baseDir)
+    AGGREGATE_DEMIX(demix_ch, baseDir)
 }
 
 
