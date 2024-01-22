@@ -15,6 +15,7 @@ for file in os.listdir(f'{base_dir}/outputs/variants'):
         paths_list.append(os.path.join(f'{base_dir}/outputs/variants', file))
 
 # Aggregate variants to one dataframe
+variants = pd.DataFrame()
 depth_thresh = 20
 j=0
 for var_path in paths_list:
@@ -22,14 +23,12 @@ for var_path in paths_list:
         df = pd.read_csv(var_path,sep='\t')
     except:
         continue
-
-    df = df[df['ALT_DP']>=depth_thresh]
-
     # Determine frequency threshold based on quality score
     avg_qual = df['ALT_QUAL'].mean()
     freq_thresh = 10 ** (-avg_qual/10)
 
     df = df[df['ALT_FREQ']>freq_thresh]
+    df = df[df['ALT_DP']>=depth_thresh]
 
     #drop frame shifts
     sname=var_path.split('/')[-1].split('.')[0]
