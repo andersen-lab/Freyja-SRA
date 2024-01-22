@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import hashlib
 import os
 import sys
@@ -18,7 +16,6 @@ for file in os.listdir(f'{base_dir}/outputs/variants'):
 
 # Aggregate variants to one dataframe
 depth_thresh = 20
-freq_thresh = 0.01
 j=0
 for var_path in paths_list:
     try:
@@ -27,7 +24,12 @@ for var_path in paths_list:
         continue
 
     df = df[df['ALT_DP']>=depth_thresh]
-    df = df[df['ALT_FREQ']>=freq_thresh]
+
+    # Determine frequency threshold based on quality score
+    avg_qual = df['ALT_QUAL'].mean()
+    freq_thresh = 10 ** (-avg_qual/10)
+
+    df = df[df['ALT_FREQ']>freq_thresh]
 
     #drop frame shifts
     sname=var_path.split('/')[-1].split('.')[0]
@@ -59,13 +61,12 @@ for col in ['collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_populati
     variants[col] = variants['sample'].map(metadata[col])
 
 
-variants_by_acc_path = '/aggregate_variants_by_acc_new.json'
+variants_by_acc_path = 'aggregate_variants_by_acc_new.json'
 
 with open(variants_by_acc_path, 'w') as output_file:
     for _, row in acc_df.iterrows():
         mut_names = row['mutName'].split(' ')
-        # if len(mut_names) >= 10000: # ES nested document limit
-        #     continue
+
         frequencies = [float(i) for i in row['frequency'].split(' ')]
         depths = [float(i) for i in row['depth'].split(' ')]
 
@@ -93,8 +94,6 @@ mut_df['mut_hash'] = mut_df['mutName'].apply(md5hash)
 with open(variants_by_mut_path, 'w') as output_file:
     for _, row in mut_df.iterrows():
         sample_names = row['sample'].split(' ')
-        # if len(sample_names) >= 10000: # ES nested document limit
-        #     continue
         frequencies = [float(i) for i in row['frequency'].split(' ')]
         depths = [float(i) for i in row['depth'].split(' ')]
         collection_dates = row['collection_date'].split(' ')
