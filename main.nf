@@ -34,11 +34,6 @@ include {
     FREYJA_DEMIX;
 } from "./modules/freyja.nf"
 
-include {
-    AGGREGATE_DEMIX;
-    AGGREGATE_VARIANTS
-} from "./modules/aggregate.nf"
-
 workflow sra {
 
     Channel
@@ -110,9 +105,6 @@ workflow freyja {
     FREYJA_DEMIX(FREYJA_VARIANTS.out, params.eps, params.depthCutoff)
         .collect()
         .set { demix_ch }   
-    
-    AGGREGATE_VARIANTS(variants_ch, baseDir)
-    AGGREGATE_DEMIX(demix_ch, baseDir)
 }
 
 
