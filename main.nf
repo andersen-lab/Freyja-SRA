@@ -6,7 +6,7 @@ nextflow.enable.dsl=2
  */
 
 accession_list = file(params.accession_list)
-
+metadata = file(params.metadata)
 ref = file(params.ref)
 bedfiles = file(params.bedfiles)
 baseDir = file("$baseDir")
@@ -14,7 +14,6 @@ annot = file(params.annot)
 
 // Import modules
 include {
-    GET_ACCESSIONS;
     GET_AMPLICON_SCHEME;
     SRA_PREFETCH;
     FASTERQ_DUMP;
@@ -38,16 +37,12 @@ workflow sra {
 
     Channel
         .fromPath(accession_list)
-        .set { input_ch }
-
-    GET_ACCESSIONS(input_ch)
         .splitCsv()
         .map { line -> line.join('') }
         .take(params.num_samples)
         .set { acc_ch }
 
-
-    GET_AMPLICON_SCHEME(acc_ch, accession_list)
+    GET_AMPLICON_SCHEME(acc_ch, metadata)
         .set { primer_scheme_ch }
 
     SRA_PREFETCH(primer_scheme_ch)
