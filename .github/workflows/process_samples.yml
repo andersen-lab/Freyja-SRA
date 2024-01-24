@@ -24,11 +24,10 @@ jobs:
       - name: Setup nextflow
         uses: nf-core/setup-nextflow@v1
       
-      - name: Install python
-        run: |
-              dnf install python3 -y
-              dnf install python3-pip -y
-
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9.18'
 
       - name: Install dependencies
         run: |
@@ -44,6 +43,11 @@ jobs:
               BG_PID=$!
               wait $BG_PID
 
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          version: '>= 363.0.0'
+      
       - id: 'auth'
         name: 'Authenticate with gcloud'
         uses: 'google-github-actions/auth@v2'
@@ -62,11 +66,6 @@ jobs:
               python scripts/aggregate_variants.py
 
 
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v2'
-        with:
-          version: '>= 363.0.0'
-      
       - id: 'upload-outputs'
         name: 'Upload Outputs to Cloud Storage'
         uses: 'google-github-actions/upload-cloud-storage@v2'
