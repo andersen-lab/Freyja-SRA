@@ -24,10 +24,11 @@ jobs:
       - name: Setup nextflow
         uses: nf-core/setup-nextflow@v1
       
-      - name: Setup python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.9.18'
+      - name: Install python
+        run: |
+              dnf install python3 -y
+              dnf install python3-pip -y
+
 
       - name: Install dependencies
         run: |
