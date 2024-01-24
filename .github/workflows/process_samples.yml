@@ -25,13 +25,13 @@ jobs:
         uses: nf-core/setup-nextflow@v1
       
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.8'
+          python-version: '3.9.18'
 
       - name: Install dependencies
         run: |
-              pip install hashlib pandas numpy 
+              pip install pandas numpy 
 
       - name: Run pipeline on new samples
         run: |
