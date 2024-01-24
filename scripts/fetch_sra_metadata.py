@@ -7,6 +7,7 @@ from Bio import Entrez
 import xml.etree.ElementTree as ET
 import http.client
 import urllib.error
+import hashlib
 import time
 
 us_state_to_abbrev = {
@@ -71,6 +72,9 @@ us_state_to_abbrev = {
 
 argparser = argparse.ArgumentParser(description='Fetch most recent SRA metadata')
 
+def md5_hash(string):
+    return hashlib.md5(string.encode('utf-8')).hexdigest()[:8]
+
 def isnumber(x):
     try:
         float(x)
@@ -81,8 +85,8 @@ def isnumber(x):
 def get_metadata():
 
     # Get n most recent 3-month periods
-    n = 2
-    start_date = datetime(2023, 8, 1)
+    n = 8
+    start_date = datetime(2024, 1, 1)
     date_ranges = [((start_date - timedelta(days=i*92)).strftime('%Y-%m-%d'), (start_date - timedelta(days=(i-1)*92)).strftime('%Y-%m-%d')) for i in range(n, 0, -1)] 
 
     metadata = pd.DataFrame()
@@ -151,7 +155,7 @@ def get_metadata():
                 dictVals[seq_meta[i].replace(' ','')] = seq_meta[i+1]
             dictVals['experiment_id'] = sampID
             dictVals['SRA_id'] = root0[0].attrib['accession']
-            allDictVals[sampID] =dictVals
+            allDictVals[sampID] = dictVals
 
         metadata = pd.concat([metadata, pd.DataFrame(allDictVals).T], axis=0)
 
@@ -165,7 +169,6 @@ def main():
     metadata['collection_date'] = pd.to_datetime(metadata['collection_date'].apply(lambda x: x.split('/')[0] if '/' in x else x))
 
     metadata = metadata.sort_values(by='collection_date',ascending=False)
-
     metadata = metadata[~metadata['geo_loc_name'].isna()]
 
     # Drop duplicates
@@ -173,45 +176,49 @@ def main():
     
     # Since Entrez returns the most recent samples, we need to concatenate the new metadata with the old metadata
     current_metadata = pd.read_csv('data/all_metadata.csv', index_col=0)
-    new_metadata = metadata[~metadata.index.isin(current_metadata.index)]
+    metadata = metadata[~metadata.index.isin(current_metadata.index)]
     all_metadata = pd.concat([current_metadata, metadata], axis=0)
+    all_metadata = all_metadata[~all_metadata.index.duplicated(keep='first')]
 
-    
+    all_metadata.index.name = 'accession'
+
+    all_metadata['collection_date'] = pd.to_datetime(all_metadata['collection_date'], format='%Y-%m-%d')
+
+    # Select columns of interest
+    all_metadata = all_metadata[['amplicon_PCR_primer_scheme', 'collected_by',  'geo_loc_name', 'collection_date', 'ww_population', 'ww_surv_target_1_conc']]
+
     all_metadata['ww_population'] = all_metadata['ww_population'].apply(lambda x: x if isnumber(x) else -1.0)
-    all_metadata['ww_surv_target_1_conc'] = all_metadata['ww_surv_target_1_conc'].apply(lambda x: x if isnumber(x) else -1.0)
-
     all_metadata['ww_population'] = all_metadata['ww_population'].fillna(-1.0)
+    all_metadata = all_metadata[all_metadata['ww_population'] != -1.0]
+
+    all_metadata['ww_surv_target_1_conc'] = all_metadata['ww_surv_target_1_conc'].apply(lambda x: x if isnumber(x) else -1.0)
     all_metadata['ww_surv_target_1_conc'] = all_metadata['ww_surv_target_1_conc'].fillna(-1.0)
+    all_metadata = all_metadata[~all_metadata['collection_date'].isna()]
 
     all_metadata['geo_loc_country'] = all_metadata['geo_loc_name'].apply(lambda x: x.split(':')[0].strip())
     all_metadata['geo_loc_region'] = all_metadata['geo_loc_name'].apply(lambda x: x.split(':')[1].strip() if len(x.split(':')) > 1 else '')
     all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].apply(lambda x: x.split(',')[0].strip() if len(x.split(',')) > 1 else x)
-    all_metadata = all_metadata[~all_metadata['geo_loc_region'].isna()]
 
     if 'US Virgin Islands' in all_metadata['geo_loc_region'].unique():
         all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].replace('US Virgin Islands', 'U.S. Virgin Islands')
 
-    # Create unique site_id for each sample
-    all_metadata['site_id'] = (all_metadata['geo_loc_region'].apply(lambda x : us_state_to_abbrev[x] if x in us_state_to_abbrev.keys() else x)) + all_metadata['ww_population'].fillna('').astype(str)
-    all_metadata['site_id'] = all_metadata['site_id'].apply(lambda x: x.replace('.0', ''))
-    all_metadata = all_metadata[~all_metadata['site_id'].isna()]
+    # Create human-readable, unique site_id for each sample
+    all_metadata['site_id'] = all_metadata['geo_loc_name'].fillna('') +\
+                            all_metadata['ww_population'].fillna('').astype(str) +\
+                            all_metadata['amplicon_PCR_primer_scheme'].fillna('') +\
+                            all_metadata['collected_by'].fillna('').astype(str)
 
-    all_metadata = all_metadata[~all_metadata['collection_date'].isna()]
-    all_metadata = all_metadata[~all_metadata.index.duplicated(keep='first')]
-    all_metadata.index.name = 'accession'
+    all_metadata['site_id'] = all_metadata['site_id'].apply(md5_hash)
+    all_metadata['site_id'] = all_metadata['geo_loc_country'] + '_' + all_metadata['geo_loc_region'].apply(lambda x: us_state_to_abbrev[x] if x in us_state_to_abbrev else x) + '_' + all_metadata['site_id']
 
-    finished_samples = pd.read_csv('data/processed_samples.csv', header=None)[0].values
+    print(all_metadata['site_id'].value_counts())
+
+    # Select samples to run
     samples_to_run = all_metadata.copy()
+    finished_samples = pd.read_csv('data/processed_samples.csv', header=None)[0].values
     samples_to_run = samples_to_run[~samples_to_run.index.isin(finished_samples)]
-
     samples_to_run = samples_to_run[~samples_to_run['collection_date'].isna()]
     samples_to_run = samples_to_run[~samples_to_run['ww_population'].isna()]    
-
-    samples_to_run['collection_date'] = pd.to_datetime(samples_to_run['collection_date'], format='%Y-%m-%d')
-    all_metadata['collection_date'] = pd.to_datetime(all_metadata['collection_date'], format='%Y-%m-%d')
-
-    samples_to_run = samples_to_run[samples_to_run['collection_date'] > datetime(2023, 1, 1)]
-    samples_to_run = samples_to_run[samples_to_run['collection_date'] < datetime(2023, 8, 1)]
 
     print('All samples: ', len(all_metadata))
     print('Processed samples: ', len(finished_samples))
@@ -222,7 +229,7 @@ def main():
     all_metadata = all_metadata.sort_values(by='collection_date', ascending=False)
 
     all_metadata.to_csv('data/all_metadata.csv')
-    samples_to_run['accession'].to_csv('data/samples_to_run.csv', index=True, header=False)
+    pd.Series(samples_to_run.index).to_csv('data/samples_to_run.csv', index=False, header=False)
 
 if __name__ == "__main__":
     main()
