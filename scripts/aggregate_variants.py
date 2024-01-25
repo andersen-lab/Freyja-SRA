@@ -126,4 +126,4 @@ for _, row in mut_df.iterrows():
     existing_data.loc[existing_data['mut_key'] == row['mut_key'], 'samples'] = existing_data.loc[existing_data['mut_key'] == row['mut_key'], 'samples'].apply(lambda x: x + samples)
 
     
-existing_data.to_json('outputs/aggregate/aggregate_variants_by_mut_output.json', orient='records', lines=True)
+existing_data.to_json('outputs/aggregate/aggregate_variants_by_mut.json', orient='records', lines=True)
