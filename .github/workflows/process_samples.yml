@@ -12,7 +12,6 @@ env:
 jobs:
   run_samples:
     permissions:
-      contents: read
       contents: write
       id-token: write
 
