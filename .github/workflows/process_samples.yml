@@ -31,7 +31,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-              pip install pandas numpy 
+              pip install pandas numpy
+              git clone https://github.com/andersen-lab/Freyja.git
+              cd Freyja
+              pip install -e .
 
       - name: Run pipeline on new samples
         run: |
