@@ -8,6 +8,12 @@ import numpy as np
 import yaml
 import pandas as pd
 
+def agg(results):
+    allResults = [pd.read_csv(fn, skipinitialspace=True, sep='\t',
+                              index_col=0) for fn in results]
+    df_demix = pd.concat(allResults, axis=1).T
+    df_demix.index = [x.split('/')[-1] for x in df_demix.index]
+    return df_demix
 
 def isnumber(x):
     try:
@@ -51,11 +57,10 @@ def merge_collapsed(lin_dict):
 
 def main():
 
-    # Create intermediate tsv
-    subprocess.run(["freyja", "aggregate", 'outputs/demix/', "--output", "aggregate_demix.tsv"])
-    
-    # Save to json
-    agg_demix = pd.read_csv('aggregate_demix.tsv', sep='\t')
+    # Load demix results
+    results = 'output/demix/'
+    results_ = [results + fn for fn in os.listdir(results)]
+    agg_demix = agg(results_)
 
     agg_demix['lin_dict'] = [dict(zip(row['lineages'].split(' '), map(float, row['abundances'].split(' ')))) for _, row in agg_demix.iterrows()]
     agg_demix['lin_dict'] = agg_demix['lin_dict'].apply(merge_collapsed)
