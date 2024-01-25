@@ -13,6 +13,7 @@ def agg(results):
                               index_col=0) for fn in results]
     df_demix = pd.concat(allResults, axis=1).T
     df_demix.index = [x.split('/')[-1] for x in df_demix.index]
+    df_demix['accession'] = [x.split('.')[0] for x in df_demix.index]
     return df_demix
 
 def isnumber(x):
@@ -58,15 +59,19 @@ def merge_collapsed(lin_dict):
 def main():
 
     # Load demix results
-    results = 'output/demix/'
+    results = 'outputs/demix/'
     results_ = [results + fn for fn in os.listdir(results)]
     agg_demix = agg(results_)
+
 
     agg_demix['lin_dict'] = [dict(zip(row['lineages'].split(' '), map(float, row['abundances'].split(' ')))) for _, row in agg_demix.iterrows()]
     agg_demix['lin_dict'] = agg_demix['lin_dict'].apply(merge_collapsed)
     agg_demix['lineages'] = agg_demix['lin_dict'].apply(lambda x: ' '.join(list(x.keys())))
     agg_demix['abundances'] = agg_demix['lin_dict'].apply(lambda x: ' '.join([str(v) for v in list(x.values())]))
     agg_demix.drop('lin_dict', axis=1, inplace=True)
+
+    agg_demix.index.rename('accession', inplace=True)
+    
 
     agg_demix = agg_demix.rename(columns={'Unnamed: 0': 'accession'})
     metadata = pd.read_csv('data/all_metadata.csv')
@@ -124,8 +129,6 @@ def main():
 
             json_row = json.dumps(json_row)
             f.write(json_row+'\n')
-
-    subprocess.run(['rm', '-rf', 'aggregate_dir'])
 
 if __name__ == '__main__':
     main()
