@@ -1,96 +1,96 @@
-# name: Process samples
+name: Process samples
 
-# on:
-#   schedule:
-#     - cron: '0 * * * *'
+on:
+  schedule:
+    - cron: '0 * * * *'
 
-# env:
-#   BATCH_SIZE: 50
-#   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+env:
+  BATCH_SIZE: 50
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
 
-# jobs:
-#   run_samples:
-#     permissions:
-#       contents: write
-#       id-token: write
+jobs:
+  run_samples:
+    permissions:
+      contents: write
+      id-token: write
 
-#     runs-on: self-hosted
+    runs-on: self-hosted
 
-#     steps:
-#       - name: Checkout main
-#         uses: actions/checkout@v4
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
 
-#       - name: Setup nextflow
-#         uses: nf-core/setup-nextflow@v1
+      - name: Setup nextflow
+        uses: nf-core/setup-nextflow@v1
       
-#       - name: Install python
-#         run: |
-#               dnf install python3 -y
-#               dnf install python3-pip -y
+      - name: Install python
+        run: |
+              dnf install python3 -y
+              dnf install python3-pip -y
 
-#       - name: Install dependencies
-#         run: |
-#               pip3 install pandas numpy
+      - name: Install dependencies
+        run: |
+              pip3 install pandas numpy
 
-#       - name: Run pipeline on new samples
-#         run: |
-#               nextflow run main.nf \
-#                   --accession_list data/samples_to_run.csv \
-#                   --num_samples $BATCH_SIZE \
-#                   -profile docker \
-#                   -entry sra &
-#               BG_PID=$!
-#               wait $BG_PID
+      - name: Run pipeline on new samples
+        run: |
+              nextflow run main.nf \
+                  --accession_list data/samples_to_run.csv \
+                  --num_samples $BATCH_SIZE \
+                  -profile docker \
+                  -entry sra &
+              BG_PID=$!
+              wait $BG_PID
 
-#       - name: 'Set up Cloud SDK'
-#         uses: 'google-github-actions/setup-gcloud@v2'
-#         with:
-#           version: '>= 363.0.0'
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          version: '>= 363.0.0'
       
-#       - id: 'auth'
-#         name: 'Authenticate with gcloud'
-#         uses: 'google-github-actions/auth@v2'
-#         with:
-#           workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
-#           service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
+      - id: 'auth'
+        name: 'Authenticate with gcloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
+          service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
 
 
-#       - name: Download existing aggregate_variants_by_mut.json
-#         run: | 
-#               gcloud storage cp gs://outbreak-ww-data/aggregate/aggregate_variants_by_mut.json outputs/aggregate/aggregate_variants_by_mut.json
+      - name: Download existing aggregate_variants_by_mut.json
+        run: | 
+              gcloud storage cp gs://outbreak-ww-data/aggregate/aggregate_variants_by_mut.json outputs/aggregate/aggregate_variants_by_mut.json
 
-#       - name: Aggregate outputs
-#         run: |
-#               python scripts/aggregate_demix.py
-#               python scripts/aggregate_variants.py
+      - name: Aggregate outputs
+        run: |
+              python scripts/aggregate_demix.py
+              python scripts/aggregate_variants.py
 
 
-#       - id: 'upload-outputs'
-#         name: 'Upload Outputs to Cloud Storage'
-#         uses: 'google-github-actions/upload-cloud-storage@v2'
-#         with:
-#           path: 'outputs/'
-#           destination: 'outbreak-ww-data/'
-#           parent: false
+      - id: 'upload-outputs'
+        name: 'Upload Outputs to Cloud Storage'
+        uses: 'google-github-actions/upload-cloud-storage@v2'
+        with:
+          path: 'outputs/'
+          destination: 'outbreak-ww-data/'
+          parent: false
 
-#       - id: 'compose-aggregated-outputs'
-#         name: 'Concatenate aggregated outputs'
-#         run: |
-#               gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_demix.json gs://outbreak-ww-data/aggregate/aggregate_demix_new.json gs://outbreak-ww-data/aggregate/aggregate_demix.json
-#               gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_variants_by_acc.json gs://outbreak-ww-data/aggregate/aggregate_variants_by_acc_new.json gs://outbreak-ww-data/aggregate/aggregate_variants_by_acc.json
+      - id: 'compose-aggregated-outputs'
+        name: 'Concatenate aggregated outputs'
+        run: |
+              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_demix.json gs://outbreak-ww-data/aggregate/aggregate_demix_new.json gs://outbreak-ww-data/aggregate/aggregate_demix.json
+              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_variants_by_acc.json gs://outbreak-ww-data/aggregate/aggregate_variants_by_acc_new.json gs://outbreak-ww-data/aggregate/aggregate_variants_by_acc.json
 
-#       - name: 'Update processed samples'
-#         run: |
-#               (cut -d, -f1 data/samples_to_run.csv | head -n $((BATCH_SIZE+1)) | tail -n $((BATCH_SIZE))) >> data/processed_samples.csv
-#               sed -i "2,$((BATCH_SIZE+1))d" data/samples_to_run.csv
+      - name: 'Update processed samples'
+        run: |
+              (cut -d, -f1 data/samples_to_run.csv | head -n $((BATCH_SIZE+1)) | tail -n $((BATCH_SIZE))) >> data/processed_samples.csv
+              sed -i "2,$((BATCH_SIZE+1))d" data/samples_to_run.csv
       
-#       - name: 'Commit and push changes'
-#         run: |
-#               git config --local user.name "$GITHUB_ACTOR"
-#               git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-#               git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
-#               git add data/processed_samples.csv
-#               git add data/samples_to_run.csv
-#               git commit -m "Update processed samples"
-#               git push --force
+      - name: 'Commit and push changes'
+        run: |
+              git config --local user.name "$GITHUB_ACTOR"
+              git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+              git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
+              git add data/processed_samples.csv
+              git add data/samples_to_run.csv
+              git commit -m "Update processed samples"
+              git push --force
