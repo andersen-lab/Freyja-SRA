@@ -211,8 +211,6 @@ def main():
     all_metadata['site_id'] = all_metadata['site_id'].apply(md5_hash)
     all_metadata['site_id'] = all_metadata['geo_loc_country'] + '_' + all_metadata['geo_loc_region'].apply(lambda x: us_state_to_abbrev[x] if x in us_state_to_abbrev else x) + '_' + all_metadata['site_id']
 
-    print(all_metadata['site_id'].value_counts())
-
     # Select samples to run
     samples_to_run = all_metadata.copy()
     finished_samples = pd.read_csv('data/processed_samples.csv', header=None)[0].values
