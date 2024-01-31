@@ -5,7 +5,7 @@ on:
     - cron: '0 * * * *'
 
 env:
-  BATCH_SIZE: 50
+  BATCH_SIZE: 100
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
 
