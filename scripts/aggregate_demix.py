@@ -61,53 +61,26 @@ def main():
     # Load demix results
     results = 'outputs/demix/'
     results_ = [results + fn for fn in os.listdir(results)]
-    agg_demix = agg(results_)
+    df = agg(results_)
 
+    df['lin_dict'] = [dict(zip(row['lineages'].split(' '), map(float, row['abundances'].split(' ')))) for _, row in df.iterrows()]
+    df['lin_dict'] = df['lin_dict'].apply(merge_collapsed)
+    df['lineages'] = df['lin_dict'].apply(lambda x: ' '.join(list(x.keys())))
+    df['abundances'] = df['lin_dict'].apply(lambda x: ' '.join([str(v) for v in list(x.values())]))
+    df.drop('lin_dict', axis=1, inplace=True)
 
-    agg_demix['lin_dict'] = [dict(zip(row['lineages'].split(' '), map(float, row['abundances'].split(' ')))) for _, row in agg_demix.iterrows()]
-    agg_demix['lin_dict'] = agg_demix['lin_dict'].apply(merge_collapsed)
-    agg_demix['lineages'] = agg_demix['lin_dict'].apply(lambda x: ' '.join(list(x.keys())))
-    agg_demix['abundances'] = agg_demix['lin_dict'].apply(lambda x: ' '.join([str(v) for v in list(x.values())]))
-    agg_demix.drop('lin_dict', axis=1, inplace=True)
+    df.index.rename('accession', inplace=True)
+    df = df.rename(columns={'Unnamed: 0': 'accession'})
 
-    agg_demix.index.rename('accession', inplace=True)
-    
-
-    agg_demix = agg_demix.rename(columns={'Unnamed: 0': 'accession'})
-    metadata = pd.read_csv('data/all_metadata.csv')
-
-    columns = ['accession', 'lineages', 'abundances', 'crumbs', 'collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_population', 'ww_surv_target_1_conc', 'site_id', 'coverage']
-
-    df = pd.DataFrame(columns=columns)
-
-    agg_demix['accession'] = agg_demix['accession'].apply(lambda x: x.split('.')[0])
-
-    # Drop samples that are not in the metadata
-    agg_demix = agg_demix[agg_demix['accession'].isin(metadata['accession'])]
-
-    # Get parent lineage for all lineages
+    df['accession'] = df['accession'].apply(lambda x: x.split('.')[0])
+   
+    # Get lineage breadcrumbs
     alias_key = get_alias_key()
-
-    df['accession'] = agg_demix['accession']
-    df['lineages'] = agg_demix['lineages']
-    df['crumbs'] = agg_demix['lineages'].apply(lambda x: [';' + ';'.join(crumbs(lin, alias_key)[::-1]) + ';' for lin in x.split(' ')])
-    df['abundances'] = agg_demix['abundances']
-    df['coverage'] = agg_demix['coverage']
-
-    metadata.set_index('accession', inplace=True)
-
-    for col in ['collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_population', 'ww_surv_target_1_conc', 'site_id']:
-        df[col] = df['accession'].map(metadata[col])
-
+    df['crumbs'] = df['lineages'].apply(lambda x: [';' + ';'.join(crumbs(lin, alias_key)[::-1]) + ';' for lin in x.split(' ')])
 
     df = df.rename(columns={'ww_surv_target_1_conc':'viral_load'})
-
     df.set_index('accession', inplace=True)
-
     df = df[df['lineages'] != ''] 
-
-    df = df[~df['site_id'].isna()]
-
 
     os.makedirs('outputs/aggregate', exist_ok=True)
     with open('outputs/aggregate/aggregate_demix_new.json', 'w') as f:
@@ -118,12 +91,6 @@ def main():
                 'lineages': [
                     {'name': lineage, 'abundance': float(abundance), 'crumbs': crumbs} for lineage, abundance, crumbs in zip(row[1]['lineages'].split(' '), row[1]['abundances'].split(' '), row[1]['crumbs'])
                 ],
-                'collection_date': row[1]['collection_date'],
-                'geo_loc_country': row[1]['geo_loc_country'],
-                'geo_loc_region': row[1]['geo_loc_region'],
-                'ww_population': row[1]['ww_population'],
-                'viral_load': row[1]['viral_load'],
-                'site_id': row[1]['site_id'],
                 'coverage': row[1]['coverage']
             }
             if not np.isfinite([lin['abundance'] for lin in json_row['lineages']]).all():
