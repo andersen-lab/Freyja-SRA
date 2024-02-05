@@ -77,6 +77,14 @@ jobs:
               gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_demix.json gs://outbreak-ww-data/aggregate/aggregate_demix_new.json gs://outbreak-ww-data/aggregate/aggregate_demix.json
               gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_variants.json gs://outbreak-ww-data/aggregate/aggregate_variants_new.json gs://outbreak-ww-data/aggregate/aggregate_variants.json
               gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_metadata.json gs://outbreak-ww-data/aggregate/aggregate_metadata_new.json gs://outbreak-ww-data/aggregate/aggregate_metadata.json
+
+      - id: 'remove-outputs'
+        name: 'Remove old outputs'
+        run: |
+              gsutil rm gs://outbreak-ww-data/aggregate/aggregate_demix_new.json
+              gsutil rm gs://outbreak-ww-data/aggregate/aggregate_variants_new.json
+              gsutil rm gs://outbreak-ww-data/aggregate/aggregate_metadata_new.json
+      
       - name: 'Update processed samples'
         run: |
               (cut -d, -f1 data/samples_to_run.csv | head -n $((BATCH_SIZE+1)) | tail -n $((BATCH_SIZE))) >> data/processed_samples.csv
