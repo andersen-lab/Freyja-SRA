@@ -6,7 +6,6 @@ on:
 
 env:
   BATCH_SIZE: 100
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
 
 jobs:
@@ -20,6 +19,8 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
+        with:
+          ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup nextflow
         uses: nf-core/setup-nextflow@v1
