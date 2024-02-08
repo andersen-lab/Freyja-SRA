@@ -231,14 +231,14 @@ def main():
             'US Virgin Islands', 'U.S. Virgin Islands')
 
     # Create human-readable, unique site_id for each sample
-    all_metadata['site_id'] = all_metadata['geo_loc_name'].fillna('') +\
+    all_metadata['collection_site_id'] = all_metadata['geo_loc_name'].fillna('') +\
         all_metadata['ww_population'].fillna('').astype(str) +\
         all_metadata['amplicon_PCR_primer_scheme'].fillna('') +\
         all_metadata['collected_by'].fillna('').astype(str)
 
-    all_metadata['site_id'] = all_metadata['site_id'].apply(md5_hash)
-    all_metadata['site_id'] = all_metadata['geo_loc_country'] + '_' + all_metadata['geo_loc_region'].apply(
-        lambda x: us_state_to_abbrev[x] if x in us_state_to_abbrev else x) + '_' + all_metadata['site_id']
+    all_metadata['collection_site_id'] = all_metadata['collection_site_id'].apply(md5_hash)
+    all_metadata['collection_site_id'] = all_metadata['geo_loc_country'] + '_' + all_metadata['geo_loc_region'].apply(
+        lambda x: us_state_to_abbrev[x] if x in us_state_to_abbrev else x) + '_' + all_metadata['collection_site_id']
 
     # Select samples to run
     samples_to_run = all_metadata.copy()
