@@ -109,10 +109,12 @@ def get_metadata():
 
         date_str = ' OR '.join(dates)
 
-        search_term = f'(wastewater[All Fields] AND\
-                        ("Severe acute respiratory syndrome coronavirus 2"[Organism] OR\
-                         sars-cov-2[All Fields])) AND\
-                            ({date_str})'
+        search_term = (
+            '((wastewater[All Fields] OR Wastewater[All Fields] OR wastewater metagenome[All Fields]) AND '
+            '("Severe acute respiratory syndrome coronavirus 2"[Organism] OR '
+            'sars-cov-2[All Fields] OR SARS-CoV-2[All Fields] OR sars cov 2[All Fields]) AND '
+            f'({date_str}))'
+        )
 
         Entrez.email = "jolevy@scripps.edu"
         handle = Entrez.esearch(db="sra", idtype='acc', retmax=4000,
@@ -142,7 +144,13 @@ def get_metadata():
         with open("data/NCBI_metadata.xml", "w") as f:
             f.write(returned_meta)
 
-        root = ET.fromstring(returned_meta)
+        try:
+            root = ET.fromstring(returned_meta)
+        except:
+            print('Error parsing XML, retrying')
+            time.sleep(10)
+            root = ET.fromstring(returned_meta)
+
         allDictVals = {}
 
         for root0 in root:
