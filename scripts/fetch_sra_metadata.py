@@ -214,7 +214,7 @@ def main():
 
     # Select columns of interest
     all_metadata = all_metadata[['amplicon_PCR_primer_scheme', 'collected_by',
-                                 'geo_loc_name', 'collection_date', 'ww_population', 'ww_surv_target_1_conc']]
+                                 'geo_loc_name', 'collection_date', 'ww_population', 'ww_surv_target_1_conc', 'sample_status']]
 
     all_metadata['ww_population'] = all_metadata['ww_population'].apply(
         lambda x: x if isnumber(x) else -1.0)
@@ -249,11 +249,8 @@ def main():
         lambda x: us_state_to_abbrev[x] if x in us_state_to_abbrev else x) + '_' + all_metadata['collection_site_id']
 
     # Select samples to run
-    samples_to_run = all_metadata.copy()
-    finished_samples = pd.read_csv(
-        'data/processed_samples.csv', header=None)[0].values
-    samples_to_run = samples_to_run[~samples_to_run.index.isin(
-        finished_samples)]
+    samples_to_run = all_metadata[all_metadata['sample_status'] == 'to_run']
+    
     samples_to_run = samples_to_run[~samples_to_run['collection_date'].isna()]
     samples_to_run = samples_to_run[~samples_to_run['ww_population'].isna()]
 
@@ -261,7 +258,6 @@ def main():
     samples_to_run = samples_to_run[samples_to_run['collection_date'] < '2023-10-01']
 
     print('All samples: ', len(all_metadata))
-    print('Processed samples: ', len(finished_samples))
     print('Samples to run: ', len(samples_to_run))
 
     # Sort by collection date
