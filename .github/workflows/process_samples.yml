@@ -92,7 +92,7 @@ jobs:
       
       - name: 'Update processed samples'
         run: |
-              (cut -d, -f1 data/samples_to_run.csv | head -n $((BATCH_SIZE+1)) | tail -n $((BATCH_SIZE))) >> data/processed_samples.csv
+              python scripts/update_sample_status.py $BATCH_SIZE
               sed -i "2,$((BATCH_SIZE+1))d" data/samples_to_run.csv
       
       - name: 'Commit and push changes'
