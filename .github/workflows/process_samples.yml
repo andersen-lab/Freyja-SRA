@@ -77,7 +77,7 @@ jobs:
         run: |
               DEMIX_GEN=$(gcloud storage objects describe gs://outbreak-ww-data/aggregate/aggregate_demix.json | sed '7!d' | cut -c 14-29)
               VARIANT_GEN=$(gcloud storage objects describe gs://outbreak-ww-data/aggregate/aggregate_variants.json | sed '7!d' | cut -c 14-29)
-              METADATA_GEN=$(gcloud storage objects describe gs://outbreak-ww-data/aggregate/aggregate_metadata.json | sed '7!d' | cut -c 14-29)
+              METADATA_GEN=$(gcloud storage objects describe gs://outbreak-ww-data/aggregate/aggregate_metadata.json | sed '6!d' | cut -c 14-29)
 
               gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_demix.json gs://outbreak-ww-data/aggregate/aggregate_demix_new.json gs://outbreak-ww-data/aggregate/aggregate_demix.json --if-generation-match=$DEMIX_GEN
               gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_variants.json gs://outbreak-ww-data/aggregate/aggregate_variants_new.json gs://outbreak-ww-data/aggregate/aggregate_variants.json --if-generation-match=$VARIANT_GEN
