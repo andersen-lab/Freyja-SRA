@@ -5,7 +5,7 @@ import pandas as pd
 metadata = pd.read_csv('data/all_metadata.csv')
 demix = os.listdir('outputs/demix')
 variants = os.listdir('outputs/variants')
-batch_size = sys.argv[1]
+batch_size = int(sys.argv[1])
 
 accessions_processed = []
 with open('data/samples_to_run.csv', 'r') as f:
