@@ -1,106 +1,106 @@
-name: Process samples
+# name: Process samples
 
-on:
-  schedule:
-    - cron: '0 * * * *'
+# on:
+#   schedule:
+#     - cron: '0 */2 * * *'
 
-env:
-  BATCH_SIZE: 100
+# env:
+#   BATCH_SIZE: 50
   
 
-jobs:
-  run_samples:
-    permissions:
-      contents: write
-      id-token: write
+# jobs:
+#   run_samples:
+#     permissions:
+#       contents: write
+#       id-token: write
 
-    runs-on: self-hosted
+#     runs-on: self-hosted
 
-    steps:
-      - name: Checkout main
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+#     steps:
+#       - name: Checkout main
+#         uses: actions/checkout@v4
+#         with:
+#           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup nextflow
-        uses: nf-core/setup-nextflow@v1
+#       - name: Setup nextflow
+#         uses: nf-core/setup-nextflow@v1
       
-      - name: Install python
-        run: |
-              dnf install python3 -y
-              dnf install python3-pip -y
+#       - name: Install python
+#         run: |
+#               dnf install python3 -y
+#               dnf install python3-pip -y
 
-      - name: Install dependencies
-        run: |
-              pip3 install pandas numpy
+#       - name: Install dependencies
+#         run: |
+#               pip3 install pandas numpy
 
-      - name: Run pipeline on new samples
-        run: |
-              nextflow run main.nf \
-                  --accession_list data/samples_to_run.csv \
-                  --num_samples $BATCH_SIZE \
-                  -profile docker \
-                  -entry sra &
-              BG_PID=$!
-              wait $BG_PID
+#       - name: Run pipeline on new samples
+#         run: |
+#               nextflow run main.nf \
+#                   --accession_list data/samples_to_run.csv \
+#                   --num_samples $BATCH_SIZE \
+#                   -profile docker \
+#                   -entry sra &
+#               BG_PID=$!
+#               wait $BG_PID
 
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v2'
-        with:
-          version: '>= 363.0.0'
+#       - name: 'Set up Cloud SDK'
+#         uses: 'google-github-actions/setup-gcloud@v2'
+#         with:
+#           version: '>= 363.0.0'
       
-      - id: 'auth'
-        name: 'Authenticate with gcloud'
-        uses: 'google-github-actions/auth@v2'
-        with:
-          workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
-          service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
+#       - id: 'auth'
+#         name: 'Authenticate with gcloud'
+#         uses: 'google-github-actions/auth@v2'
+#         with:
+#           workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
+#           service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
 
           
-      - name: Aggregate outputs
-        run: |
-              python scripts/aggregate_demix.py
-              python scripts/aggregate_variants.py
-              python scripts/aggregate_metadata.py
+#       - name: Aggregate outputs
+#         run: |
+#               python scripts/aggregate_demix.py
+#               python scripts/aggregate_variants.py
+#               python scripts/aggregate_metadata.py
 
 
-      - id: 'upload-outputs'
-        name: 'Upload Outputs to Cloud Storage'
-        uses: 'google-github-actions/upload-cloud-storage@v2'
-        with:
-          path: 'outputs/'
-          destination: 'outbreak-ww-data/'
-          parent: false
+#       - id: 'upload-outputs'
+#         name: 'Upload Outputs to Cloud Storage'
+#         uses: 'google-github-actions/upload-cloud-storage@v2'
+#         with:
+#           path: 'outputs/'
+#           destination: 'outbreak-ww-data/'
+#           parent: false
 
-      - id: 'compose-aggregated-outputs'
-        name: 'Concatenate aggregated outputs'
-        run: |
-              DEMIX_GEN=$(gcloud storage objects describe gs://outbreak-ww-data/aggregate/aggregate_demix.json | sed '7!d' | cut -c 14-29)
-              VARIANT_GEN=$(gcloud storage objects describe gs://outbreak-ww-data/aggregate/aggregate_variants.json | sed '7!d' | cut -c 14-29)
-              METADATA_GEN=$(gcloud storage objects describe gs://outbreak-ww-data/aggregate/aggregate_metadata.json | sed '7!d' | cut -c 14-29)
+#       - id: 'compose-aggregated-outputs'
+#         name: 'Concatenate aggregated outputs'
+#         run: |
+#               DEMIX_GEN=$(gcloud storage objects describe gs://outbreak-ww-data/aggregate/aggregate_demix.json | sed '7!d' | cut -c 14-29)
+#               VARIANT_GEN=$(gcloud storage objects describe gs://outbreak-ww-data/aggregate/aggregate_variants.json | sed '7!d' | cut -c 14-29)
+#               METADATA_GEN=$(gcloud storage objects describe gs://outbreak-ww-data/aggregate/aggregate_metadata.json | sed '7!d' | cut -c 14-29)
 
-              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_demix.json gs://outbreak-ww-data/aggregate/aggregate_demix_new.json gs://outbreak-ww-data/aggregate/aggregate_demix.json --if-generation-match=$DEMIX_GEN
-              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_variants.json gs://outbreak-ww-data/aggregate/aggregate_variants_new.json gs://outbreak-ww-data/aggregate/aggregate_variants.json --if-generation-match=$VARIANT_GEN
-              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_metadata.json gs://outbreak-ww-data/aggregate/aggregate_metadata_new.json gs://outbreak-ww-data/aggregate/aggregate_metadata.json --if-generation-match=$METADATA_GEN
+#               gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_demix.json gs://outbreak-ww-data/aggregate/aggregate_demix_new.json gs://outbreak-ww-data/aggregate/aggregate_demix.json --if-generation-match=$DEMIX_GEN
+#               gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_variants.json gs://outbreak-ww-data/aggregate/aggregate_variants_new.json gs://outbreak-ww-data/aggregate/aggregate_variants.json --if-generation-match=$VARIANT_GEN
+#               gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_metadata.json gs://outbreak-ww-data/aggregate/aggregate_metadata_new.json gs://outbreak-ww-data/aggregate/aggregate_metadata.json --if-generation-match=$METADATA_GEN
 
-      - id: 'remove-outputs'
-        name: 'Remove old outputs'
-        run: |
-              gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_demix_new.json
-              gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_variants_new.json
-              gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_metadata_new.json
+#       - id: 'remove-outputs'
+#         name: 'Remove old outputs'
+#         run: |
+#               gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_demix_new.json
+#               gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_variants_new.json
+#               gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_metadata_new.json
       
-      - name: 'Update processed samples'
-        run: |
-              python scripts/update_sample_status.py $BATCH_SIZE
-              sed -i "2,$((BATCH_SIZE+1))d" data/samples_to_run.csv
+#       - name: 'Update processed samples'
+#         run: |
+#               python scripts/update_sample_status.py $BATCH_SIZE
+#               sed -i "2,$((BATCH_SIZE+1))d" data/samples_to_run.csv
       
-      - name: 'Commit and push changes'
-        run: |
-              git config --local user.name "$GITHUB_ACTOR"
-              git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-              git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
-              git add data/all_metadata.csv
-              git add data/samples_to_run.csv
-              git commit -m "Update processed samples"
-              git push --force
+#       - name: 'Commit and push changes'
+#         run: |
+#               git config --local user.name "$GITHUB_ACTOR"
+#               git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+#               git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
+#               git add data/all_metadata.csv
+#               git add data/samples_to_run.csv
+#               git commit -m "Update processed samples"
+#               git push --force
