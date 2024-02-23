@@ -83,12 +83,12 @@ jobs:
               gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_variants.json gs://outbreak-ww-data/aggregate/aggregate_variants_new.json gs://outbreak-ww-data/aggregate/aggregate_variants.json --if-generation-match=$VARIANT_GEN
               gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_metadata.json gs://outbreak-ww-data/aggregate/aggregate_metadata_new.json gs://outbreak-ww-data/aggregate/aggregate_metadata.json --if-generation-match=$METADATA_GEN
 
-      - id: 'remove-outputs'
-        name: 'Remove old outputs'
-        run: |
-              gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_demix_new.json
-              gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_variants_new.json
-              gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_metadata_new.json
+      # - id: 'remove-outputs'
+      #   name: 'Remove old outputs'
+      #   run: |
+      #         gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_demix_new.json
+      #         gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_variants_new.json
+      #         gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_metadata_new.json
       
       - name: 'Update processed samples'
         run: |
