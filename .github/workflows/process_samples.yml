@@ -2,7 +2,7 @@ name: Process samples
 
 on:
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '0 17-23,0-9 * * *'
 
 env:
   BATCH_SIZE: 50
@@ -100,6 +100,7 @@ jobs:
               git config --local user.name "$GITHUB_ACTOR"
               git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
               git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
+              git add data/all_metadata.csv
               git add data/samples_to_run.csv
               git add data/all_metadata.csv
               git commit -m "Update processed samples"

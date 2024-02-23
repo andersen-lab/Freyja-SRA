@@ -35,4 +35,14 @@ nextflow run main.nf -entry [sra|rerun_demix] -profile [docker|singularity] --ac
 Addtional configuration options can be found in `nextflow.config`
 
 ## Data Availability
-All currently processed data (see `data/processed_samples.csv`) is publicly available on google cloud storage at `gs://outbreak-ww-data/`
+
+Freyja-SRA is currently in the process of downloading and processing all publicly available SRA data, fetched with the following search terms:
+```
+(wastewater[All Fields] OR Wastewater[All Fields] OR wastewater metagenome[All Fields]) AND ("Severe acute respiratory syndrome coronavirus 2"[Organism] OR sars-cov-2[All Fields] OR SARS-CoV-2[All Fields] OR sars cov 2[All Fields])
+```
+In addition, to the above search terms, we exclude accessions that don't meet the following metadata requirements:
+* Missing collection date
+* Missing catchment size (`ww_population`)
+* Missing location (`geo_loc_name`)
+
+To check the status of each accession, please refer to the `sample_status` column in `data/all_metadata.csv`. All currently processed freyja outputs are publicly available via Google Cloud Storage at `gs://outbreak-ww-data`
