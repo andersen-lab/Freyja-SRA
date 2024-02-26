@@ -9,3 +9,4 @@ dependencies:
   - bioconda::minimap2=2.26
   - conda-forge::awscli=2.13.34
   - conda-forge::google-cloud-sdk=458.0.1
+  - conda-forge::procps-ng=3.3.17
