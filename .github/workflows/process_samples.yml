@@ -63,6 +63,17 @@ jobs:
               python scripts/aggregate_variants.py
               python scripts/aggregate_metadata.py
 
+      - id: 'download-aggregated-outputs'
+        name: 'Download aggregated outputs'
+        run: |
+              gsutil cp gs://outbreak-ww-data/aggregate/aggregate_demix.json outputs/aggregate_demix.json
+              gsutil cp gs://outbreak-ww-data/aggregate/aggregate_variants.json outputs/aggregate_variants.json
+              gsutil cp gs://outbreak-ww-data/aggregate/aggregate_metadata.json outputs/aggregate_metadata.json
+
+      - id: 'concatenate-outputs'
+        name: 'Concatenate outputs'
+        run: |
+              python scripts/concat_agg_files.py
 
       - id: 'upload-outputs'
         name: 'Upload Outputs to Cloud Storage'
@@ -72,24 +83,6 @@ jobs:
           destination: 'outbreak-ww-data/'
           parent: false
 
-      - id: 'compose-aggregated-outputs'
-        name: 'Concatenate aggregated outputs'
-        run: |
-              DEMIX_GEN=$(gcloud storage objects describe gs://outbreak-ww-data/aggregate/aggregate_demix.json | sed '7!d' | cut -c 14-29)
-              VARIANT_GEN=$(gcloud storage objects describe gs://outbreak-ww-data/aggregate/aggregate_variants.json | sed '7!d' | cut -c 14-29)
-              METADATA_GEN=$(gcloud storage objects describe gs://outbreak-ww-data/aggregate/aggregate_metadata.json | sed '7!d' | cut -c 14-29)
-
-              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_demix.json gs://outbreak-ww-data/aggregate/aggregate_demix_new.json gs://outbreak-ww-data/aggregate/aggregate_demix.json --if-generation-match=$DEMIX_GEN
-              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_variants.json gs://outbreak-ww-data/aggregate/aggregate_variants_new.json gs://outbreak-ww-data/aggregate/aggregate_variants.json --if-generation-match=$VARIANT_GEN
-              gcloud storage objects compose gs://outbreak-ww-data/aggregate/aggregate_metadata.json gs://outbreak-ww-data/aggregate/aggregate_metadata_new.json gs://outbreak-ww-data/aggregate/aggregate_metadata.json --if-generation-match=$METADATA_GEN
-
-      # - id: 'remove-outputs'
-      #   name: 'Remove old outputs'
-      #   run: |
-      #         gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_demix_new.json
-      #         gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_variants_new.json
-      #         gcloud storage rm gs://outbreak-ww-data/aggregate/aggregate_metadata_new.json
-      
       - name: 'Update processed samples'
         run: |
               python scripts/update_sample_status.py $BATCH_SIZE
