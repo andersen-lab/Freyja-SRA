@@ -62,8 +62,6 @@ process GET_AMPLICON_SCHEME {
 
 
 process SRA_PREFETCH {
-
-    disk '1TB'
     input:
     val accession
     path primer_scheme
@@ -79,6 +77,8 @@ process SRA_PREFETCH {
 }
 
 process FASTERQ_DUMP {
+    cpus 8
+    
     errorStrategy 'ignore'
     container { params.profile == "docker" ? "ncbi/sra-tools" : "docker://ncbi/sra-tools" }
 
