@@ -59,45 +59,45 @@ jobs:
           service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
 
           
-      # - name: Aggregate outputs
-      #   run: |
-      #         python scripts/aggregate_demix.py
-      #         python scripts/aggregate_variants.py
-      #         python scripts/aggregate_metadata.py
+      - name: Aggregate outputs
+        run: |
+              python scripts/aggregate_demix.py
+              python scripts/aggregate_variants.py
+              python scripts/aggregate_metadata.py
 
-      # - id: 'download-aggregated-outputs'
-      #   name: 'Download aggregated outputs'
-      #   run: |
-      #         gsutil cp gs://outbreak-ww-data/aggregate/aggregate_demix.json outputs/aggregate_demix.json
-      #         gsutil cp gs://outbreak-ww-data/aggregate/aggregate_variants.json outputs/aggregate_variants.json
-      #         gsutil cp gs://outbreak-ww-data/aggregate/aggregate_metadata.json outputs/aggregate_metadata.json
+      - id: 'download-aggregated-outputs'
+        name: 'Download aggregated outputs'
+        run: |
+              gsutil cp gs://outbreak-ww-data/aggregate/aggregate_demix.json outputs/aggregate_demix.json
+              gsutil cp gs://outbreak-ww-data/aggregate/aggregate_variants.json outputs/aggregate_variants.json
+              gsutil cp gs://outbreak-ww-data/aggregate/aggregate_metadata.json outputs/aggregate_metadata.json
 
-      # - id: 'concatenate-outputs'
-      #   name: 'Concatenate outputs'
-      #   run: |
-      #         python scripts/concat_agg_files.py
+      - id: 'concatenate-outputs'
+        name: 'Concatenate outputs'
+        run: |
+              python scripts/concat_agg_files.py
 
-      # - id: 'upload-outputs'
-      #   name: 'Upload Outputs to Cloud Storage'
-      #   uses: 'google-github-actions/upload-cloud-storage@v2'
-      #   with:
-      #     path: 'outputs/'
-      #     destination: 'outbreak-ww-data/'
-      #     parent: false
+      - id: 'upload-outputs'
+        name: 'Upload Outputs to Cloud Storage'
+        uses: 'google-github-actions/upload-cloud-storage@v2'
+        with:
+          path: 'outputs/'
+          destination: 'outbreak-ww-data/'
+          parent: false
 
-      # - name: 'Update processed samples'
-      #   run: |
-      #         python scripts/update_sample_status.py $BATCH_SIZE
-      #         sed -i "2,$((BATCH_SIZE+1))d" data/samples_to_run.csv
+      - name: 'Update processed samples'
+        run: |
+              python scripts/update_sample_status.py $BATCH_SIZE
+              sed -i "2,$((BATCH_SIZE+1))d" data/samples_to_run.csv
       
-      # - name: 'Commit and push changes'
-      #   run: |
-      #         git config --local user.name "$GITHUB_ACTOR"
-      #         git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-      #         git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
-      #         git add data/all_metadata.csv
-      #         git add data/samples_to_run.csv
-      #         git add data/all_metadata.csv
-      #         git add report.html
-      #         git commit -m "Update processed samples"
-      #         git push --force
+      - name: 'Commit and push changes'
+        run: |
+              git config --local user.name "$GITHUB_ACTOR"
+              git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+              git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
+              git add data/all_metadata.csv
+              git add data/samples_to_run.csv
+              git add data/all_metadata.csv
+              git add report.html
+              git commit -m "Update processed samples"
+              git push --force
