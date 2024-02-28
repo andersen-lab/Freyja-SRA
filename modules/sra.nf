@@ -79,7 +79,7 @@ process SRA_PREFETCH {
 process FASTERQ_DUMP {
     //errorStrategy 'ignore'
     shell '/bin/sh'
-    container { params.profile == "docker" ? "ncbi/sra-tools" : "docker://ncbi/sra-tools" }
+    container { params.profile == "docker" ? "dylanpilz/sra-tools" : "docker://dylanpilz/sra-tools" }
 
     input:
     tuple val(accession), path(primer_scheme), path(sra_data)
