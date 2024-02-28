@@ -78,6 +78,7 @@ process SRA_PREFETCH {
 
 process FASTERQ_DUMP {
     //errorStrategy 'ignore'
+    shell '/bin/sh'
     container { params.profile == "docker" ? "ncbi/sra-tools" : "docker://ncbi/sra-tools" }
 
     input:
