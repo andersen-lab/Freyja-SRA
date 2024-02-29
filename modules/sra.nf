@@ -93,3 +93,22 @@ process FASTERQ_DUMP {
     fasterq-dump ./${sra_data}/${accession} --progress --threads 8 --split-files    
     """
 }
+
+process ASPERA_CONNECT {
+    container { params.profile == "docker" ? "davetang/aspera_connect:4.2.5.306" : "docker://davetang/aspera_connect:4.2.5.306" }
+    containerOptions '-u parasite'
+    input:
+    val accession
+    path primer_scheme
+
+
+    output:
+    tuple val(accession), path(primer_scheme), path("*.fastq")
+
+    script:
+    accession_prefix = accession.take(6)
+    """
+    /home/parasite/.aspera/connect/bin//ascp -QT -l 300m -P33001 -i ~/asperaweb_id_dsa.openssh era-fasp@fasp.sra.ebi.ac.uk:vol1/fastq/${accession_prefix}/${accession}/${accession}_1.fastq.gz .
+    gunzip *.fastq.gz
+    """
+}
