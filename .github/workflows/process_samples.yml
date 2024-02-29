@@ -26,13 +26,11 @@ jobs:
         uses: nf-core/setup-nextflow@v1
       
       - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.10'
-
-      - name: Install dependencies
         run: |
-              pip install pandas numpy
+              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3 -y
+              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
+              pip3 install pandas numpy
+
 
       - name: Run pipeline on new samples
         run: |
