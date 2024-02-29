@@ -25,14 +25,14 @@ jobs:
       - name: Setup nextflow
         uses: nf-core/setup-nextflow@v1
       
-      - name: Install python
-        run: |
-              dnf install python3 -y
-              dnf install python3-pip -y
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
 
       - name: Install dependencies
         run: |
-              pip3 install pandas numpy
+              pip install pandas numpy
 
       - name: Run pipeline on new samples
         run: |
