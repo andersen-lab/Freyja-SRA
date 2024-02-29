@@ -77,7 +77,7 @@ process SRA_PREFETCH {
 }
 
 process FASTERQ_DUMP {
-    //errorStrategy 'ignore'
+    errorStrategy 'ignore'
     shell '/bin/sh'
     container { params.profile == "docker" ? "dylanpilz/sra-tools:latest" : "docker://dylanpilz/sra-tools:latest" }
 
