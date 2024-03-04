@@ -1,39 +1,38 @@
-# name: Update NCBI metadata
+name: Update NCBI metadata
 
-# on:
-#   schedule:
-#       - cron:  '0 0 */7 * *'
+on:
+  schedule:
+      - cron:  '0 0 */7 * *'
 
-# env:
-#   BATCH_SIZE: 50
-#   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-# jobs:
-#   fetch_ncbi_metadata:
-#     runs-on: self-hosted
+jobs:
+  fetch_ncbi_metadata:
+    runs-on: self-hosted
 
-#     steps:
-#       - name: Checkout main
-#         uses: actions/checkout@v4
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
 
-#       - name: Install python
-#         run: |
-#               dnf install python3 -y
-#               dnf install python3-pip -y
+      - name: Install python
+        run: |
+              dnf install python3 -y
+              dnf install python3-pip -y
 
-#       - name: Install dependencies
-#         run: |
-#               pip install pandas biopython
+      - name: Install dependencies
+        run: |
+              pip install pandas biopython
 
-#       - name: Fetch NCBI metadata
-#         run: python scripts/fetch_sra_metadata.py
+      - name: Fetch NCBI metadata
+        run: python scripts/fetch_sra_metadata.py
 
-#       - name: 'Commit and push changes'
-#         run: |
-#               git config --local user.name "$GITHUB_ACTOR"
-#               git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-#               git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
-#               git add data/all_metadata.csv
-#               git add data/samples_to_run.csv
-#               git commit -m "Fetch NCBI metadata"
-#               git push --force
+      - name: 'Commit and push changes'
+        run: |
+              git config --local user.name "$GITHUB_ACTOR"
+              git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+              git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
+              git add data/all_metadata.csv
+              git add data/samples_to_run.csv
+              git commit -m "Fetch NCBI metadata"
+              git push --force
