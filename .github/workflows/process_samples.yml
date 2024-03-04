@@ -30,13 +30,13 @@ jobs:
               echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3 -y
               echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
               pip3 install pandas numpy
-              
+
       - name: Setup AWS CLI
-        uses: unfor19/install-aws-cli-action@v1
-        with:
-          version: 2
-          verbose: false
-          arch: amd64 
+        run : |
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S ./aws/install
+              
 
       - name: Run pipeline on new samples
         run: |
