@@ -65,6 +65,8 @@ process SRA_PREFETCH {
     input:
     val accession
     path primer_scheme
+    container { params.profile == "docker" ? "dylanpilz/sra-tools:latest" : "docker://dylanpilz/sra-tools:latest" }
+
 
     output:
     tuple val(accession), path(primer_scheme), path("*")
@@ -72,11 +74,12 @@ process SRA_PREFETCH {
     script:
     """
     #!/bin/sh
-    aws s3 sync s3://sra-pub-run-odp/sra/${accession} ${accession} --no-sign-request
+    prefetch ${accession}
     """
 }
 
 process FASTERQ_DUMP {
+    disk '8GB'
     errorStrategy 'ignore'
     shell '/bin/sh'
     container { params.profile == "docker" ? "dylanpilz/sra-tools:latest" : "docker://dylanpilz/sra-tools:latest" }
