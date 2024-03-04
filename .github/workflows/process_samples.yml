@@ -107,3 +107,7 @@ jobs:
               git add report.html
               git commit -m "Update processed samples"
               git push --force
+
+      - name: 'Clean workspace'
+        run: |
+              rm -rf ${{ github.workspace }}/*
