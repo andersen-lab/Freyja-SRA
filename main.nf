@@ -15,7 +15,7 @@ annot = file(params.annot)
 // Import modules
 include {
     GET_AMPLICON_SCHEME;
-    SRA_PREFETCH;
+    AWS_PREFETCH;
     FASTERQ_DUMP;
 } from "./modules/sra.nf"
 
@@ -45,9 +45,9 @@ workflow sra {
     GET_AMPLICON_SCHEME(acc_ch, metadata)
         .set { primer_scheme_ch }
 
-    SRA_PREFETCH(primer_scheme_ch)
+    AWS_PREFETCH(primer_scheme_ch)
 
-    FASTERQ_DUMP(SRA_PREFETCH.out)
+    FASTERQ_DUMP(AWS_PREFETCH.out)
         .branch {
             unknown_primer: it[1].text == 'unknown'
             known_primer: it[1].text != 'unknown'
