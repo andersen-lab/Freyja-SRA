@@ -78,6 +78,21 @@ process SRA_PREFETCH {
     """
 }
 
+process AWS_PREFETCH {
+    input:
+    val accession
+    path primer_scheme
+
+    output:
+    tuple val(accession), path(primer_scheme), path("*")
+
+    script:
+    """
+    aws s3 sync s3://sra-pub-run-odp/sra/${accession} ${accession} --no-sign-request
+    """
+}
+
+
 process FASTERQ_DUMP {
     disk '8GB'
     errorStrategy 'ignore'
