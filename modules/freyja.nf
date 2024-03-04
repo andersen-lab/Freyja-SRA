@@ -1,5 +1,6 @@
 process FREYJA_VARIANTS {
     publishDir "${params.output}/variants", mode: 'copy'
+    memory '4 GB'
 
     input:
     val sra_accession
@@ -17,6 +18,7 @@ process FREYJA_VARIANTS {
 }
 
 process FREYJA_DEMIX {
+    memory '4 GB'
     publishDir "${params.output}/demix", mode: 'copy'
     errorStrategy 'ignore'
 
