@@ -112,12 +112,29 @@ process FASTERQ_DUMP {
     """
 }
 
-process ASPERA_CONNECT {
-    container { params.profile == "docker" ? "davetang/aspera_connect:4.2.5.306" : "docker://davetang/aspera_connect:4.2.5.306" }
-    containerOptions '-u parasite'
+process GET_DOWNLOAD_SCRIPT {
+
     input:
     val accession
     path primer_scheme
+
+    output:
+    tuple val(accession), path(primer_scheme), path("aspera.sh")
+
+    script:
+    """
+    ffq --ftp ${accession} | script/ffs aspera - > aspera.sh
+    """
+}
+
+process ASPERA_CONNECT {
+    container { params.profile == "docker" ? "davetang/aspera_connect:4.2.5.306" : "docker://davetang/aspera_connect:4.2.5.306" }
+    containerOptions '-u parasite'
+
+    input:
+    val accession
+    path primer_scheme
+    path download_script
 
 
     output:
