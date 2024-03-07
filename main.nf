@@ -10,6 +10,7 @@ metadata = file(params.metadata)
 ref = file(params.ref)
 bedfiles = file(params.bedfiles)
 baseDir = file("$baseDir")
+aspera_key = file("${baseDir}/data/asperaweb_id_dsa.openssh")
 annot = file(params.annot)
 
 // Import modules
@@ -17,6 +18,8 @@ include {
     GET_AMPLICON_SCHEME;
     AWS_PREFETCH;
     FASTERQ_DUMP;
+    GET_ASPERA_DOWNLOAD_SCRIPT;
+    ASPERA_CONNECT;
 } from "./modules/sra.nf"
 
 include {
@@ -45,9 +48,17 @@ workflow sra {
     GET_AMPLICON_SCHEME(acc_ch, metadata)
         .set { primer_scheme_ch }
 
-    AWS_PREFETCH(primer_scheme_ch)
+    // AWS_PREFETCH(primer_scheme_ch)
 
-    FASTERQ_DUMP(AWS_PREFETCH.out)
+    // FASTERQ_DUMP(AWS_PREFETCH.out)
+    //     .branch {
+    //         unknown_primer: it[1].text == 'unknown'
+    //         known_primer: it[1].text != 'unknown'
+    //     }
+    //     .set { fq_ch }
+
+    GET_ASPERA_DOWNLOAD_SCRIPT(primer_scheme_ch, aspera_key)
+    ASPERA_CONNECT(GET_ASPERA_DOWNLOAD_SCRIPT.out)
         .branch {
             unknown_primer: it[1].text == 'unknown'
             known_primer: it[1].text != 'unknown'

@@ -112,18 +112,23 @@ process FASTERQ_DUMP {
     """
 }
 
-process GET_DOWNLOAD_SCRIPT {
+process GET_ASPERA_DOWNLOAD_SCRIPT {
+
+    errorStrategy 'retry'
+    maxRetries 3
 
     input:
     val accession
     path primer_scheme
+    path aspera_key_file
 
     output:
     tuple val(accession), path(primer_scheme), path("aspera.sh")
 
     script:
     """
-    ffq --ftp ${accession} | script/ffs aspera - > aspera.sh
+    chmod +x ${baseDir}/scripts/aspera.sh
+    ffq --ftp ${accession} | ${baseDir}/scripts/ffs aspera - > aspera.sh
     """
 }
 
@@ -132,18 +137,14 @@ process ASPERA_CONNECT {
     containerOptions '-u parasite'
 
     input:
-    val accession
-    path primer_scheme
-    path download_script
-
+    tuple val(accession), path(primer_scheme), path(download_script)
 
     output:
     tuple val(accession), path(primer_scheme), path("*.fastq")
 
     script:
-    accession_prefix = accession.take(6)
     """
-    /home/parasite/.aspera/connect/bin//ascp -QT -l 300m -P33001 -i ~/asperaweb_id_dsa.openssh era-fasp@fasp.sra.ebi.ac.uk:vol1/fastq/${accession_prefix}/${accession}/${accession}_1.fastq.gz .
+    bash ${download_script}
     gunzip *.fastq.gz
     """
 }
