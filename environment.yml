@@ -10,3 +10,6 @@ dependencies:
   - conda-forge::awscli=2.15.25
   - conda-forge::google-cloud-sdk=458.0.1
   - conda-forge::procps-ng=3.3.17
+  - hcc::aspera-cli
+  - pip:
+    - ffq
