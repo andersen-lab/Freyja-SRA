@@ -58,7 +58,7 @@ workflow sra {
     //     .set { fq_ch }
 
     GET_ASPERA_DOWNLOAD_SCRIPT(primer_scheme_ch, aspera_key)
-    ASPERA_CONNECT(GET_ASPERA_DOWNLOAD_SCRIPT.out)
+    ASPERA_CONNECT(GET_ASPERA_DOWNLOAD_SCRIPT.out, aspera_key)
         .branch {
             unknown_primer: it[1].text == 'unknown'
             known_primer: it[1].text != 'unknown'

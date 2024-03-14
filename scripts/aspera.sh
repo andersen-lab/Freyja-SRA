@@ -39,7 +39,7 @@ cat ${input} \
       $l =~ s/"//g;
       ($f = $l) =~ s/.*\/(.*)$/$1/;
       print "if [[ ! -f $f ]]; then";
-      print "   /home/parasite/.aspera/connect/bin//ascp -QT -l 300m -P33001 -i /home/parasite/asperaweb_id_dsa.openssh $l .";
+      print "   ascp -QT -l 300m -P33001 -i asperaweb_id_dsa.openssh $l .";
       print "fi";
    '
 

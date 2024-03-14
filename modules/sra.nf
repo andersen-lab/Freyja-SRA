@@ -120,7 +120,7 @@ process GET_ASPERA_DOWNLOAD_SCRIPT {
     input:
     val accession
     path primer_scheme
-    path aspera_key_file
+
 
     output:
     tuple val(accession), path(primer_scheme), path("aspera.sh")
