@@ -94,8 +94,8 @@ process AWS_PREFETCH {
 
 
 process FASTERQ_DUMP {
-    disk '8GB'
     errorStrategy 'ignore'
+    scratch '/tmp/freyja-sra'
     shell '/bin/sh'
     container { params.profile == "docker" ? "dylanpilz/sra-tools:latest" : "docker://dylanpilz/sra-tools:latest" }
 
@@ -112,38 +112,37 @@ process FASTERQ_DUMP {
     """
 }
 
-process GET_DOWNLOAD_SCRIPT {
+process GET_ASPERA_DOWNLOAD_SCRIPT {
+    errorStrategy 'ignore'
 
     input:
     val accession
     path primer_scheme
+    path aspera_key_file
 
     output:
     tuple val(accession), path(primer_scheme), path("aspera.sh")
 
     script:
     """
-    ffq --ftp ${accession} | script/ffs aspera - > aspera.sh
+    ffq --ftp ${accession} | ${baseDir}/scripts/ffs aspera - > aspera.sh
     """
 }
 
 process ASPERA_CONNECT {
-    container { params.profile == "docker" ? "davetang/aspera_connect:4.2.5.306" : "docker://davetang/aspera_connect:4.2.5.306" }
-    containerOptions '-u parasite'
-
+    errorStrategy 'retry'
+    maxRetries 5
     input:
-    val accession
-    path primer_scheme
-    path download_script
-
+    tuple val(accession), path(primer_scheme), path(download_script)
+    path aspera_key_file
 
     output:
     tuple val(accession), path(primer_scheme), path("*.fastq")
 
     script:
-    accession_prefix = accession.take(6)
     """
-    /home/parasite/.aspera/connect/bin//ascp -QT -l 300m -P33001 -i ~/asperaweb_id_dsa.openssh era-fasp@fasp.sra.ebi.ac.uk:vol1/fastq/${accession_prefix}/${accession}/${accession}_1.fastq.gz .
+    sleep 5
+    bash ${download_script}
     gunzip *.fastq.gz
     """
 }
