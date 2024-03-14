@@ -38,7 +38,8 @@ Addtional configuration options can be found in `nextflow.config`
 
 Freyja-SRA is currently in the process of downloading and processing all publicly available SRA data, fetched with the following search terms:
 ```
-(wastewater[All Fields] OR Wastewater[All Fields] OR wastewater metagenome[All Fields]) AND ("Severe acute respiratory syndrome coronavirus 2"[Organism] OR sars-cov-2[All Fields] OR SARS-CoV-2[All Fields] OR sars cov 2[All Fields])
+'(Wastewater[All Fields] OR wastewater metagenome[All Fields]) AND ("Severe acute respiratory syndrome coronavirus 2"[Organism] OR SARS-CoV-2[All Fields])
+
 ```
 In addition, to the above search terms, we exclude accessions that don't meet the following metadata requirements:
 * Missing collection date
