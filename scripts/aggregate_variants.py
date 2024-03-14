@@ -35,7 +35,7 @@ for var_path in paths_list:
     variants_list.append(df)
 
 if not variants_list:
-    sys.exit()
+    raise ValueError('No valid variants found')
 
 variants = pd.concat(variants_list, axis=0)
 variants = variants.rename(columns={'ALT_FREQ':'frequency', 'ALT_DP':'depth'})
@@ -50,6 +50,6 @@ variants['alt_base'] = variants['mutName'].apply(handle_alt_base)
 
 variants = variants.groupby(['sra_accession', 'site', 'ref_base'])[['alt_base', 'frequency', 'depth']].apply(lambda x: x.to_dict('records')).reset_index()
 variants = variants.rename(columns={0:'variants'})
-
+variants = variants[~variants.index.duplicated(keep='first')]
 os.makedirs('outputs/aggregate', exist_ok=True)
 variants.to_json('outputs/aggregate/aggregate_variants_new.json', orient='records', lines=True)
