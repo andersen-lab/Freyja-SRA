@@ -94,8 +94,8 @@ process AWS_PREFETCH {
 
 
 process FASTERQ_DUMP {
-    disk '8GB'
     errorStrategy 'ignore'
+    scratch '/tmp/freyja-sra'
     shell '/bin/sh'
     container { params.profile == "docker" ? "dylanpilz/sra-tools:latest" : "docker://dylanpilz/sra-tools:latest" }
 
@@ -113,37 +113,35 @@ process FASTERQ_DUMP {
 }
 
 process GET_ASPERA_DOWNLOAD_SCRIPT {
-
-    errorStrategy 'retry'
-    maxRetries 3
+    errorStrategy 'ignore'
 
     input:
     val accession
     path primer_scheme
-
+    path aspera_key_file
 
     output:
     tuple val(accession), path(primer_scheme), path("aspera.sh")
 
     script:
     """
-    chmod +x ${baseDir}/scripts/aspera.sh
     ffq --ftp ${accession} | ${baseDir}/scripts/ffs aspera - > aspera.sh
     """
 }
 
 process ASPERA_CONNECT {
-    container { params.profile == "docker" ? "davetang/aspera_connect:4.2.5.306" : "docker://davetang/aspera_connect:4.2.5.306" }
-    containerOptions '-u parasite'
-
+    errorStrategy 'retry'
+    maxRetries 5
     input:
     tuple val(accession), path(primer_scheme), path(download_script)
+    path aspera_key_file
 
     output:
     tuple val(accession), path(primer_scheme), path("*.fastq")
 
     script:
     """
+    sleep 5
     bash ${download_script}
     gunzip *.fastq.gz
     """
