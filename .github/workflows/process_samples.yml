@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: '0 0-16 * * *'
 env:
-  BATCH_SIZE: 75
+  BATCH_SIZE: 100
   
 
 jobs:
