@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: '0 0-16 * * *'
 env:
-  BATCH_SIZE: 50
+  BATCH_SIZE: 75
   
 
 jobs:
@@ -100,7 +100,6 @@ jobs:
               git add data/all_metadata.csv
               git add data/samples_to_run.csv
               git add data/all_metadata.csv
-              git add report.html
               git commit -m "Update processed samples"
               git push --force
 
