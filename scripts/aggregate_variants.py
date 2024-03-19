@@ -50,6 +50,6 @@ variants['alt_base'] = variants['mutName'].apply(handle_alt_base)
 
 variants = variants.groupby(['sra_accession', 'site', 'ref_base'])[['alt_base', 'frequency', 'depth']].apply(lambda x: x.to_dict('records')).reset_index()
 variants = variants.rename(columns={0:'variants'})
-variants = variants[~variants.index.duplicated(keep='first')]
+variants = variants.drop_duplicates(subset=['sra_accession', 'site'], keep='first')
 os.makedirs('outputs/aggregate', exist_ok=True)
 variants.to_json('outputs/aggregate/aggregate_variants_new.json', orient='records', lines=True)

@@ -10,7 +10,7 @@ metadata = pd.read_csv('data/all_metadata.csv', index_col=None)
 metadata = metadata[metadata['accession'].isin(accessions)]
 metadata = metadata[['accession', 'collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_population', 'ww_surv_target_1_conc', 'collection_site_id']]
 metadata = metadata.rename(columns={'accession':'sra_accession', 'ww_surv_target_1_conc':'viral_load'})
-metadata = metadata[~metadata.index.duplicated(keep='first')]
+metadata = metadata.drop_duplicates(subset='sra_accession', keep='first')
 
 os.makedirs('outputs/aggregate', exist_ok=True)
 metadata.to_json('outputs/aggregate/aggregate_metadata_new.json', orient='records', lines=True)

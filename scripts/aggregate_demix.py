@@ -81,12 +81,9 @@ def main():
     df = df.rename(columns={'ww_surv_target_1_conc':'viral_load'})
     df.set_index('accession', inplace=True)
     df = df[df['lineages'] != ''] 
+
     df = df[~df.index.duplicated(keep='first')]
 
-    # Check that there are no duplicate accessions
-    if len(df.index) != len(set(df.index)):
-        print('Duplicate accessions found')
-        sys.exit(1)
 
     os.makedirs('outputs/aggregate', exist_ok=True)
     with open('outputs/aggregate/aggregate_demix_new.json', 'w') as f:
