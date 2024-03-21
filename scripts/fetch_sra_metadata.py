@@ -88,6 +88,9 @@ def parse_collection_date(x):
     if re.match(r'\d{4}-\d{2}-\d{2}/\d{4}-\d{2}-\d{2}', x):
         return x.split('/')[0]
 
+    # If " 00:00:00+00:00" is present, remove it
+    x = re.sub(r' 00:00:00\+00:00', '', x)
+
     return x
 
 def get_metadata():
@@ -187,44 +190,59 @@ def get_metadata():
 def main():
     #metadata = get_metadata()
     metadata = pd.read_csv('data/raw_metadata.csv', index_col=0 ,low_memory=False)
-    print('All fetched samples: ', len(metadata))
-    # Drop duplicates
     metadata = metadata[~metadata.index.duplicated(keep='first')]
 
-    print('Unique fetched samples: ', len(metadata))
+    print('SRA accessions:', metadata.index.str.contains('SRR').sum())
+    print('ENA accessions:',metadata.index.str.contains('ERR').sum())
 
-    # Parse collection date
-    metadata['collection_date'] = metadata['collection_date'].astype(str)
-    metadata['collection_date'] = metadata['collection_date'].apply(parse_collection_date)
-    metadata['collection_date'] = pd.to_datetime(metadata['collection_date'], errors='coerce', format='%Y-%m-%d')
-    metadata = metadata[~metadata['collection_date'].isna()]
-
-    print('Samples with valid collection date: ', len(metadata))
-
-    ## For samples that report published date, if that date is a year or more after the collection date, drop the sample
-    metadata['ENA_first_public'] = pd.to_datetime(metadata['ENA_first_public'], errors='coerce', format='%Y-%m-%d')
-    metadata = metadata[metadata['ENA_first_public'].isna() | (metadata['ENA_first_public'] - metadata['collection_date'] < timedelta(days=365))]
-
-    print('Samples with valid collection date and publication date: ', len(metadata))
-    
-    # Parse collection location
-    ## Combine ENA location column with SRA location column
-    metadata['geo_loc_name'] = metadata['geo_loc_name'].fillna('') + metadata['geographic_location_(country_and/or_sea)'].fillna('')
-    metadata = metadata[~metadata['geo_loc_name'].isna()]
-    print('Samples with valid location: ', len(metadata))
-
-    # Since Entrez returns the most recent samples, we need to concatenate the new metadata with the old metadata
+    print('Total : ', len(metadata))
+    # Combine with existing metadata
     current_metadata = pd.read_csv('data/all_metadata.csv', index_col=0)
     metadata = metadata[~metadata.index.isin(current_metadata.index)]
     
     all_metadata = pd.concat([current_metadata, metadata], axis=0)
-    all_metadata = all_metadata[~all_metadata.index.duplicated(keep='first')]
-    all_metadata['collection_date'] = pd.to_datetime(all_metadata['collection_date'], errors='coerce', format='%Y-%m-%d')
     all_metadata.index.name = 'accession'
+
+    print('All fetched samples: ', len(all_metadata))
+
+    # Parse collection date
+    all_metadata['collection_date'] = all_metadata['collection_date'].astype(str)
+    all_metadata['collection_date'] = all_metadata['collection_date'].apply(parse_collection_date)
+    all_metadata['collection_date'] = pd.to_datetime(all_metadata['collection_date'], format='%Y-%m-%d', errors='coerce')
+    all_metadata = all_metadata[~all_metadata['collection_date'].isna()]
+
+    print('Samples with valid collection date: ', len(all_metadata))
+
+    ## For samples that report published date, if that date is a year or more after the collection date, drop the sample
+    all_metadata['ENA_first_public'] = pd.to_datetime(all_metadata['ENA_first_public'], errors='coerce', format='%Y-%m-%d')
+    all_metadata = all_metadata[all_metadata['ENA_first_public'].isna() | (all_metadata['ENA_first_public'] - all_metadata['collection_date'] < timedelta(days=365))]
+
+    print('Samples with valid collection date and publication date: ', len(all_metadata))
+    
+    # Parse location information
+    ## Combine ENA location column with SRA location column
+    
+    all_metadata['geo_loc_name'] = all_metadata['geo_loc_name'].fillna('') + all_metadata['geographic_location_(country_and/or_sea)'].fillna('')
+    all_metadata = all_metadata[~all_metadata['geo_loc_name'].isna()]
+
+    all_metadata['geo_loc_country'] = all_metadata['geo_loc_name'].apply(
+    lambda x: x.split(':')[0].strip() if ':' in x else x)
+    all_metadata['geo_loc_region'] = all_metadata['geo_loc_name'].apply(
+        lambda x: x.split(':')[1].strip() if len(x.split(':')) > 1 else '')
+    all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].apply(
+        lambda x: x.split(',')[0].strip() if len(x.split(',')) > 1 else x)
+
+    # Combine ENA region column with SRA region column
+    all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].fillna('') + all_metadata['geographic_location_(region_and_locality)'].fillna('')
+
+    if 'US Virgin Islands' in all_metadata['geo_loc_region'].unique():
+        all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].replace(
+            'US Virgin Islands', 'U.S. Virgin Islands')
+    print('Samples with valid location: ', len(all_metadata))
 
     # Select columns of interest
     all_metadata = all_metadata[['amplicon_PCR_primer_scheme', 'collected_by',
-                                 'geo_loc_name', 'collection_date', 'ww_population', 'ww_surv_target_1_conc', 'sample_status']]
+                                 'geo_loc_name', 'geo_loc_country', 'geo_loc_region', 'collection_date', 'ww_population', 'ww_surv_target_1_conc', 'sample_status']]
 
     # Filter out samples missing catchment population
     all_metadata['ww_population'] = all_metadata['ww_population'].apply(
@@ -239,17 +257,6 @@ def main():
         -1.0)
 
 
-    all_metadata['geo_loc_country'] = all_metadata['geo_loc_name'].apply(
-        lambda x: x.split(':')[0].strip())
-    all_metadata['geo_loc_region'] = all_metadata['geo_loc_name'].apply(
-        lambda x: x.split(':')[1].strip() if len(x.split(':')) > 1 else '')
-    all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].apply(
-        lambda x: x.split(',')[0].strip() if len(x.split(',')) > 1 else x)
-
-    if 'US Virgin Islands' in all_metadata['geo_loc_region'].unique():
-        all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].replace(
-            'US Virgin Islands', 'U.S. Virgin Islands')
-
     # Create human-readable, unique site_id for each sample
     all_metadata['collection_site_id'] = all_metadata['geo_loc_name'].fillna('') +\
         all_metadata['ww_population'].fillna('').astype(str) +\
@@ -263,20 +270,17 @@ def main():
     # Select samples to run
     samples_to_run = all_metadata[all_metadata['sample_status'] == 'to_run']
     
-    samples_to_run = samples_to_run[~samples_to_run['collection_date'].isna()]
-    samples_to_run = samples_to_run[~samples_to_run['ww_population'].isna()]
+    samples_to_run = samples_to_run[samples_to_run['ww_surv_target_1_conc'] > 0]
 
+    # For Freyja USA freyja-global analysis
     samples_to_run = samples_to_run[samples_to_run['collection_date'] > '2022-04-01']
     samples_to_run = samples_to_run[samples_to_run['collection_date'] < '2023-10-01']
+    samples_to_run = samples_to_run[samples_to_run['geo_loc_country'].str.contains('USA')]
 
-    print('All samples: ', len(all_metadata))
-    print('Samples to run: ', len(samples_to_run))
+    print('All samples: ', all_metadata['sample_status'].value_counts())
 
-    # Sort by collection date
-    samples_to_run = samples_to_run.sort_values(
-        by='collection_date', ascending=False)
-    all_metadata = all_metadata.sort_values(
-        by='collection_date', ascending=False)
+    print('Samples to run (Freyja-global): ', len(samples_to_run))
+
 
     all_metadata.to_csv('data/all_metadata.csv')
     pd.Series(samples_to_run.index).to_csv(
