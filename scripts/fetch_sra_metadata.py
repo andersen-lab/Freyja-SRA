@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-
-import argparse
 from datetime import timedelta, datetime
 import pandas as pd
+import re
 from Bio import Entrez
 import xml.etree.ElementTree as ET
 import http.client
@@ -70,9 +68,9 @@ us_state_to_abbrev = {
     "U.S. Virgin Islands": "VI",
 }
 
-argparser = argparse.ArgumentParser(
-    description='Fetch most recent SRA metadata')
-
+START_DATE = '2020-03-01'
+END_DATE = '2024-03-01'
+INTERVAL = 14 # days
 
 def md5_hash(string):
     return hashlib.md5(string.encode('utf-8')).hexdigest()[:8]
@@ -85,14 +83,18 @@ def isnumber(x):
     except:
         return False
 
+def parse_collection_date(x):
+    # If collection_date is in the format '20XX-XX-XX/20XX-XX-XX', take the second date
+    if re.match(r'\d{4}-\d{2}-\d{2}/\d{4}-\d{2}-\d{2}', x):
+        return x.split('/')[0]
+
+    return x
 
 def get_metadata():
-
-    # Get n most recent 3-month periods
-    n = 6
-    start_date = datetime(2023, 10, 1)
-    date_ranges = [((start_date - timedelta(days=i*92)).strftime('%Y-%m-%d'), (start_date -
-                    timedelta(days=(i-1)*92)).strftime('%Y-%m-%d')) for i in range(n, 0, -1)]
+    
+    # date_ranges = [((start_date - timedelta(days=i*92)).strftime('%Y-%m-%d'), (start_date -
+    #                 timedelta(days=(i-1)*92)).strftime('%Y-%m-%d')) for i in range(n, 0, -1)]
+    date_ranges = [(datetime.strptime(START_DATE, '%Y-%m-%d') + timedelta(days=i*INTERVAL)).strftime('%Y-%m-%d', (datetime.strptime(START_DATE, '%Y-%m-%d') + timedelta(days=(i-1)*INTERVAL)).strftime('%Y-%m-%d')) for i in range(0, int((datetime.strptime(END_DATE, '%Y-%m-%d') - datetime.strptime(START_DATE, '%Y-%m-%d')).days/INTERVAL))]
 
     metadata = pd.DataFrame()
     for date_range in date_ranges:
@@ -183,49 +185,59 @@ def get_metadata():
 
 
 def main():
-    metadata = get_metadata()
-
-    # Convert collection date to datetime
-    # If collection_date is in the format '20XX-XX-XX/20XX-XX-XX', take the second date
-    metadata['collection_date'] = metadata['collection_date'].apply(
-        lambda x: x.split('/')[1] if '/' in x else x)
-    
-    metadata = metadata[metadata['collection_date'].str.contains(
-        '20[0-9]{2}-[0-9]{2}-[0-9]{2}')]
-    metadata['collection_date'] = pd.to_datetime(
-        metadata['collection_date'].apply(lambda x: x.split('/')[0] if '/' in x else x))
-
-    metadata = metadata.sort_values(by='collection_date', ascending=False)
-    metadata = metadata[~metadata['geo_loc_name'].isna()]
-
+    #metadata = get_metadata()
+    metadata = pd.read_csv('data/raw_metadata.csv', index_col=0 ,low_memory=False)
+    print('All fetched samples: ', len(metadata))
     # Drop duplicates
     metadata = metadata[~metadata.index.duplicated(keep='first')]
+
+    print('Unique fetched samples: ', len(metadata))
+
+    # Parse collection date
+    metadata['collection_date'] = metadata['collection_date'].astype(str)
+    metadata['collection_date'] = metadata['collection_date'].apply(parse_collection_date)
+    metadata['collection_date'] = pd.to_datetime(metadata['collection_date'], errors='coerce', format='%Y-%m-%d')
+    metadata = metadata[~metadata['collection_date'].isna()]
+
+    print('Samples with valid collection date: ', len(metadata))
+
+    ## For samples that report published date, if that date is a year or more after the collection date, drop the sample
+    metadata['ENA_first_public'] = pd.to_datetime(metadata['ENA_first_public'], errors='coerce', format='%Y-%m-%d')
+    metadata = metadata[metadata['ENA_first_public'].isna() | (metadata['ENA_first_public'] - metadata['collection_date'] < timedelta(days=365))]
+
+    print('Samples with valid collection date and publication date: ', len(metadata))
+    
+    # Parse collection location
+    ## Combine ENA location column with SRA location column
+    metadata['geo_loc_name'] = metadata['geo_loc_name'].fillna('') + metadata['geographic_location_(country_and/or_sea)'].fillna('')
+    metadata = metadata[~metadata['geo_loc_name'].isna()]
+    print('Samples with valid location: ', len(metadata))
 
     # Since Entrez returns the most recent samples, we need to concatenate the new metadata with the old metadata
     current_metadata = pd.read_csv('data/all_metadata.csv', index_col=0)
     metadata = metadata[~metadata.index.isin(current_metadata.index)]
+    
     all_metadata = pd.concat([current_metadata, metadata], axis=0)
     all_metadata = all_metadata[~all_metadata.index.duplicated(keep='first')]
-
+    all_metadata['collection_date'] = pd.to_datetime(all_metadata['collection_date'], errors='coerce', format='%Y-%m-%d')
     all_metadata.index.name = 'accession'
-
-    all_metadata['collection_date'] = pd.to_datetime(
-        all_metadata['collection_date'], format='%Y-%m-%d')
 
     # Select columns of interest
     all_metadata = all_metadata[['amplicon_PCR_primer_scheme', 'collected_by',
                                  'geo_loc_name', 'collection_date', 'ww_population', 'ww_surv_target_1_conc', 'sample_status']]
 
+    # Filter out samples missing catchment population
     all_metadata['ww_population'] = all_metadata['ww_population'].apply(
-        lambda x: x if isnumber(x) else -1.0)
-    all_metadata['ww_population'] = all_metadata['ww_population'].fillna(-1.0)
-    all_metadata = all_metadata[all_metadata['ww_population'] != -1.0]
+        lambda x: x if isnumber(x) else pd.NA)
+    all_metadata = all_metadata[~all_metadata['ww_population'].isna()]
 
+
+    # Keep samples with missing viral load, set to -1.0 to work with Elasticsearch
     all_metadata['ww_surv_target_1_conc'] = all_metadata['ww_surv_target_1_conc'].apply(
         lambda x: x if isnumber(x) else -1.0)
     all_metadata['ww_surv_target_1_conc'] = all_metadata['ww_surv_target_1_conc'].fillna(
         -1.0)
-    all_metadata = all_metadata[~all_metadata['collection_date'].isna()]
+
 
     all_metadata['geo_loc_country'] = all_metadata['geo_loc_name'].apply(
         lambda x: x.split(':')[0].strip())
