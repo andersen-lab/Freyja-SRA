@@ -130,8 +130,7 @@ process GET_ASPERA_DOWNLOAD_SCRIPT {
 }
 
 process ASPERA_CONNECT {
-    errorStrategy 'retry'
-    maxRetries 5
+    errorStrategy 'ignore'
     input:
     tuple val(accession), path(primer_scheme), path(download_script)
     path aspera_key_file
@@ -141,7 +140,7 @@ process ASPERA_CONNECT {
 
     script:
     """
-    sleep 5
+    sleep 10
     bash ${download_script}
     gunzip *.fastq.gz
     """
