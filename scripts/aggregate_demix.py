@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import subprocess
 import json
 import os
@@ -14,6 +12,8 @@ def agg(results):
     df_demix = pd.concat(allResults, axis=1).T
     df_demix.index = [x.split('/')[-1] for x in df_demix.index]
     df_demix['accession'] = [x.split('.')[0] for x in df_demix.index]
+    df_demix = df_demix[~df_demix['lineages'].isna()]
+    df_demix.to_csv('test.csv')
     return df_demix
 
 def isnumber(x):
@@ -62,6 +62,7 @@ def main():
     results = 'outputs/demix/'
     results_ = [results + fn for fn in os.listdir(results)]
     df = agg(results_)
+
 
     df['lin_dict'] = [dict(zip(row['lineages'].split(' '), map(float, row['abundances'].split(' ')))) for _, row in df.iterrows()]
     df['lin_dict'] = df['lin_dict'].apply(merge_collapsed)
