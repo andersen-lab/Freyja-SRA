@@ -1,6 +1,6 @@
 # Freyja-SRA
 
-[![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A523.04.3-brightgreen.svg)](http://nextflow.io) ![](https://img.shields.io/docker/image-size/dylanpilz/freyja-sra/latest)
+[![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A523.04.3-brightgreen.svg)](http://nextflow.io) ![](https://img.shields.io/docker/image-size/dylanpilz/freyja-sra/latest) [![Process samples](https://github.com/andersen-lab/Freyja-SRA/actions/workflows/process_samples.yml/badge.svg)](https://github.com/andersen-lab/Freyja-SRA/actions/workflows/process_samples.yml)
 
 
 Automated SRA downloading, processing and [Freyja](https://github.com/andersen-lab/Freyja) analysis pipeline.
