@@ -1,0 +1,28 @@
+{
+    "sra_accession": {
+        "type": "keyword",
+        "normalizer": "keyword_lowercase_normalizer"
+    },
+    "collection_date": {
+        "type": "date",
+        "format": "yyyy-MM-dd"
+    },
+    "geo_loc_country": {
+        "type": "keyword",
+        "normalizer": "keyword_lowercase_normalizer"
+    },
+    "geo_loc_region": {
+        "type": "keyword",
+        "normalizer": "keyword_lowercase_normalizer"
+    },
+    "ww_population": {
+        "type": "double"
+    },
+    "viral_load": {
+        "type": "double"
+    },
+    "collection_site_id": {
+        "type": "keyword",
+        "normalizer": "keyword_lowercase_normalizer"
+    }
+}

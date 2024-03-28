@@ -1,0 +1,26 @@
+{
+    "sra_accession": {
+        "type": "keyword",
+        "normalizer": "keyword_lowercase_normalizer"
+    },
+    "site": {
+        "type": "integer"
+    },
+    "ref_base": {
+        "type": "keyword"
+    },
+    "variants": {
+        "type": "nested",
+        "properties": {
+            "alt_base": {
+                "type": "keyword"
+            },
+            "depth": {
+                "type": "double"
+            },
+            "frequency": {
+                "type": "double"
+            }
+        }
+    }
+}
