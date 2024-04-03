@@ -62,7 +62,7 @@ def merge_collapsed(lin_dict):
 def main():
     # Load demix results
     demix_output = 'outputs/demix/'
-    paths = [demix_output + fn for fn in os.listdir(demix_output)][:5]
+    paths = [demix_output + fn for fn in os.listdir(demix_output)]
     df = agg(paths)
     
     # Get lineage breadcrumbs

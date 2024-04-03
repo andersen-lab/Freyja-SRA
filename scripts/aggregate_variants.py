@@ -52,5 +52,4 @@ variants = variants.drop_duplicates(subset=['sra_accession', 'site', 'alt_base']
 variants = variants[['sra_accession', 'site', 'ref_base', 'alt_base', 'depth', 'frequency']]
 os.makedirs('outputs/aggregate', exist_ok=True)
 
-print(variants.head())
 variants.to_json('outputs/aggregate/aggregate_variants_new.json', orient='records', lines=True)
