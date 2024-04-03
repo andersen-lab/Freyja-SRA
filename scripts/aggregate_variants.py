@@ -1,5 +1,4 @@
 import os
-import sys
 import pandas as pd 
 
 def handle_alt_base(mut):
@@ -28,7 +27,6 @@ for var_path in paths_list:
     if df.empty:
         continue
 
-
     df['sra_accession'] = var_path.split('/')[-1].split('.')[0]
     df['mutName'] = df['REF'] + df['POS'].astype(str) + df['ALT']
     df = df[['mutName','sra_accession','ALT_FREQ','ALT_DP']]
@@ -48,8 +46,11 @@ variants['site'] = variants['site'].apply(lambda x: x[:x.index('-')] if '-' in x
 
 variants['alt_base'] = variants['mutName'].apply(handle_alt_base)
 
-variants = variants.groupby(['sra_accession', 'site', 'ref_base'])[['alt_base', 'frequency', 'depth']].apply(lambda x: x.to_dict('records')).reset_index()
+variants = variants.drop(columns=['mutName'])
 variants = variants.rename(columns={0:'variants'})
-variants = variants.drop_duplicates(subset=['sra_accession', 'site'], keep='first')
+variants = variants.drop_duplicates(subset=['sra_accession', 'site', 'alt_base'], keep='first')
+variants = variants[['sra_accession', 'site', 'ref_base', 'alt_base', 'depth', 'frequency']]
 os.makedirs('outputs/aggregate', exist_ok=True)
+
+print(variants.head())
 variants.to_json('outputs/aggregate/aggregate_variants_new.json', orient='records', lines=True)

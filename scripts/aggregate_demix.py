@@ -1,27 +1,26 @@
-import subprocess
-import json
 import os
-import sys
-import numpy as np
 import yaml
+import numpy as np
 import pandas as pd
+
 
 def agg(results):
     allResults = [pd.read_csv(fn, skipinitialspace=True, sep='\t',
                               index_col=0) for fn in results]
     df_demix = pd.concat(allResults, axis=1).T
     df_demix.index = [x.split('/')[-1] for x in df_demix.index]
-    df_demix['accession'] = [x.split('.')[0] for x in df_demix.index]
+    df_demix['sra_accession'] = [x.split('.')[0] for x in df_demix.index]
     df_demix = df_demix[~df_demix['lineages'].isna()]
-    df_demix.to_csv('test.csv')
+    df_demix = df_demix.drop(columns=['summarized', 'resid'])
+
+    # Explode lineages and abundances
+    df_demix['lineages'] = df_demix['lineages'].str.split(' ')
+    df_demix['abundances'] = df_demix['abundances'].str.split(' ')
+    df_demix = df_demix.explode(['lineages', 'abundances'], ignore_index=True)
+    df_demix = df_demix.rename(columns={'lineages': 'name', 'abundances': 'abundance'})
+    df_demix = df_demix[['sra_accession', 'name', 'abundance']]
     return df_demix
 
-def isnumber(x):
-    try:
-        float(x)
-        return True
-    except:
-        return False
 
 def get_alias_key(lineages_yml='data/lineages.yml'):
     with open(lineages_yml, 'r') as alias_key:
@@ -36,12 +35,15 @@ def get_alias_key(lineages_yml='data/lineages.yml'):
     alias_key.update({'A.1': 'A', 'B.1': 'B'})
     return alias_key
 
+
 def _crumbs(lin, alias_key):
     return [lin] + ( _crumbs(alias_key[lin], alias_key) if lin in alias_key else [])
+
 
 def crumbs(lin, alias_key):
     lin = lin.upper()
     return _crumbs(lin, alias_key) if lin in alias_key else crumbs(lin[:-1], alias_key) if len(lin.split('.')) > 1 else []
+
 
 def merge_collapsed(lin_dict):
     new_dict = {}
@@ -56,52 +58,28 @@ def merge_collapsed(lin_dict):
             new_dict[k] = lin_dict[k]
     return new_dict
 
+
 def main():
-
     # Load demix results
-    results = 'outputs/demix/'
-    results_ = [results + fn for fn in os.listdir(results)]
-    df = agg(results_)
-
-
-    df['lin_dict'] = [dict(zip(row['lineages'].split(' '), map(float, row['abundances'].split(' ')))) for _, row in df.iterrows()]
-    df['lin_dict'] = df['lin_dict'].apply(merge_collapsed)
-    df['lineages'] = df['lin_dict'].apply(lambda x: ' '.join(list(x.keys())))
-    df['abundances'] = df['lin_dict'].apply(lambda x: ' '.join([str(v) for v in list(x.values())]))
-    df.drop('lin_dict', axis=1, inplace=True)
-
-    df.index.rename('accession', inplace=True)
-    df = df.rename(columns={'Unnamed: 0': 'accession'})
-
-    df['accession'] = df['accession'].apply(lambda x: x.split('.')[0])
-   
+    demix_output = 'outputs/demix/'
+    paths = [demix_output + fn for fn in os.listdir(demix_output)][:5]
+    df = agg(paths)
+    
     # Get lineage breadcrumbs
     alias_key = get_alias_key()
-    df['crumbs'] = df['lineages'].apply(lambda x: [';' + ';'.join(crumbs(lin, alias_key)[::-1]) + ';' for lin in x.split(' ')])
 
-    df = df.rename(columns={'ww_surv_target_1_conc':'viral_load'})
-    df.set_index('accession', inplace=True)
-    df = df[df['lineages'] != ''] 
+    # Can store in dict if needed
+    df['crumbs'] = df['name'].apply(lambda x: ';' + ';'.join(crumbs(x, alias_key)[::-1]) + ';')
 
-    df = df[~df.index.duplicated(keep='first')]
+    df = df[df['name'] != ''] 
 
+    df = df.drop_duplicates(subset=['sra_accession', 'name'], keep='first')
+    df['abundance'] = pd.to_numeric(df['abundance'], errors='coerce')
+    df = df[~np.isinf(df['abundance'])]
 
     os.makedirs('outputs/aggregate', exist_ok=True)
-    with open('outputs/aggregate/aggregate_demix_new.json', 'w') as f:
-        for row in df.iterrows():
+    df.to_json('outputs/aggregate/aggregate_demix_new.json', orient='records', lines=True)
 
-            json_row = {
-                'sra_accession': row[0],
-                'lineages': [
-                    {'name': lineage, 'abundance': float(abundance), 'crumbs': crumbs} for lineage, abundance, crumbs in zip(row[1]['lineages'].split(' '), row[1]['abundances'].split(' '), row[1]['crumbs'])
-                ],
-                'coverage': row[1]['coverage']
-            }
-            if not np.isfinite([lin['abundance'] for lin in json_row['lineages']]).all():
-                continue
-
-            json_row = json.dumps(json_row)
-            f.write(json_row+'\n')
 
 if __name__ == '__main__':
     main()
