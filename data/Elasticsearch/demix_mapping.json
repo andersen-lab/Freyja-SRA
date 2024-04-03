@@ -1,23 +1,17 @@
 {
-    "sra_accession": {"type": "keyword"},
-    "lineages": {
-        "coverage": {"type": "double"},
-        "type": "nested",
-        "properties": {
-            "name": {
-                "type": "keyword",
-                "normalizer": "keyword_lowercase_normalizer"
-            },
-            "abundance": {
-                "type": "double"
-            },
-            "crumbs": {
-                "type": "keyword",
-                "normalizer": "keyword_lowercase_normalizer"
-            }
-        }
+    "sra_accession": {
+        "type": "keyword",
+        "normalizer": "keyword_lowercase_normalizer"
     },
-    "coverage" : {
-        "type" : "double"
+    "name": {
+        "type": "keyword",
+        "normalizer": "keyword_lowercase_normalizer"
+    },
+    "abundance": {
+        "type": "double"
+    },
+    "crumbs": {
+        "type": "keyword",
+        "normalizer": "keyword_lowercase_normalizer"
     }
 }

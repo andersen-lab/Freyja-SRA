@@ -9,18 +9,13 @@
     "ref_base": {
         "type": "keyword"
     },
-    "variants": {
-        "type": "nested",
-        "properties": {
-            "alt_base": {
-                "type": "keyword"
-            },
-            "depth": {
-                "type": "double"
-            },
-            "frequency": {
-                "type": "double"
-            }
-        }
+    "alt_base": {
+        "type": "keyword"
+    },
+    "depth": {
+         "type": "double"
+    },
+    "frequency": {
+         "type": "double"
     }
 }
