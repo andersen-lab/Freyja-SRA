@@ -108,7 +108,7 @@ workflow freyja {
         .map { it[1] }
         .set { variants_ch }
 
-    FREYJA_DEMIX(FREYJA_VARIANTS.out, params.eps, params.depthCutoff)
+    FREYJA_DEMIX(FREYJA_VARIANTS.out, params.eps)
         .collect()
         .set { demix_ch }   
 }
@@ -117,9 +117,10 @@ workflow freyja {
 workflow rerun_demix {
     Channel
         .fromFilePairs("${params.variants_dir}/SRR*{variants,depths}.tsv")
+        .map { k, v -> tuple(k, v[1], v[0]) }
         .set { variants_ch }
 
-    FREYJA_DEMIX(variants_ch)
+    FREYJA_DEMIX(variants_ch, params.eps)
         .collect()
         .set { demix_ch }
 }

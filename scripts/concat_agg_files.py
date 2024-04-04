@@ -10,9 +10,11 @@ for file in files:
 
     if file == 'variants':
         df = pd.read_json(f'outputs/aggregate/aggregate_{file}.json', lines=True).drop_duplicates(subset=['sra_accession', 'site'], keep='first')
+    elif file == 'demix':
+        df = pd.read_json(f'outputs/aggregate/aggregate_{file}.json', lines=True).drop_duplicates(subset=['sra_accession', 'name'], keep='first')
     else:
-        df = pd.read_json(f'outputs/aggregate/aggregate_{file}.json', lines=True).drop_duplicates(subset='sra_accession', keep='first')
-        
+        df = pd.read_json(f'outputs/aggregate/aggregate_{file}.json', lines=True).drop_duplicates(subset=['sra_accession'], keep='first')
+
     df.to_json(f'outputs/aggregate/aggregate_{file}_dedup.json', orient='records', lines=True)
 
     os.remove(f'outputs/aggregate/aggregate_{file}.json')
