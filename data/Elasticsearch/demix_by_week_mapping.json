@@ -16,10 +16,13 @@
     "num_samples": {
         "type": "integer"
     },
-    "aggregated_lineage": {
+    "geo_loc_region": {
         "type": "keyword"
     },
-    "aggregated_lineage_prevalence": {
+    "name": {
+        "type": "keyword"
+    },
+    "mean_lineage_prevalence": {
         "type": "double"
     }
 }

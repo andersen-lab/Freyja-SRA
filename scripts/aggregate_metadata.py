@@ -13,7 +13,14 @@ metadata = metadata[['accession', 'collection_date', 'geo_loc_country', 'geo_loc
 metadata = metadata.rename(columns={'accession':'sra_accession', 'ww_surv_target_1_conc':'viral_load'})
 metadata = metadata.drop_duplicates(subset='sra_accession', keep='first')
 
+
 metadata['demix_success'] = metadata['sra_accession'].isin(demix_success)
+agg_demix = pd.read_json('outputs/aggregate/aggregate_demix_new.json', orient='records', lines=True).drop_duplicates(subset='sra_accession', keep='first')
+
+metadata['demix_success'] = metadata['sra_accession'].isin(agg_demix['sra_accession']) & (metadata['sra_accession'].isin(demix_success) | metadata['sra_accession'].isin(agg_demix[agg_demix['coverage'] == 0.0]['sra_accession']))
+agg_variants = pd.read_json('outputs/aggregate/aggregate_variants_new.json', orient='records', lines=True).drop_duplicates(subset='sra_accession', keep='first')
+metadata['variants_success'] = metadata['sra_accession'].isin(agg_variants['sra_accession'])
+
 
 os.makedirs('outputs/aggregate', exist_ok=True)
 metadata.to_json('outputs/aggregate/aggregate_metadata_new.json', orient='records', lines=True)

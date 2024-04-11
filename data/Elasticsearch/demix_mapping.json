@@ -13,5 +13,11 @@
     "crumbs": {
         "type": "keyword",
         "normalizer": "keyword_lowercase_normalizer"
+    },
+    "coverage": {
+        "type": "double"
+    },
+    "spike_coverage": {
+        "type": "double"
     }
 }
