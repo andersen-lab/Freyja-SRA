@@ -69,19 +69,12 @@ us_state_to_abbrev = {
 }
 
 START_DATE = '2020-03-01'
-END_DATE = '2024-03-01'
+END_DATE = '2024-04-01'
 INTERVAL = 14 # days
 
 def md5_hash(string):
     return hashlib.md5(string.encode('utf-8')).hexdigest()[:8]
 
-
-def isnumber(x):
-    try:
-        float(x)
-        return True
-    except:
-        return False
 
 def parse_collection_date(x):
     # If collection_date is in the format '20XX-XX-XX/20XX-XX-XX', take the second date
@@ -94,11 +87,10 @@ def parse_collection_date(x):
     return x
 
 def get_metadata():
-    
-    # date_ranges = [((start_date - timedelta(days=i*92)).strftime('%Y-%m-%d'), (start_date -
-    #                 timedelta(days=(i-1)*92)).strftime('%Y-%m-%d')) for i in range(n, 0, -1)]
-    date_ranges = [(datetime.strptime(START_DATE, '%Y-%m-%d') + timedelta(days=i*INTERVAL)).strftime('%Y-%m-%d', (datetime.strptime(START_DATE, '%Y-%m-%d') + timedelta(days=(i-1)*INTERVAL)).strftime('%Y-%m-%d')) for i in range(0, int((datetime.strptime(END_DATE, '%Y-%m-%d') - datetime.strptime(START_DATE, '%Y-%m-%d')).days/INTERVAL))]
 
+    date_ranges = [((datetime.strptime(START_DATE, '%Y-%m-%d') + timedelta(days=(i-1)*INTERVAL)).strftime('%Y-%m-%d'), 
+               (datetime.strptime(START_DATE, '%Y-%m-%d') + timedelta(days=i*INTERVAL)).strftime('%Y-%m-%d')) 
+               for i in range(1, int((datetime.strptime(END_DATE, '%Y-%m-%d') - datetime.strptime(START_DATE, '%Y-%m-%d')).days/INTERVAL) + 1)]
     metadata = pd.DataFrame()
     for date_range in date_ranges:
         print(date_range)
@@ -115,9 +107,9 @@ def get_metadata():
         date_str = ' OR '.join(dates)
 
         search_term = (
-            '((wastewater[All Fields] OR Wastewater[All Fields] OR wastewater metagenome[All Fields]) AND '
+            '((Wastewater[All Fields] OR wastewater metagenome[All Fields]) AND '
             '("Severe acute respiratory syndrome coronavirus 2"[Organism] OR '
-            'sars-cov-2[All Fields] OR SARS-CoV-2[All Fields] OR sars cov 2[All Fields]) AND '
+            'SARS-CoV-2[All Fields]) AND '
             f'({date_str}))'
         )
 
@@ -177,7 +169,10 @@ def get_metadata():
             dictVals = {vals[i].replace(' ', '_'): vals[i+1]
                         for i in range(0, len(vals), 2)}
             for i in range(0, len(seq_meta), 2):
-                dictVals[seq_meta[i].replace(' ', '')] = seq_meta[i+1]
+                try:
+                    dictVals[seq_meta[i].replace(' ', '')] = seq_meta[i+1]
+                except:
+                    continue
             dictVals['experiment_id'] = sampID
             dictVals['SRA_id'] = root0[0].attrib['accession']
             allDictVals[sampID] = dictVals
@@ -189,6 +184,7 @@ def get_metadata():
 
 def main():
     #metadata = get_metadata()
+    #metadata.to_csv('data/raw_metadata.csv')
     metadata = pd.read_csv('data/raw_metadata.csv', index_col=0 ,low_memory=False)
     metadata = metadata[~metadata.index.duplicated(keep='first')]
 
@@ -196,15 +192,18 @@ def main():
     print('ENA accessions:',metadata.index.str.contains('ERR').sum())
 
     print('Total : ', len(metadata))
+
+
     # Combine with existing metadata
-    current_metadata = pd.read_csv('data/all_metadata.csv', index_col=0)
+    current_metadata = pd.read_csv('data/all_metadata.csv', index_col=0, low_memory=False)
+
     metadata = metadata[~metadata.index.isin(current_metadata.index)]
     
     all_metadata = pd.concat([current_metadata, metadata], axis=0)
     all_metadata.index.name = 'accession'
 
     print('All fetched samples: ', len(all_metadata))
-
+    
     # Parse collection date
     all_metadata['collection_date'] = all_metadata['collection_date'].astype(str)
     all_metadata['collection_date'] = all_metadata['collection_date'].apply(parse_collection_date)
@@ -212,6 +211,12 @@ def main():
     all_metadata = all_metadata[~all_metadata['collection_date'].isna()]
 
     print('Samples with valid collection date: ', len(all_metadata))
+
+    all_metadata = all_metadata[all_metadata['collection_date'] >= '2022-04-01']
+    all_metadata = all_metadata[all_metadata['collection_date'] <= '2023-10-01']
+    all_metadata = all_metadata[~all_metadata['geo_loc_name'].isna()]
+    all_metadata = all_metadata[all_metadata['geo_loc_name'].str.contains('USA', case=False)]
+    print('Freyja global samples:', len(all_metadata))
 
     ## For samples that report published date, if that date is a year or more after the collection date, drop the sample
     all_metadata['ENA_first_public'] = pd.to_datetime(all_metadata['ENA_first_public'], errors='coerce', format='%Y-%m-%d')
@@ -245,42 +250,36 @@ def main():
                                  'geo_loc_name', 'geo_loc_country', 'geo_loc_region', 'collection_date', 'ww_population', 'ww_surv_target_1_conc', 'sample_status']]
 
     # Filter out samples missing catchment population
-    all_metadata['ww_population'] = all_metadata['ww_population'].apply(
-        lambda x: x if isnumber(x) else pd.NA)
+    all_metadata['ww_population'] = pd.to_numeric(all_metadata['ww_population'], errors='coerce')
     all_metadata = all_metadata[~all_metadata['ww_population'].isna()]
 
+    print('Samples with valid population: ', len(all_metadata))
 
     # Keep samples with missing viral load, set to -1.0 to work with Elasticsearch
-    all_metadata['ww_surv_target_1_conc'] = all_metadata['ww_surv_target_1_conc'].apply(
-        lambda x: x if isnumber(x) else -1.0)
+    all_metadata['ww_surv_target_1_conc'] = pd.to_numeric(all_metadata['ww_surv_target_1_conc'], errors='coerce')
+    #all_metadata = all_metadata[~all_metadata['ww_surv_target_1_conc'].isna()]
     all_metadata['ww_surv_target_1_conc'] = all_metadata['ww_surv_target_1_conc'].fillna(
         -1.0)
+    print('valid viral load',len(all_metadata[all_metadata['ww_surv_target_1_conc'] > 0]))
 
-
+    print('Samples with valid viral load: ', len(all_metadata))
     # Create human-readable, unique site_id for each sample
     all_metadata['collection_site_id'] = all_metadata['geo_loc_name'].fillna('') +\
         all_metadata['ww_population'].fillna('').astype(str) +\
         all_metadata['amplicon_PCR_primer_scheme'].fillna('') +\
         all_metadata['collected_by'].fillna('').astype(str)
 
+
     all_metadata['collection_site_id'] = all_metadata['collection_site_id'].apply(md5_hash)
     all_metadata['collection_site_id'] = all_metadata['geo_loc_country'] + '_' + all_metadata['geo_loc_region'].apply(
         lambda x: us_state_to_abbrev[x] if x in us_state_to_abbrev else x) + '_' + all_metadata['collection_site_id']
 
     # Select samples to run
+    all_metadata['sample_status'] = all_metadata['sample_status'].fillna('to_run')
     samples_to_run = all_metadata[all_metadata['sample_status'] == 'to_run']
-    
-    samples_to_run = samples_to_run[samples_to_run['ww_surv_target_1_conc'] > 0]
-
-    # For Freyja USA freyja-global analysis
-    samples_to_run = samples_to_run[samples_to_run['collection_date'] > '2022-04-01']
-    samples_to_run = samples_to_run[samples_to_run['collection_date'] < '2023-10-01']
-    samples_to_run = samples_to_run[samples_to_run['geo_loc_country'].str.contains('USA')]
 
     print('All samples: ', all_metadata['sample_status'].value_counts())
-
-    print('Samples to run (Freyja-global): ', len(samples_to_run))
-
+    print('Samples to run: ', len(samples_to_run))
 
     all_metadata.to_csv('data/all_metadata.csv')
     pd.Series(samples_to_run.index).to_csv(

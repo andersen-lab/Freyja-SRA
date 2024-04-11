@@ -1,0 +1,25 @@
+{
+    "date_start": {
+        "type": "date",
+        "format": "yyyy-MM-dd"
+    },
+    "date_end": {
+        "type": "date",
+        "format": "yyyy-MM-dd"
+    },
+    "total_population": {
+        "type": "integer"
+    },
+    "num_collection_sites": {
+        "type": "integer"
+    },
+    "num_samples": {
+        "type": "integer"
+    },
+    "aggregated_lineage": {
+        "type": "keyword"
+    },
+    "aggregated_lineage_prevalence": {
+        "type": "double"
+    }
+}
