@@ -26,8 +26,14 @@ jobs:
       
       - name: Setup Python
         run: |
-              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3 -y
-              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
+              if [[ ${{ runner.name }} == 'wendy' ]]; then
+                echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3 -y
+                echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
+                fi
+              if [[ ${{ runner.name }} == 'chef' ]]; then
+              apt-get update
+              apt-get install python3 -y
+              fi
               pip3 install pandas numpy
 
       # - name: Setup AWS CLI
