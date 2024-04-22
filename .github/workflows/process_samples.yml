@@ -36,17 +36,6 @@ jobs:
       #         unzip awscliv2.zip
       #         echo ${{secrets.DPILZ_USR_PWD}} | sudo -S ./aws/install --update
               
-      - name: Run pipeline on new samples
-        run: |
-              nextflow run main.nf \
-                  --accession_list data/samples_to_run.csv \
-                  --num_samples $BATCH_SIZE \
-                  -profile docker \
-                  -with-report \
-                  -entry sra &
-              BG_PID=$!
-              wait $BG_PID
-
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
         with:
@@ -58,6 +47,26 @@ jobs:
         with:
           workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
           service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
+
+      - name: 'Get accession list'
+        run: |
+              if [[ ${{ runner.name }} == 'wendy' ]]; then
+                python scripts/get_accession_list_wendy.py $BATCH_SIZE
+              fi
+
+              if [[ ${{ runner.name }} == 'chef' ]]; then
+                python scripts/get_accession_list_chef.py $BATCH_SIZE
+              fi
+
+      - name: Run pipeline on new samples
+        run: |
+              nextflow run main.nf \
+                  --accession_list data/accession_list.csv \
+                  --num_samples $BATCH_SIZE \
+                  -profile docker \
+                  -entry sra &
+              BG_PID=$!
+              wait $BG_PID
 
           
       - name: Aggregate outputs
@@ -94,15 +103,12 @@ jobs:
       - name: 'Update processed samples'
         run: |
               python scripts/update_sample_status.py $BATCH_SIZE
-              sed -i "2,$((BATCH_SIZE+1))d" data/samples_to_run.csv
       
       - name: 'Commit and push changes'
         run: |
               git config --local user.name "$GITHUB_ACTOR"
               git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
               git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
-              git add data/all_metadata.csv
-              git add data/samples_to_run.csv
               git add data/all_metadata.csv
               git commit -m "Update processed samples"
               git push --force
