@@ -113,7 +113,7 @@ process FASTERQ_DUMP {
 }
 
 process GET_ASPERA_DOWNLOAD_SCRIPT {
-    errorStrategy 'ignore'
+    //errorStrategy 'ignore'
 
     input:
     val accession
