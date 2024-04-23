@@ -34,7 +34,7 @@ jobs:
                 echo ${{secrets.DPILZ_CHEF_PWD}} | sudo -S apt-get install python3 -y
                 echo ${{secrets.DPILZ_CHEF_PWD}} | sudo -S apt-get install python3-pip -y
               fi
-              pip3 install pandas numpy
+              pip3 install pandas numpy pyyaml ffq
 
       # - name: Setup AWS CLI
       #   run : |
