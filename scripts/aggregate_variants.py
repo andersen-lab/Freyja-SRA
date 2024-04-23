@@ -1,4 +1,5 @@
 import os
+import sys
 import pandas as pd 
 
 def handle_alt_base(mut):
@@ -33,7 +34,11 @@ for var_path in paths_list:
     variants_list.append(df)
 
 if not variants_list:
-    raise ValueError('No valid variants found')
+    print('No valid variants found')
+    # Create empty json
+    empty_df = pd.DataFrame(columns=['sra_accession', 'site', 'ref_base', 'alt_base', 'depth', 'frequency'])
+    empty_df.to_json('outputs/aggregate/aggregate_variants_new.json', orient='records', lines=True)
+    sys.exit()
 
 variants = pd.concat(variants_list, axis=0)
 variants = variants.rename(columns={'ALT_FREQ':'frequency', 'ALT_DP':'depth'})
