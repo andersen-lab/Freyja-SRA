@@ -11,7 +11,7 @@ metadata = metadata[metadata['geo_loc_name'].str.contains('USA', na=False)]
 ##
 
 metadata = metadata[metadata['sample_status'] == 'to_run']
-accessions = metadata['accession'].sort_values(ascending=False)
+accessions = metadata['accession'].sort_values(ascending=True)
 accessions = accessions[:batch_size]
 
 accessions.to_csv('data/accession_list.csv', index=False, header=False)
