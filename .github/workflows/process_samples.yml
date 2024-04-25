@@ -76,12 +76,11 @@ jobs:
               fi
 
               if [[ ${{ runner.name }} == 'chef' ]]; then
-                nextflow run main.nf \
+                nextflow -C chef.config run main.nf \
                   --accession_list data/accession_list.csv \
                   --num_samples $BATCH_SIZE \
                   -profile docker \
-                  -entry sra
-                  -C chef.config &
+                  -entry sra &
                 BG_PID=$!
               fi
 
