@@ -9,29 +9,32 @@ usage(){
 >&2 cat << EOF
    Usage
 
-            $ ffs aspera (<json> | <stdin>)
+            $ ffs aspera
 
    Examples
 
             Read from a file
 
-            $ ffs aspera ffq.json
+            $ cat ffq.json | ffs aspera
 
-            Read from STDIN
+            Read from STDIN directly
 
-            $ ffq --ftp SRR22891572 | ffs aspera -
+            $ ffq --ftp SRR22891572 | ffs aspera
 
 EOF
 exit 1
 }
 
+# Read all input from stdin into a variable
+json_input=$(cat)
 
-if [[ $# -lt 1 ]]; then
-  usage
+# Check if the input is effectively empty
+if [[ -z "$json_input" || "$json_input" == "[]" ]]; then
+    echo "Error: JSON input is empty or '[]'." >&2
+    exit 1
 fi
 
-input=$1
-cat ${input} \
+echo "$json_input" \
    | grep '"url"' \
    | sed 's/ftp:\/\/ftp.sra.ebi.ac.uk\//era-fasp@fasp.sra.ebi.ac.uk:/' \
    | perl -lane '
