@@ -34,7 +34,7 @@ process MINIMAP2 {
 
     script:
     """
-    minimap2 -ax sr ${ref} ${reads} | samtools view -bS - > ${sample_id}.bam   
+    minimap2 -ax -t 4 sr ${ref} ${reads} | samtools view -bS - > ${sample_id}.bam   
     """
 }
 
