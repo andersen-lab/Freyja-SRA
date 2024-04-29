@@ -26,14 +26,8 @@ jobs:
       
       - name: Setup Python
         run: |
-              if [[ ${{ runner.name }} == 'wendy' ]]; then
-                echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3 -y
-                echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
-                fi
-              if [[ ${{ runner.name }} == 'chef' ]]; then
-                echo ${{secrets.DPILZ_CHEF_PWD}} | sudo -S apt-get install python3 -y
-                echo ${{secrets.DPILZ_CHEF_PWD}} | sudo -S apt-get install python3-pip -y
-              fi
+              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3 -y
+              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
               pip3 install pandas numpy pyyaml ffq
 
       # - name: Setup AWS CLI
@@ -56,36 +50,16 @@ jobs:
 
       - name: 'Get accession list'
         run: |
-              if [[ ${{ runner.name }} == 'wendy' ]]; then
-                python scripts/get_accession_list_wendy.py $BATCH_SIZE
-              fi
-
-              if [[ ${{ runner.name }} == 'chef' ]]; then
-                python scripts/get_accession_list_chef.py $BATCH_SIZE
-              fi
+              python scripts/get_accession_list_wendy.py $BATCH_SIZE
 
       - name: Run pipeline on new samples
         run: |
-              if [[ ${{ runner.name }} == 'wendy' ]]; then
                 nextflow run main.nf \
                   --accession_list data/accession_list.csv \
                   --num_samples $BATCH_SIZE \
                   -profile docker \
                   -entry sra &
                 BG_PID=$!
-              fi
-
-              if [[ ${{ runner.name }} == 'chef' ]]; then
-                nextflow -C chef.config run main.nf \
-                  --accession_list data/accession_list.csv \
-                  --num_samples $BATCH_SIZE \
-                  -profile docker \
-                  -entry sra &
-                BG_PID=$!
-              fi
-
-              wait $BG_PID
-
           
       - name: Aggregate outputs
         run: |

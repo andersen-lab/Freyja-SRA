@@ -8,10 +8,9 @@ variants = os.listdir('outputs/variants')
 batch_size = int(sys.argv[1])
 
 accessions_processed = []
-with open('data/samples_to_run.csv', 'r') as f:
+with open('data/accession_list.csv', 'r') as f:
     accessions_processed = f.readlines()
     accessions_processed = [x.strip() for x in accessions_processed]
-    accessions_processed = accessions_processed[:batch_size]
 
 for accession in accessions_processed:
     if f'{accession}.variants.tsv' not in variants:
