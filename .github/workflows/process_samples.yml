@@ -60,6 +60,7 @@ jobs:
                   -profile docker \
                   -entry sra &
                 BG_PID=$!
+                wait $BG_PID
           
       - name: Aggregate outputs
         run: |
