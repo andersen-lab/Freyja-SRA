@@ -37,6 +37,7 @@ if not variants_list:
     print('No valid variants found')
     # Create empty json
     empty_df = pd.DataFrame(columns=['sra_accession', 'site', 'ref_base', 'alt_base', 'depth', 'frequency'])
+
     empty_df.to_json('outputs/aggregate/aggregate_variants_new.json', orient='records', lines=True)
     sys.exit()
 

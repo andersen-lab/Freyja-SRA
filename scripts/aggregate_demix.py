@@ -1,4 +1,5 @@
 import os
+import sys
 import yaml
 import numpy as np
 import pandas as pd
@@ -7,7 +8,18 @@ import pandas as pd
 def agg(results):
     allResults = [pd.read_csv(fn, skipinitialspace=True, sep='\t',
                               index_col=0) for fn in results]
-    df_demix = pd.concat(allResults, axis=1).T
+    df_demix = pd.DataFrame()
+    try:
+        df_demix = pd.concat(allResults, axis=1).T
+
+    except ValueError:
+        print('No valid demix results found')
+        # Create empty json
+        os.makedirs('outputs/aggregate', exist_ok=True)
+        empty_df = pd.DataFrame(columns=['sra_accession', 'name', 'abundance', 'coverage', 'spike_coverage'])
+        empty_df.to_json('outputs/aggregate/aggregate_demix_new.json', orient='records', lines=True)
+        sys.exit()
+
     df_demix.index = [x.split('/')[-1] for x in df_demix.index]
     df_demix['sra_accession'] = [x.split('.')[0] for x in df_demix.index]
     df_demix = df_demix[~df_demix['lineages'].isna()]
