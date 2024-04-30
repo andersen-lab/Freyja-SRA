@@ -48,7 +48,7 @@ process MINIMAP2_UNKNOWN_PRIMER {
 
     script:
     """
-    minimap2 -ax sr ${ref} ${reads} | samtools view -bS - > ${sample_id}.bam   
+    minimap2 -ax sr ${ref} ${reads} -t 4 | samtools view -bS - > ${sample_id}.bam   
     """
 }
 
