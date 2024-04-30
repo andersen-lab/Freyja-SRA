@@ -25,6 +25,7 @@ process CUTADAPT_TRIM {
 }
 
 process MINIMAP2 {
+    errorStrategy 'ignore'
     input:
     tuple val(sample_id), val(primer_scheme), path(reads)
     path ref
@@ -34,11 +35,13 @@ process MINIMAP2 {
 
     script:
     """
+
     minimap2 -ax sr ${ref} ${reads} | samtools view -bS - > ${sample_id}.bam   
     """
 }
 
 process MINIMAP2_UNKNOWN_PRIMER {
+    errorStrategy 'ignore'
     input:
     tuple val(sample_id), path(reads)
     path ref
