@@ -68,8 +68,8 @@ us_state_to_abbrev = {
     "U.S. Virgin Islands": "VI",
 }
 
-START_DATE = '2020-03-01'
-END_DATE = '2024-04-01'
+START_DATE = '2020-03-14'
+END_DATE = '2024-05-01'
 INTERVAL = 14 # days
 
 def md5_hash(string):
@@ -153,12 +153,15 @@ def get_metadata():
         for root0 in root:
             # pull all sample attributes
             vals = [r.text for r in root0.findall('.//SAMPLE_ATTRIBUTE/')]
-            sampExp = [r.text for r in root0.findall(
-                './/EXPERIMENT/IDENTIFIERS/PRIMARY_ID')]
+            # sampExp = [r.text for r in root0.findall(
+            #     './/EXPERIMENT/IDENTIFIERS/PRIMARY_ID')]
             seq_meta = [r.text for r in root0.findall(
                 './/RUN_SET/RUN/RUN_ATTRIBUTES/RUN_ATTRIBUTE/')]
             sampID = [r.text for r in root0.findall(
                 './/RUN_SET/RUN/IDENTIFIERS/PRIMARY_ID')]
+            runAttributes = [r.attrib for r in root0.findall('.//RUN_SET/RUN')]
+            
+            
             if len(sampID) > 1:
                 print('more than one experiment... add funcs')
             elif len(sampID) == 0:
@@ -175,6 +178,7 @@ def get_metadata():
                     continue
             dictVals['experiment_id'] = sampID
             dictVals['SRA_id'] = root0[0].attrib['accession']
+            dictVals['SRA_published_date'] = runAttributes[0]['published']
             allDictVals[sampID] = dictVals
 
         metadata = pd.concat([metadata, pd.DataFrame(allDictVals).T], axis=0)
@@ -201,7 +205,7 @@ def main():
     
     all_metadata = pd.concat([current_metadata, metadata], axis=0)
     all_metadata.index.name = 'accession'
-
+    all_metadata = all_metadata[~all_metadata.index.duplicated(keep='first')]
     print('All fetched samples: ', len(all_metadata))
     
     # Parse collection date
@@ -212,16 +216,19 @@ def main():
 
     print('Samples with valid collection date: ', len(all_metadata))
 
-    all_metadata = all_metadata[all_metadata['collection_date'] >= '2022-04-01']
-    all_metadata = all_metadata[all_metadata['collection_date'] <= '2023-10-01']
+    # all_metadata = all_metadata[all_metadata['collection_date'] >= '2022-04-01']
+    # all_metadata = all_metadata[all_metadata['collection_date'] <= '2023-10-01']
     all_metadata = all_metadata[~all_metadata['geo_loc_name'].isna()]
-    all_metadata = all_metadata[all_metadata['geo_loc_name'].str.contains('USA', case=False)]
-    print('Freyja global samples:', len(all_metadata))
+    #all_metadata = all_metadata[all_metadata['geo_loc_name'].str.contains('USA', case=False)]
+    #print('Freyja global samples:', len(all_metadata))
 
     ## For samples that report published date, if that date is a year or more after the collection date, drop the sample
     all_metadata['ENA_first_public'] = pd.to_datetime(all_metadata['ENA_first_public'], errors='coerce', format='%Y-%m-%d')
-    all_metadata = all_metadata[all_metadata['ENA_first_public'].isna() | (all_metadata['ENA_first_public'] - all_metadata['collection_date'] < timedelta(days=365))]
+    all_metadata['SRA_published_date'] = pd.to_datetime(all_metadata['SRA_published_date'], errors='coerce', format='%Y-%m-%d')
 
+    all_metadata['published_date'] = all_metadata['SRA_published_date'].fillna(all_metadata['ENA_first_public'])
+
+    all_metadata = all_metadata[all_metadata['published_date'].isna() | (all_metadata['published_date'] - all_metadata['published_date'] < timedelta(days=365))]
     print('Samples with valid collection date and publication date: ', len(all_metadata))
     
     # Parse location information
@@ -237,7 +244,7 @@ def main():
     all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].apply(
         lambda x: x.split(',')[0].strip() if len(x.split(',')) > 1 else x)
 
-    # Combine ENA region column with SRA region column
+    # Combine ENA region column with SRA column
     all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].fillna('') + all_metadata['geographic_location_(region_and_locality)'].fillna('')
 
     if 'US Virgin Islands' in all_metadata['geo_loc_region'].unique():
@@ -245,15 +252,21 @@ def main():
             'US Virgin Islands', 'U.S. Virgin Islands')
     print('Samples with valid location: ', len(all_metadata))
 
+    print(len(all_metadata))
+    # Filter out samples missing catchment population
+    
+    all_metadata['population_size_of_the_catchment_area'] = pd.to_numeric(all_metadata['population_size_of_the_catchment_area'], errors='coerce')
+    all_metadata['ww_population'] = pd.to_numeric(all_metadata['ww_population'], errors='coerce')
+    all_metadata['ww_population'] = all_metadata['ww_population'].astype(str)
+    all_metadata['population_size_of_the_catchment_area'] = all_metadata['population_size_of_the_catchment_area'].astype(str)
+    all_metadata['ww_population'] = all_metadata['ww_population'].fillna('') + all_metadata['population_size_of_the_catchment_area'].fillna('')
+    all_metadata['ww_population'] = pd.to_numeric(all_metadata['ww_population'], errors='coerce')
+    #all_metadata = all_metadata[~all_metadata['ww_population'].isna()]
+
+    print('Samples with valid population: ', len(all_metadata))
     # Select columns of interest
     all_metadata = all_metadata[['amplicon_PCR_primer_scheme', 'collected_by',
                                  'geo_loc_name', 'geo_loc_country', 'geo_loc_region', 'collection_date', 'ww_population', 'ww_surv_target_1_conc', 'sample_status']]
-
-    # Filter out samples missing catchment population
-    all_metadata['ww_population'] = pd.to_numeric(all_metadata['ww_population'], errors='coerce')
-    all_metadata = all_metadata[~all_metadata['ww_population'].isna()]
-
-    print('Samples with valid population: ', len(all_metadata))
 
     # Keep samples with missing viral load, set to -1.0 to work with Elasticsearch
     all_metadata['ww_surv_target_1_conc'] = pd.to_numeric(all_metadata['ww_surv_target_1_conc'], errors='coerce')
@@ -277,7 +290,9 @@ def main():
     # Select samples to run
     all_metadata['sample_status'] = all_metadata['sample_status'].fillna('to_run')
     samples_to_run = all_metadata[all_metadata['sample_status'] == 'to_run']
-
+    samples_to_run = samples_to_run[samples_to_run['geo_loc_name'].str.contains('USA', case=False)]
+    samples_to_run = samples_to_run[samples_to_run['collection_date'] >= '2022-04-01']
+    samples_to_run = samples_to_run[samples_to_run['collection_date'] <= '2023-10-01']
     print('All samples: ', all_metadata['sample_status'].value_counts())
     print('Samples to run: ', len(samples_to_run))
 
