@@ -36,13 +36,13 @@ for var_path in paths_list:
 if not variants_list:
     print('No valid variants found')
     # Create empty json
-    empty_df = pd.DataFrame(columns=['sra_accession', 'site', 'ref_base', 'alt_base', 'depth', 'frequency'])
+    empty_df = pd.DataFrame(columns=['sra_accession', 'site', 'ref_base', 'alt_base', 'depth', 'prevalence'])
 
     empty_df.to_json('outputs/aggregate/aggregate_variants_new.json', orient='records', lines=True)
     sys.exit()
 
 variants = pd.concat(variants_list, axis=0)
-variants = variants.rename(columns={'ALT_FREQ':'frequency', 'ALT_DP':'depth'})
+variants = variants.rename(columns={'ALT_FREQ':'prevalence', 'ALT_DP':'depth'})
 
 variants['ref_base'] = variants['mutName'].apply(lambda x: x[0])
 
@@ -55,7 +55,7 @@ variants['alt_base'] = variants['mutName'].apply(handle_alt_base)
 variants = variants.drop(columns=['mutName'])
 variants = variants.rename(columns={0:'variants'})
 variants = variants.drop_duplicates(subset=['sra_accession', 'site', 'alt_base'], keep='first')
-variants = variants[['sra_accession', 'site', 'ref_base', 'alt_base', 'depth', 'frequency']]
+variants = variants[['sra_accession', 'site', 'ref_base', 'alt_base', 'depth', 'prevalence']]
 os.makedirs('outputs/aggregate', exist_ok=True)
 
 variants.to_json('outputs/aggregate/aggregate_variants_new.json', orient='records', lines=True)

@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=freyja-sra
-#Resource request
 #SBATCH --time=24:00:00
 #SBATCH --nodes=10
 #SBATCH --ntasks-per-node=4

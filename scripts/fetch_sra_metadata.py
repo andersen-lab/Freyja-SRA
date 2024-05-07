@@ -178,18 +178,18 @@ def get_metadata():
                     continue
             dictVals['experiment_id'] = sampID
             dictVals['SRA_id'] = root0[0].attrib['accession']
-            dictVals['SRA_published_date'] = runAttributes[0]['published']
+            dictVals['published_date'] = runAttributes[0]['published'].split(' ')[0]
             allDictVals[sampID] = dictVals
 
         metadata = pd.concat([metadata, pd.DataFrame(allDictVals).T], axis=0)
-
     return metadata
 
 
 def main():
-    #metadata = get_metadata()
-    #metadata.to_csv('data/raw_metadata.csv')
+    # metadata = get_metadata()
+    # metadata.to_csv('data/raw_metadata.csv')
     metadata = pd.read_csv('data/raw_metadata.csv', index_col=0 ,low_memory=False)
+    print('raw', metadata['SRA_published_date'].isna().sum())
     metadata = metadata[~metadata.index.duplicated(keep='first')]
 
     print('SRA accessions:', metadata.index.str.contains('SRR').sum())
@@ -202,8 +202,9 @@ def main():
     current_metadata = pd.read_csv('data/all_metadata.csv', index_col=0, low_memory=False)
 
     metadata = metadata[~metadata.index.isin(current_metadata.index)]
-    
     all_metadata = pd.concat([current_metadata, metadata], axis=0)
+
+    print('all', all_metadata['published_date'].isna().sum())
     all_metadata.index.name = 'accession'
     all_metadata = all_metadata[~all_metadata.index.duplicated(keep='first')]
     print('All fetched samples: ', len(all_metadata))
@@ -213,24 +214,16 @@ def main():
     all_metadata['collection_date'] = all_metadata['collection_date'].apply(parse_collection_date)
     all_metadata['collection_date'] = pd.to_datetime(all_metadata['collection_date'], format='%Y-%m-%d', errors='coerce')
     all_metadata = all_metadata[~all_metadata['collection_date'].isna()]
+    
+    ## For samples that report published date, if that date is a year or more after the collection date, drop the sample
+    print(all_metadata['published_date'])
+    all_metadata['published_date'] = pd.to_datetime(all_metadata['published_date'], errors='coerce', format='%Y-%m-%d')
 
+    all_metadata = all_metadata[all_metadata['published_date'].isna() | (all_metadata['published_date'] - all_metadata['collection_date'] < timedelta(days=365))]
+    
+    print(all_metadata['published_date'].isna().sum())
     print('Samples with valid collection date: ', len(all_metadata))
 
-    # all_metadata = all_metadata[all_metadata['collection_date'] >= '2022-04-01']
-    # all_metadata = all_metadata[all_metadata['collection_date'] <= '2023-10-01']
-    all_metadata = all_metadata[~all_metadata['geo_loc_name'].isna()]
-    #all_metadata = all_metadata[all_metadata['geo_loc_name'].str.contains('USA', case=False)]
-    #print('Freyja global samples:', len(all_metadata))
-
-    ## For samples that report published date, if that date is a year or more after the collection date, drop the sample
-    all_metadata['ENA_first_public'] = pd.to_datetime(all_metadata['ENA_first_public'], errors='coerce', format='%Y-%m-%d')
-    all_metadata['SRA_published_date'] = pd.to_datetime(all_metadata['SRA_published_date'], errors='coerce', format='%Y-%m-%d')
-
-    all_metadata['published_date'] = all_metadata['SRA_published_date'].fillna(all_metadata['ENA_first_public'])
-
-    all_metadata = all_metadata[all_metadata['published_date'].isna() | (all_metadata['published_date'] - all_metadata['published_date'] < timedelta(days=365))]
-    print('Samples with valid collection date and publication date: ', len(all_metadata))
-    
     # Parse location information
     ## Combine ENA location column with SRA location column
     
@@ -252,7 +245,6 @@ def main():
             'US Virgin Islands', 'U.S. Virgin Islands')
     print('Samples with valid location: ', len(all_metadata))
 
-    print(len(all_metadata))
     # Filter out samples missing catchment population
     
     all_metadata['population_size_of_the_catchment_area'] = pd.to_numeric(all_metadata['population_size_of_the_catchment_area'], errors='coerce')
@@ -266,7 +258,7 @@ def main():
     print('Samples with valid population: ', len(all_metadata))
     # Select columns of interest
     all_metadata = all_metadata[['amplicon_PCR_primer_scheme', 'collected_by',
-                                 'geo_loc_name', 'geo_loc_country', 'geo_loc_region', 'collection_date', 'ww_population', 'ww_surv_target_1_conc', 'sample_status']]
+                                 'geo_loc_name', 'geo_loc_country', 'geo_loc_region', 'collection_date', 'published_date', 'ww_population', 'ww_surv_target_1_conc', 'sample_status']]
 
     # Keep samples with missing viral load, set to -1.0 to work with Elasticsearch
     all_metadata['ww_surv_target_1_conc'] = pd.to_numeric(all_metadata['ww_surv_target_1_conc'], errors='coerce')
@@ -296,9 +288,7 @@ def main():
     print('All samples: ', all_metadata['sample_status'].value_counts())
     print('Samples to run: ', len(samples_to_run))
 
-    all_metadata.to_csv('data/all_metadata.csv')
-    pd.Series(samples_to_run.index).to_csv(
-        'data/samples_to_run.csv', index=False, header=False)
+    #all_metadata.to_csv('data/all_metadata.csv')
 
 
 if __name__ == "__main__":

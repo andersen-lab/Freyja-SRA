@@ -16,7 +16,7 @@ def agg(results):
         print('No valid demix results found')
         # Create empty json
         os.makedirs('outputs/aggregate', exist_ok=True)
-        empty_df = pd.DataFrame(columns=['sra_accession', 'name', 'abundance', 'coverage', 'spike_coverage'])
+        empty_df = pd.DataFrame(columns=['sra_accession', 'name', 'prevalence', 'coverage', 'spike_coverage'])
         empty_df.to_json('outputs/aggregate/aggregate_demix_new.json', orient='records', lines=True)
         sys.exit()
 
@@ -25,12 +25,14 @@ def agg(results):
     df_demix = df_demix[~df_demix['lineages'].isna()]
     df_demix = df_demix.drop(columns=['summarized', 'resid'])    
 
-    # Explode lineages and abundances
+    # Explode lineages and prevalences
     df_demix['lineages'] = df_demix['lineages'].str.split(' ')
-    df_demix['abundances'] = df_demix['abundances'].str.split(' ')
-    df_demix = df_demix.explode(['lineages', 'abundances'], ignore_index=True)
-    df_demix = df_demix.rename(columns={'lineages': 'name', 'abundances': 'abundance'})
-    df_demix = df_demix[['sra_accession', 'name', 'abundance', 'coverage']]
+    # Rename abundances col to prevalence
+    df_demix = df_demix.rename(columns={'abundances': 'prevalence'})
+    df_demix['prevalence'] = df_demix['prevalence'].str.split(' ')
+    df_demix = df_demix.explode(['lineages', 'prevalence'], ignore_index=True)
+    df_demix = df_demix.rename(columns={'lineages': 'name'})
+    df_demix = df_demix[['sra_accession', 'name', 'prevalence', 'coverage']]
 
     return df_demix
 
@@ -38,8 +40,8 @@ def merge_collapsed(df_agg):
     # if -like is in the name, merge with the true lineage, if present
     df_agg['name'] = df_agg['name'].str.replace('-like', '')
 
-    # Sum abundances for the same lineage in the same sample
-    df_agg = df_agg.groupby(['sra_accession', 'name']).agg({'abundance': 'sum', 'coverage': 'first'}).reset_index()
+    # Sum prevalences for the same lineage in the same sample
+    df_agg = df_agg.groupby(['sra_accession', 'name']).agg({'prevalence': 'sum', 'coverage': 'first'}).reset_index()
     return df_agg
 
 
@@ -111,8 +113,8 @@ def main():
     df_agg = df_agg[df_agg['name'] != ''] 
 
     df_agg = df_agg.drop_duplicates(subset=['sra_accession', 'name'], keep='first')
-    df_agg['abundance'] = pd.to_numeric(df_agg['abundance'], errors='coerce')
-    df_agg = df_agg[~np.isinf(df_agg['abundance'])]
+    df_agg['prevalence'] = pd.to_numeric(df_agg['prevalence'], errors='coerce')
+    df_agg = df_agg[~np.isinf(df_agg['prevalence'])]
 
     os.makedirs('outputs/aggregate', exist_ok=True)
     df_agg.to_json('outputs/aggregate/aggregate_demix_new.json', orient='records', lines=True)
