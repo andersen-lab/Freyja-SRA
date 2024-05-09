@@ -10,4 +10,8 @@ RUN micromamba create -n freyja-sra
 RUN micromamba install -y -n freyja-sra -f /tmp/environment.yml && \
     micromamba clean --all --yes
 
+RUN eval "$(micromamba shell hook --shell=bash)" && \
+    micromamba activate freyja-sra && \
+    freyja update
+
 ENV PATH /opt/conda/envs/freyja-sra/bin:$PATH
