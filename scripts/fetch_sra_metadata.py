@@ -213,7 +213,7 @@ def main():
     
     ## If published date is a year or more after the collection date, drop the sample
     all_metadata['SRA_published_date'] = all_metadata['SRA_published_date'].astype(str)
-    all_metadata['SRA_published_date'] = all_metadata['SRA_published_date'].str.split(' ').str[0]
+    #all_metadata['SRA_published_date'] = all_metadata['SRA_published_date'].str.split(' ').str[0]
     all_metadata['SRA_published_date'] = pd.to_datetime(all_metadata['SRA_published_date'], errors='coerce', format='%Y-%m-%d')
     all_metadata = all_metadata[(all_metadata['SRA_published_date'] - all_metadata['collection_date'] < timedelta(days=365))]
     
