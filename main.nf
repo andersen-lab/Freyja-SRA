@@ -11,6 +11,7 @@ ref = file(params.ref)
 bedfiles = file(params.bedfiles)
 baseDir = file("$baseDir")
 aspera_key = file("${baseDir}/data/asperaweb_id_dsa.openssh")
+barcodes = file("${baseDir}/data/usher_barcodes.csv")
 annot = file(params.annot)
 
 // Import modules
@@ -120,7 +121,7 @@ workflow rerun_demix {
         .map { k, v -> tuple(k, v[1], v[0]) }
         .set { variants_ch }
 
-    FREYJA_DEMIX(variants_ch, params.eps)
+    FREYJA_DEMIX(variants_ch, params.eps, barcodes)
         .collect()
         .set { demix_ch }
 }

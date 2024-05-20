@@ -94,6 +94,7 @@ def get_spike_coverage(df_agg):
 
 def main():
     # Load demix results
+    os.makedirs('outputs/demix', exist_ok=True)
     demix_output = 'outputs/demix/'
     paths = [demix_output + fn for fn in os.listdir(demix_output)]
     df_agg = agg(paths)

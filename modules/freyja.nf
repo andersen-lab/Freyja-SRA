@@ -17,13 +17,14 @@ process FREYJA_VARIANTS {
 }
 
 process FREYJA_DEMIX {
-    publishDir "${params.output}/demix", mode: 'copy'
+    publishDir "${params.output}/demix_rerun", mode: 'copy'
     errorStrategy {task.attempt <= maxRetries  ? 'retry' : 'ignore' }
     maxRetries 1
 
     input:
     tuple val(sample_id), path(variants), path(depths)
     val eps
+    path barcodes
 
     output:
     path "${sample_id}.demix.tsv"
@@ -31,7 +32,7 @@ process FREYJA_DEMIX {
     script:
     def depthCutoff = 0 + (task.attempt - 1) * 10
     """
-    freyja demix ${variants} ${depths} --eps ${eps} --output ${sample_id}.demix.tsv --depthcutoff ${depthCutoff} --relaxedmrca
+    freyja demix ${variants} ${depths} --eps ${eps} --output ${sample_id}.demix.tsv --depthcutoff ${depthCutoff} --relaxedmrca --barcodes ${barcodes}
     """
 }
 
