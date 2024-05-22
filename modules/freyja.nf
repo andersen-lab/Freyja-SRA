@@ -17,7 +17,7 @@ process FREYJA_VARIANTS {
 }
 
 process FREYJA_DEMIX {
-    publishDir "${params.output}/demix_rerun", mode: 'copy'
+    publishDir "${params.output}/demix", mode: 'copy'
     errorStrategy {task.attempt <= maxRetries  ? 'retry' : 'ignore' }
     maxRetries 1
 
