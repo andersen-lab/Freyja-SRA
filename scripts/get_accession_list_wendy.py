@@ -10,7 +10,7 @@ metadata = metadata[metadata['collection_date'] < '2023-10-01']
 metadata = metadata[metadata['geo_loc_name'].str.contains('USA', na=False)]
 ######################################################################
 
-metadata = metadata[metadata['sample_status'] == 'to_run']
+metadata = metadata[metadata['sample_status'] == 'fastq_error']
 accessions = metadata['accession'][-1 * batch_size:] # Get last batch_size accessions
 
 accessions.to_csv('data/accession_list.csv', index=False, header=False)
