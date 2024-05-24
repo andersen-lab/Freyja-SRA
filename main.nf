@@ -109,7 +109,7 @@ workflow freyja {
         .map { it[1] }
         .set { variants_ch }
 
-    FREYJA_DEMIX(FREYJA_VARIANTS.out, params.eps)
+    FREYJA_DEMIX(FREYJA_VARIANTS.out, params.eps, barcodes)
         .collect()
         .set { demix_ch }   
 }
