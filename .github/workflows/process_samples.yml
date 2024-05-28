@@ -54,6 +54,7 @@ jobs:
 
       - name: Run pipeline on new samples
         run: |
+                export NXF_ENABLE_VIRTUAL_THREADS=false
                 nextflow run main.nf \
                   --accession_list data/accession_list.csv \
                   --num_samples $BATCH_SIZE \
