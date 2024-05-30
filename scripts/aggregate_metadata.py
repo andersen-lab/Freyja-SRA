@@ -1,7 +1,30 @@
 import os
 import pandas as pd
+import numpy as np
+
+def get_intervals(accession):
+    try:
+        df_depth = pd.read_csv(f'outputs/variants/{accession}.depths.tsv', sep='\t', header=None, index_col=1)[3]
+    except:
+        return []
+    vec = df_depth >= 10
+    vec = vec.astype(int)
+    if len(vec)==0:
+        return []
+    elif not isinstance(vec, np.ndarray):
+        vec = np.array(vec)
+
+    edges, = np.nonzero(np.diff((vec==0)*1))
+    edge_vec = [edges+1]
+    if vec[0] != 0:
+        edge_vec.insert(0, [0])
+    if vec[-1] != 0:
+        edge_vec.append([len(vec)])
+    edges = np.concatenate(edge_vec)
+    return np.dstack((edges[::2], edges[1::2]))
 
 paths_list = [entry.path for entry in os.scandir('outputs/variants') if 'variants' in entry.name]
+depths_list = [entry.path for entry in os.scandir('outputs/variants') if 'depths' in entry.name]
 demix_success = [entry.path.split('.')[0].split('/')[-1] for entry in os.scandir('outputs/demix') if 'demix' in entry.name]
 
 accessions = [p.split('/')[-1].split('.')[0] for p in paths_list]
@@ -30,6 +53,8 @@ try:
     metadata['variants_success'] = metadata['sra_accession'].isin(agg_variants['sra_accession'])
 except:
     metadata['variants_success'] = False
+
+metadata['coverage_intervals'] = metadata['sra_accession'].apply(get_intervals)
 
 os.makedirs('outputs/aggregate', exist_ok=True)
 metadata.to_json('outputs/aggregate/aggregate_metadata_new.json', orient='records', lines=True)

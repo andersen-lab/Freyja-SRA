@@ -30,5 +30,8 @@
     },
     "variants_success": {
         "type": "boolean"
+    },
+    "coverage_intervals": {
+        "type": "object"
     }
 }
