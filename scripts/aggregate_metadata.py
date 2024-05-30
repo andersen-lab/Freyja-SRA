@@ -21,7 +21,7 @@ def get_intervals(accession):
     if vec[-1] != 0:
         edge_vec.append([len(vec)])
     edges = np.concatenate(edge_vec)
-    return np.dstack((edges[::2], edges[1::2]))
+    return np.dstack((edges[::2], edges[1::2]))[0]
 
 paths_list = [entry.path for entry in os.scandir('outputs/variants') if 'variants' in entry.name]
 depths_list = [entry.path for entry in os.scandir('outputs/variants') if 'depths' in entry.name]
