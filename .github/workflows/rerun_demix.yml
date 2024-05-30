@@ -5,6 +5,10 @@ on:
 
 jobs:
   rerun_demix:
+    permissions:
+        contents: write
+        id-token: write
+
     runs-on: self-hosted
 
     steps:
@@ -33,6 +37,20 @@ jobs:
         with:
           workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
           service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
+
+      - name: 'Get updated barcodes and lineages from Freyja repo'
+        run: |
+              git clone http://github.com/andersen-lab/Freyja
+              cp Freyja/freyja/data/usher_barcodes.csv data/
+              cp Freyja/freyja/data/lineages.yml data/
+      
+      - name: 'Commit updated barcodes and lineages to main repo'
+        run: |
+              git config --local user.name "$GITHUB_ACTOR"
+              git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+              git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
+              git commit -m "Update Freyja barcodes"
+              git push --force
 
       - name: 'Get samples to re-run'
         run: |
