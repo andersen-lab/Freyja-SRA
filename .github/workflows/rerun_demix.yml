@@ -27,10 +27,10 @@ jobs:
               pip3 install pandas numpy pyyaml ffq
 
       - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v2'
-      with:
-        version: '>= 363.0.0'
-      
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          version: '>= 363.0.0'
+          
       - id: 'auth'
         name: 'Authenticate with gcloud'
         uses: 'google-github-actions/auth@v2'
