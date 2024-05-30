@@ -32,6 +32,14 @@
         "type": "boolean"
     },
     "coverage_intervals": {
-        "type": "object"
+        "type": "nested",
+        "properties": {
+            "start": {
+                "type": "integer"
+            },
+            "end": {
+                "type": "integer"
+            }
+        }
     }
 }
