@@ -69,7 +69,7 @@ us_state_to_abbrev = {
 }
 
 START_DATE = '2020-03-14'
-END_DATE = '2024-05-01'
+END_DATE = '2024-06-01'
 INTERVAL = 14 # days
 
 def md5_hash(string):
@@ -195,11 +195,11 @@ def main():
     print('ENA accessions:',metadata.index.str.contains('ERR').sum())
     print('Total : ', len(metadata))
 
-    # Combine with existing metadata
-    current_metadata = pd.read_csv('data/all_metadata.csv', index_col=0, low_memory=False)
+    # Get sample status from current metadata file
+    sample_status = pd.read_csv('data/all_metadata.csv', index_col=0, low_memory=False)['sample_status']
 
-    metadata = metadata[~metadata.index.isin(current_metadata.index)]
-    all_metadata = pd.concat([current_metadata, metadata], axis=0)
+    all_metadata = metadata.join(sample_status, how='left')
+    all_metadata['sample_status'] = all_metadata['sample_status'].fillna('to_run')
 
     all_metadata.index.name = 'accession'
     all_metadata = all_metadata[~all_metadata.index.duplicated(keep='first')]
@@ -222,7 +222,7 @@ def main():
     # Parse location information
     ## Combine ENA country column with SRA country column
     
-    all_metadata['geo_loc_name'] = all_metadata['geo_loc_name'].fillna('') + all_metadata['geographic_location_(country_and/or_sea)'].fillna('')
+    all_metadata['geo_loc_name'] = all_metadata['geo_loc_name'].fillna(all_metadata['geographic_location_(country_and/or_sea)'])
     all_metadata = all_metadata[~all_metadata['geo_loc_name'].isna()]
 
     all_metadata['geo_loc_country'] = all_metadata['geo_loc_name'].apply(
@@ -231,9 +231,7 @@ def main():
         lambda x: x.split(':')[1].strip() if len(x.split(':')) > 1 else '')
     all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].apply(
         lambda x: x.split(',')[0].strip() if len(x.split(',')) > 1 else x)
-
-    # Combine ENA state/region column with SRA column
-    all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].fillna('') + all_metadata['geographic_location_(region_and_locality)'].fillna('')
+    all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].fillna(all_metadata['geographic_location_(region_and_locality)'])
 
     if 'US Virgin Islands' in all_metadata['geo_loc_region'].unique():
         all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].replace(
@@ -241,28 +239,25 @@ def main():
         
     print('Samples with valid location: ', len(all_metadata))
 
-    # Filter out samples missing catchment population
-    all_metadata['population_size_of_the_catchment_area'] = pd.to_numeric(all_metadata['population_size_of_the_catchment_area'], errors='coerce')
+    # Parse population size
+    all_metadata['ww_population'] = all_metadata['ww_population'].fillna(
+        all_metadata['population_size_of_the_catchment_area']) # for ENA
+
     all_metadata['ww_population'] = pd.to_numeric(all_metadata['ww_population'], errors='coerce')
-    all_metadata['ww_population'] = all_metadata['ww_population'].astype(str)
-    all_metadata['population_size_of_the_catchment_area'] = all_metadata['population_size_of_the_catchment_area'].astype(str)
-    all_metadata['ww_population'] = all_metadata['ww_population'].fillna('') + all_metadata['population_size_of_the_catchment_area'].fillna('')
-    all_metadata['ww_population'] = pd.to_numeric(all_metadata['ww_population'], errors='coerce')
-    #all_metadata = all_metadata[~all_metadata['ww_population'].isna()]
+    all_metadata = all_metadata[~all_metadata['ww_population'].isna()]
 
     print('Samples with valid population: ', len(all_metadata))
+
     # Select columns of interest
     all_metadata = all_metadata[['amplicon_PCR_primer_scheme', 'collected_by',
                                  'geo_loc_name', 'geo_loc_country', 'geo_loc_region', 'collection_date', 'SRA_published_date', 'ww_population', 'ww_surv_target_1_conc', 'sample_status']]
 
     # Keep samples with missing viral load, set to -1.0 to work with Elasticsearch
     all_metadata['ww_surv_target_1_conc'] = pd.to_numeric(all_metadata['ww_surv_target_1_conc'], errors='coerce')
-    #all_metadata = all_metadata[~all_metadata['ww_surv_target_1_conc'].isna()]
     all_metadata['ww_surv_target_1_conc'] = all_metadata['ww_surv_target_1_conc'].fillna(
         -1.0)
-    print('valid viral load',len(all_metadata[all_metadata['ww_surv_target_1_conc'] > 0]))
+    print('Samples with valid viral load',len(all_metadata[all_metadata['ww_surv_target_1_conc'] > 0]))
 
-    print('Samples with valid viral load: ', len(all_metadata))
     # Create human-readable, unique site_id for each sample
     all_metadata['collection_site_id'] = all_metadata['geo_loc_name'].fillna('') +\
         all_metadata['ww_population'].fillna('').astype(str) +\
@@ -281,7 +276,7 @@ def main():
     samples_to_run = samples_to_run[samples_to_run['collection_date'] >= '2022-04-01']
     samples_to_run = samples_to_run[samples_to_run['collection_date'] <= '2023-10-01']
     print('All samples: ', all_metadata['sample_status'].value_counts())
-    print('Samples to run (freyja global): ', len(samples_to_run))
+    print('Samples to run (freyja global USA): ', len(samples_to_run))
 
     all_metadata.to_csv('data/all_metadata.csv')
 
