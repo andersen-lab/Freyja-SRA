@@ -34,4 +34,5 @@ df_agg_weekly['mean_lineage_prevalence'] = df_agg_weekly['pop_weighted_prevalenc
 df_agg_weekly = df_agg_weekly.drop(columns=['pop_weighted_prevalence', 'collection_date', 'week'])
 
 df_agg_weekly = df_agg_weekly[['date_start', 'date_end', 'total_population', 'num_collection_sites', 'num_samples', 'geo_loc_region', 'name', 'mean_lineage_prevalence']]
+df_agg_weekly['id'] = df_agg_weekly['date_start'] + '_' + df_agg_weekly['geo_loc_region'] + '_' + df_agg_weekly['name']
 df_agg_weekly.to_json('outputs/aggregate/aggregate_demix_weekly.json', orient='records', lines=True)
