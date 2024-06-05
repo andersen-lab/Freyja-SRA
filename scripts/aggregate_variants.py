@@ -10,7 +10,8 @@ def handle_alt_base(mut):
     else:
         return mut[-1]
 
-# Create variants json (by accession * site)    
+# Create variants json (by accession * site)
+os.makedirs('outputs/variants', exist_ok=True)
 paths_list = [entry.path for entry in os.scandir('outputs/variants') if 'variants' in entry.name]
 variants_list = []
 depth_thresh = 20
