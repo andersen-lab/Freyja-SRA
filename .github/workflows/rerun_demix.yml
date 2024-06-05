@@ -40,6 +40,7 @@ jobs:
 
       - name: 'Get samples to re-run'
         run: |
+              mkdir demix_rerun
               python scripts/get_samples_for_demix_rerun.py
               bash scripts/get_variants_output.sh
       
