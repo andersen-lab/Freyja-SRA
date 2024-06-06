@@ -8,6 +8,6 @@ metadata = metadata[metadata['sample_status'] == 'to_run']
 metadata = metadata[metadata['geo_loc_name'].str.contains('USA', case=False)]
 metadata = metadata[metadata['collection_date'] >= '2022-04-01']
 metadata = metadata[metadata['collection_date'] <= '2023-10-01']
-accessions = metadata['accession'][-1 * batch_size:] # Get last batch_size accessions
+accessions = metadata['accession'][:batch_size] # Get last batch_size accessions
 
 accessions.to_csv('data/accession_list.csv', index=False, header=False)
