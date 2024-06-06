@@ -28,7 +28,7 @@ jobs:
         run: |
               echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3 -y
               echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
-              pip3 install pandas numpy pyyaml ffq
+              pip3 install pandas numpy pyyaml ffq epiweeks
 
       # - name: Setup AWS CLI
       #   run : |
