@@ -213,7 +213,6 @@ def main():
     
     ## If published date is a year or more after the collection date, drop the sample
     all_metadata['SRA_published_date'] = all_metadata['SRA_published_date'].astype(str)
-    #all_metadata['SRA_published_date'] = all_metadata['SRA_published_date'].str.split(' ').str[0]
     all_metadata['SRA_published_date'] = pd.to_datetime(all_metadata['SRA_published_date'], errors='coerce', format='%Y-%m-%d')
     all_metadata = all_metadata[(all_metadata['SRA_published_date'] - all_metadata['collection_date'] < timedelta(days=365))]
     
@@ -250,12 +249,22 @@ def main():
 
     # Select columns of interest
     all_metadata = all_metadata[['amplicon_PCR_primer_scheme', 'collected_by',
-                                 'geo_loc_name', 'geo_loc_country', 'geo_loc_region', 'collection_date', 'SRA_published_date', 'ww_population', 'ww_surv_target_1_conc', 'sample_status']]
+                                 'geo_loc_name', 'geo_loc_country', 'geo_loc_region', 'collection_date', 'SRA_published_date', 'ww_population', 'ww_surv_target_1_conc','ww_surv_target_1_conc_unit', 'sample_status']]
 
     # Keep samples with missing viral load, set to -1.0 to work with Elasticsearch
     all_metadata['ww_surv_target_1_conc'] = pd.to_numeric(all_metadata['ww_surv_target_1_conc'], errors='coerce')
+    all_metadata['ww_surv_target_1_conc_unit'] = all_metadata['ww_surv_target_1_conc_unit'].str.lower()
+    all_metadata['ww_surv_target_1_conc_unit'] = all_metadata['ww_surv_target_1_conc_unit'].fillna(-1.0)
     all_metadata['ww_surv_target_1_conc'] = all_metadata['ww_surv_target_1_conc'].fillna(
         -1.0)
+    # if units column contains 'copies/ml', convert concentration to copies/l
+    mask = all_metadata['ww_surv_target_1_conc_unit'].str.contains('copies/ml', na=False)
+    all_metadata.loc[mask, 'ww_surv_target_1_conc'] *= 1000
+
+
+    # If units aren't copies/l or copies/ml, set concentration to NA
+    all_metadata.loc[~all_metadata['ww_surv_target_1_conc_unit'].isin(['copies/l', 'copies/ml']), 'ww_surv_target_1_conc'] = -1.0
+    
     print('Samples with valid viral load',len(all_metadata[all_metadata['ww_surv_target_1_conc'] > 0]))
 
     # Create human-readable, unique site_id for each sample
