@@ -6,6 +6,6 @@ while read -r accession; do
         echo "gs://outbreak-ww-data/variants/${accession}.variants.tsv does not exist"
         continue
     fi
-    gcloud storage cp gs://outbreak-ww-data/variants/${accession}.variants.tsv" "demix_rerun/"
-    gcloud storage cp gs://outbreak-ww-data/variants/${accession}.depths.tsv" "demix_rerun/"
+    gcloud storage cp gs://outbreak-ww-data/variants/${accession}.variants.tsv demix_rerun/
+    gcloud storage cp gs://outbreak-ww-data/variants/${accession}.depths.tsv demix_rerun/
 done < "data/samples_to_rerun.txt"
