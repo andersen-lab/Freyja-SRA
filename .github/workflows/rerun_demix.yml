@@ -38,6 +38,24 @@ jobs:
           workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
           service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
 
+      - name: 'Get updated barcodes and lineages from Freyja repo'
+        run: |
+              git clone http://github.com/andersen-lab/Freyja
+              cp Freyja/freyja/data/usher_barcodes.csv data/
+              cp Freyja/freyja/data/lineages.yml data/
+
+      - name: 'Commit updated barcodes and lineages to main repo'
+        run: |
+              if [[($(git status data/usher_barcodes.csv --porcelain | wc -c) -ne 0)]]; then
+                git config --local user.name "$GITHUB_ACTOR"
+                git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+                git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
+                git add data/usher_barcodes.csv
+                git add data/lineages.yml
+                git commit -m "Update Freyja barcodes"
+                git push --force
+              fi
+              
       - name: 'Get samples to re-run'
         run: |
               mkdir demix_rerun
@@ -73,21 +91,5 @@ jobs:
               gcloud storage cp -r outputs/demix gs://outbreak-ww-data/
 
 
-      - name: 'Get updated barcodes and lineages from Freyja repo'
-        run: |
-              git clone http://github.com/andersen-lab/Freyja
-              cp Freyja/freyja/data/usher_barcodes.csv data/
-              cp Freyja/freyja/data/lineages.yml data/
 
-      - name: 'Commit updated barcodes and lineages to main repo'
-        run: |
-              if [[($(git status data/usher_barcodes.csv --porcelain | wc -c) -ne 0)]]; then
-                git config --local user.name "$GITHUB_ACTOR"
-                git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-                git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
-                git add data/usher_barcodes.csv
-                git add data/lineages.yml
-                git commit -m "Update Freyja barcodes"
-                git push --force
-              fi
 
