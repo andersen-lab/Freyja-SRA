@@ -13,3 +13,4 @@ dependencies:
   - hcc::aspera-cli
   - pip:
     - ffq
+    - epiweeks
