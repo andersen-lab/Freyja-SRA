@@ -24,5 +24,8 @@
     },
     "mean_lineage_prevalence": {
         "type": "double"
+    },
+    "id": {
+        "type": "keyword"
     }
 }
