@@ -23,6 +23,9 @@ def get_intervals(accession):
     edges = np.concatenate(edge_vec)
     return np.dstack((edges[::2], edges[1::2]))[0]
 
+def format_intervals(intervals):
+    return [{'start': int(i[0]), 'end': int(i[1])} for i in intervals]
+
 paths_list = [entry.path for entry in os.scandir('outputs/variants') if 'variants' in entry.name]
 depths_list = [entry.path for entry in os.scandir('outputs/variants') if 'depths' in entry.name]
 demix_success = [entry.path.split('.')[0].split('/')[-1] for entry in os.scandir('outputs/demix') if 'demix' in entry.name]
@@ -55,6 +58,7 @@ except:
     metadata['variants_success'] = False
 
 metadata['coverage_intervals'] = metadata['sra_accession'].apply(get_intervals)
+metadata['coverage_intervals'] = metadata['coverage_intervals'].apply(format_intervals)
 
 os.makedirs('outputs/aggregate', exist_ok=True)
 metadata.to_json('outputs/aggregate/aggregate_metadata_new.json', orient='records', lines=True)
