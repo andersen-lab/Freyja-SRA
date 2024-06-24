@@ -60,6 +60,9 @@ jobs:
         run: |
               mkdir demix_rerun
               python scripts/get_samples_for_demix_rerun.py
+              
+      - name: 'Get variants output'
+        run: |
               bash scripts/get_variants_output.sh
       
       - name: 'Rerun demix'
