@@ -11,7 +11,7 @@ ref = file(params.ref)
 bedfiles = file(params.bedfiles)
 baseDir = file("$baseDir")
 aspera_key = file("${baseDir}/data/asperaweb_id_dsa.openssh")
-barcodes = file("${baseDir}/data/usher_barcodes.feather")
+barcodes = file("${baseDir}/data/usher_barcodes.csv")
 annot = file(params.annot)
 
 // Import modules
