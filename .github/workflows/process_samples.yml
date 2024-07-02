@@ -93,6 +93,7 @@ jobs:
           path: 'outputs/'
           destination: 'outbreak-ww-data/'
           parent: false
+          project_id: 'andersen-lab-primary'
 
       - name: 'Update processed samples'
         run: |
