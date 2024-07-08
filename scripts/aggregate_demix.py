@@ -12,7 +12,8 @@ def agg(results):
     try:
         df_demix = pd.concat(allResults, axis=1).T
 
-    except ValueError:
+    except ValueError as e:
+        print(e)
         print('No valid demix results found')
         # Create empty json
         os.makedirs('outputs/aggregate', exist_ok=True)
