@@ -3,6 +3,7 @@ channels:
     - bioconda
     - conda-forge
 dependencies:
+  - anaconda::pyarrow=14.0.2
   - bioconda::cutadapt=4.4
   - bioconda::freyja=1.5.1
   - bioconda::nextflow=23.04.3
