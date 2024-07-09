@@ -1,7 +1,7 @@
 name: Rerun demix
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '0 0 * * *'
 
 jobs:
   rerun_demix:
