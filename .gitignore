@@ -6,6 +6,7 @@ null
 
 # Pipeline results
 outputs
+demix_rerun
 variants_rerun
 aggregate_demix.tsv
 
