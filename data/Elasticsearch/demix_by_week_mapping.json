@@ -1,4 +1,7 @@
 {
+    "epiweek": {
+        "type": "integer"
+    },
     "date_start": {
         "type": "date",
         "format": "yyyy-MM-dd"
@@ -10,7 +13,7 @@
     "total_population": {
         "type": "integer"
     },
-    "num_collection_sites": {
+    "num_sites": {
         "type": "integer"
     },
     "num_samples": {
@@ -24,8 +27,6 @@
     },
     "mean_lineage_prevalence": {
         "type": "double"
-    },
-    "id": {
-        "type": "keyword"
     }
+
 }
