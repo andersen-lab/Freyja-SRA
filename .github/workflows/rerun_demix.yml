@@ -44,6 +44,7 @@ jobs:
               git clone http://github.com/andersen-lab/Freyja
               cp Freyja/freyja/data/usher_barcodes.feather data/
               cp Freyja/freyja/data/lineages.yml data/
+              cp Freyja/freyja/data/last_barcode_update.txt data/
 
       - name: 'Commit updated barcodes and lineages to main repo'
         run: |
@@ -53,6 +54,7 @@ jobs:
               git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
               git add data/usher_barcodes.feather
               git add data/lineages.yml
+              git add data/last_barcode_update.txt
               git commit -m "Update Freyja barcodes"
               git push --force
             fi
