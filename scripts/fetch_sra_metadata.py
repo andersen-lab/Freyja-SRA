@@ -69,7 +69,7 @@ us_state_to_abbrev = {
 }
 
 START_DATE = '2020-03-14'
-END_DATE = '2024-06-01'
+END_DATE = datetime.now().strftime('%Y-%m-%d')
 INTERVAL = 14 # days
 
 def md5_hash(string):
@@ -186,8 +186,8 @@ def get_metadata():
 
 
 def main():
-    # metadata = get_metadata()
-    # metadata.to_csv('data/raw_metadata.csv')
+    metadata = get_metadata()
+    metadata.to_csv('data/raw_metadata.csv')
     metadata = pd.read_csv('data/raw_metadata.csv', index_col=0 ,low_memory=False)
     metadata = metadata[~metadata.index.duplicated(keep='first')]
 
@@ -281,11 +281,8 @@ def main():
     # Select samples to run
     all_metadata['sample_status'] = all_metadata['sample_status'].fillna('to_run')
     samples_to_run = all_metadata[all_metadata['sample_status'] == 'to_run']
-    samples_to_run = samples_to_run[samples_to_run['geo_loc_name'].str.contains('USA', case=False)]
-    samples_to_run = samples_to_run[samples_to_run['collection_date'] >= '2022-04-01']
-    samples_to_run = samples_to_run[samples_to_run['collection_date'] <= '2023-10-01']
     print('All samples: ', all_metadata['sample_status'].value_counts())
-    print('Samples to run (freyja global USA): ', len(samples_to_run))
+    print('Samples to run: ', len(samples_to_run))
 
     all_metadata.to_csv('data/all_metadata.csv')
 
