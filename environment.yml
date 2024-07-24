@@ -8,6 +8,7 @@ dependencies:
   - bioconda::freyja=1.5.1
   - bioconda::nextflow=23.04.3
   - bioconda::minimap2=2.26
+  - conda-forge::awscli
   - conda-forge::pyarrow
   - conda-forge::google-cloud-sdk=458.0.1
   - conda-forge::procps-ng=3.3.17
