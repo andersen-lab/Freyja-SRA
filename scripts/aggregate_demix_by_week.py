@@ -6,17 +6,15 @@ import datetime
 # Get existing aggregate outputs
 demix = pd.read_json('outputs/aggregate/aggregate_demix.json', lines=True)
 metadata = pd.read_json('outputs/aggregate/aggregate_metadata.json', lines=True)
-
-
 demix = demix[demix['sra_accession'].isin(metadata['sra_accession'])]
 
+crumbs = {k : v for k, v in zip(demix['name'], demix['crumbs'])}
 
 # Remove samples where the sum of the lineage prevalence is greater than 1
 demix = demix[~demix.groupby('sra_accession')['prevalence'].transform('sum').gt(1)]
 
 # Add metadata to demix
 df_agg = pd.merge(demix, metadata, on='sra_accession', how='left')
-
 
 # Calculate population-weighted prevalence for each lineage
 df_agg['prevalence'] = pd.to_numeric(df_agg['prevalence'])
@@ -46,6 +44,7 @@ df_agg_weekly = df_agg.groupby(['epiweek', 'geo_loc_region', 'name']).agg({
 df_agg_weekly['id'] = df_agg_weekly['epiweek'].astype(str) + '_' + df_agg_weekly['geo_loc_region']
 df_agg_weekly['total_lineage_prevalence'] = df_agg_weekly['id'].map(total_prev_dict)
 df_agg_weekly['mean_lineage_prevalence'] = df_agg_weekly['pop_weighted_prevalence'] / df_agg_weekly['total_lineage_prevalence']
+df_agg_weekly['crumbs'] = df_agg_weekly['name'].map(crumbs)
 
 
 df_agg_weekly['id'] = df_agg_weekly['id'] + '_' + df_agg_weekly['name']
@@ -54,8 +53,9 @@ df_agg_weekly['id'] = df_agg_weekly['id'] + '_' + df_agg_weekly['name']
 df_agg_weekly['week_start'] = df_agg_weekly['epiweek'].apply(lambda x: x.startdate()).astype(str)
 df_agg_weekly['week_end'] = df_agg_weekly['epiweek'].apply(lambda x: x.enddate()).astype(str)
 
-df_agg_weekly = df_agg_weekly[['id', 'epiweek', 'week_start', 'week_end', 'geo_loc_region','num_sites', 'num_samples', 'name', 'mean_lineage_prevalence']]
+df_agg_weekly = df_agg_weekly[['id', 'epiweek', 'week_start', 'week_end', 'geo_loc_region','num_sites', 'num_samples', 'name', 'mean_lineage_prevalence', 'crumbs']]
 
+# Workaround to save to json
 df_agg_weekly.to_csv('outputs/aggregate/aggregate_demix_by_week.csv', index=False)
 df_out = pd.read_csv('outputs/aggregate/aggregate_demix_by_week.csv')
 os.remove('outputs/aggregate/aggregate_demix_by_week.csv')
