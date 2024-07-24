@@ -30,11 +30,11 @@ jobs:
               echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
               pip3 install pandas numpy pyyaml ffq epiweeks
 
-      # - name: Setup AWS CLI
-      #   run : |
-      #         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-      #         unzip awscliv2.zip
-      #         echo ${{secrets.DPILZ_USR_PWD}} | sudo -S ./aws/install --update
+      - name: Setup AWS CLI
+        run : |
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S ./aws/install --update
               
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'

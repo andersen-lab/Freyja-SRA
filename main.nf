@@ -49,22 +49,22 @@ workflow sra {
     GET_AMPLICON_SCHEME(acc_ch, metadata)
         .set { primer_scheme_ch }
 
-    // AWS_PREFETCH(primer_scheme_ch)
+    AWS_PREFETCH(primer_scheme_ch)
 
-    // FASTERQ_DUMP(AWS_PREFETCH.out)
-    //     .branch {
-    //         unknown_primer: it[1].text == 'unknown'
-    //         known_primer: it[1].text != 'unknown'
-    //     }
-    //     .set { fq_ch }
-
-    GET_ASPERA_DOWNLOAD_SCRIPT(primer_scheme_ch, aspera_key)
-    ASPERA_CONNECT(GET_ASPERA_DOWNLOAD_SCRIPT.out, aspera_key)
+    FASTERQ_DUMP(AWS_PREFETCH.out)
         .branch {
             unknown_primer: it[1].text == 'unknown'
             known_primer: it[1].text != 'unknown'
         }
         .set { fq_ch }
+
+    // GET_ASPERA_DOWNLOAD_SCRIPT(primer_scheme_ch, aspera_key)
+    // ASPERA_CONNECT(GET_ASPERA_DOWNLOAD_SCRIPT.out, aspera_key)
+    //     .branch {
+    //         unknown_primer: it[1].text == 'unknown'
+    //         known_primer: it[1].text != 'unknown'
+    //     }
+    //     .set { fq_ch }
 
     process_unknown_primer(fq_ch.unknown_primer)
     process_known_primer(fq_ch.known_primer)
