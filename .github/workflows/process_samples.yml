@@ -2,7 +2,7 @@ name: Process samples
 
 on:
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '0 10-23/2,0-2/2 * * *'
 env:
   BATCH_SIZE: 100
   
