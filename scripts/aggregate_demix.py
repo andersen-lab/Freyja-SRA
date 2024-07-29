@@ -3,6 +3,7 @@ import sys
 import yaml
 import numpy as np
 import pandas as pd
+from datetime import datetime
 
 
 def agg(results):
@@ -105,8 +106,6 @@ def main():
     
     # Get lineage breadcrumbs
     alias_key = get_alias_key()
-
-    # Can store in dict if needed
     df_agg['crumbs'] = df_agg['name'].apply(lambda x: ';' + ';'.join(crumbs(x, alias_key)[::-1]) + ';')
 
     # Get spike coverage
@@ -117,6 +116,10 @@ def main():
     df_agg = df_agg.drop_duplicates(subset=['sra_accession', 'name'], keep='first')
     df_agg['prevalence'] = pd.to_numeric(df_agg['prevalence'], errors='coerce')
     df_agg = df_agg[~np.isinf(df_agg['prevalence'])]
+
+    barcode_version = open('data/last_barcode_update.txt').readlines()[0].split('-')[0]
+    barcode_version_date = datetime.strptime(barcode_version, '%m_%d_%Y')
+    df_agg['barcode_version'] = barcode_version_date.strftime('%Y-%m-%d')
 
     os.makedirs('outputs/aggregate', exist_ok=True)
     df_agg.to_json('outputs/aggregate/aggregate_demix_new.json', orient='records', lines=True)

@@ -19,5 +19,9 @@
     },
     "spike_coverage": {
         "type": "double"
+    },
+    "barcode_version": {
+        "type": "date",
+        "format": "yyyy-MM-dd"
     }
 }
