@@ -37,7 +37,7 @@ include {
     FREYJA_DEMIX;
 } from "./modules/freyja.nf"
 
-workflow sra {
+workflow aws {
 
     Channel
         .fromPath(accession_list)
@@ -58,17 +58,32 @@ workflow sra {
         }
         .set { fq_ch }
 
-    // GET_ASPERA_DOWNLOAD_SCRIPT(primer_scheme_ch, aspera_key)
-    // ASPERA_CONNECT(GET_ASPERA_DOWNLOAD_SCRIPT.out, aspera_key)
-    //     .branch {
-    //         unknown_primer: it[1].text == 'unknown'
-    //         known_primer: it[1].text != 'unknown'
-    //     }
-    //     .set { fq_ch }
-
     process_unknown_primer(fq_ch.unknown_primer)
     process_known_primer(fq_ch.known_primer)
 
+}
+
+workflow aspera {
+    Channel
+        .fromPath(accession_list)
+        .splitCsv()
+        .map { line -> line.join('') }
+        .take(params.num_samples)
+        .set { acc_ch }
+
+    GET_AMPLICON_SCHEME(acc_ch, metadata)
+        .set { primer_scheme_ch }
+
+    GET_ASPERA_DOWNLOAD_SCRIPT(primer_scheme_ch, aspera_key)
+    ASPERA_CONNECT(GET_ASPERA_DOWNLOAD_SCRIPT.out, aspera_key)
+        .branch {
+            unknown_primer: it[1].text == 'unknown'
+            known_primer: it[1].text != 'unknown'
+        }
+        .set { fq_ch }
+
+    process_unknown_primer(fq_ch.unknown_primer)
+    process_known_primer(fq_ch.known_primer)
 }
 
 workflow process_unknown_primer {

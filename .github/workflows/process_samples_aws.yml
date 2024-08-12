@@ -1,10 +1,10 @@
-name: Process samples
+name: Process Samples AWS
 
 on:
   schedule:
-    - cron: '0 16-23/2,0-8/2 * * *'
+    - cron: '0 0-16 * * *'
 env:
-  BATCH_SIZE: 100
+  BATCH_SIZE: 25
   
 
 jobs:
@@ -59,7 +59,7 @@ jobs:
                   --accession_list data/accession_list.csv \
                   --num_samples $BATCH_SIZE \
                   -profile docker \
-                  -entry sra &
+                  -entry aws &
                 BG_PID=$!
                 wait $BG_PID
           
