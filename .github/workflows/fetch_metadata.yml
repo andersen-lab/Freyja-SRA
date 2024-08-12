@@ -17,8 +17,8 @@ jobs:
 
       - name: Install python
         run: |
-              dnf install python3 -y
-              dnf install python3-pip -y
+              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3 -y
+              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
 
       - name: Install dependencies
         run: |
