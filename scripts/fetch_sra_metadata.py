@@ -169,13 +169,13 @@ def get_metadata():
             else:
                 sampID = sampID[0]
             # write to dictionary form
-            dictVals = {vals[i].replace(' ', '_'): vals[i+1]
-                        for i in range(0, len(vals), 2)}
-            for i in range(0, len(seq_meta), 2):
-                try:
+            try:
+                dictVals = {vals[i].replace(' ', '_'): vals[i+1]
+                            for i in range(0, len(vals), 2)}
+                for i in range(0, len(seq_meta), 2):
                     dictVals[seq_meta[i].replace(' ', '')] = seq_meta[i+1]
-                except:
-                    continue
+            except:
+                continue
             dictVals['experiment_id'] = sampID
             dictVals['SRA_id'] = root0[0].attrib['accession']
             dictVals['SRA_published_date'] = runAttributes[0]['published'].split(' ')[0]
