@@ -144,9 +144,7 @@ def get_metadata():
         try:
             root = ET.fromstring(returned_meta)
         except:
-            print('Error parsing XML, retrying')
-            time.sleep(10)
-            root = ET.fromstring(returned_meta)
+            continue
 
         allDictVals = {}
 
