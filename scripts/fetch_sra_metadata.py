@@ -114,9 +114,18 @@ def get_metadata():
         )
 
         Entrez.email = "jolevy@scripps.edu"
-        handle = Entrez.esearch(db="sra", idtype='acc', retmax=4000,
-                                sort='recently_added',
-                                term=search_term)
+        try:
+            handle = Entrez.esearch(db="sra", idtype='acc', retmax=4000,
+                                    sort='recently_added',
+                                    term=search_term)
+        except urllib.error.HTTPError as e:
+            # Retry once
+            print('HTTPError, retrying')
+            time.sleep(10)
+            handle = Entrez.esearch(db="sra", idtype='acc', retmax=4000,
+                                    sort='recently_added',
+                                    term=search_term)
+
         record = Entrez.read(handle)
         handle.close()
 
