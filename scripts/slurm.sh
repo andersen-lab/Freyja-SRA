@@ -8,7 +8,7 @@
 #SBATCH --mem=64G
 
 BATCH_SIZE=100
-python scripts/get_accession_list_wendy.py $BATCH_SIZE
+python scripts/get_accession_list.py $BATCH_SIZE
 nextflow run main.nf -entry sra -profile singularity --accession_list data/accession_list.csv --num_samples $BATCH_SIZE
 rm -rf work
 python scripts/update_sample_status.py $BATCH_SIZE

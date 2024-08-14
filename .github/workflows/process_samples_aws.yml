@@ -50,7 +50,8 @@ jobs:
 
       - name: 'Get accession list'
         run: |
-              python scripts/get_accession_list_wendy.py $BATCH_SIZE
+          
+              python scripts/get_accession_list_aws.py $BATCH_SIZE
 
       - name: Run pipeline on new samples
         run: |
