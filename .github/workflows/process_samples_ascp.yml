@@ -2,7 +2,7 @@ name: Process Samples Aspera
 
 on:
   schedule:
-    - cron: '0 0-16 * * 0,6'
+    - cron: '0 * * * *'
 env:
   BATCH_SIZE: 100
   
