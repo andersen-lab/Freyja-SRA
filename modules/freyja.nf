@@ -32,7 +32,6 @@ process FREYJA_DEMIX {
     script:
     def depthCutoff = 0 + (task.attempt - 1) * 10
     """
-    freyja --version
     freyja demix ${variants} ${depths} --eps ${eps} --output ${sample_id}.demix.tsv --depthcutoff ${depthCutoff} --relaxedmrca --barcodes ${barcodes}
     """
 }
