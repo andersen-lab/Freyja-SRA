@@ -198,14 +198,22 @@ def main():
     metadata = pd.read_csv('data/raw_metadata.csv', index_col=0 ,low_memory=False)
     metadata = metadata[~metadata.index.duplicated(keep='first')]
 
+
     print('SRA accessions:', metadata.index.str.contains('SRR').sum())
     print('ENA accessions:',metadata.index.str.contains('ERR').sum())
     print('Total : ', len(metadata))
 
     # Get sample status from current metadata file
-    sample_status = pd.read_csv('data/all_metadata.csv', index_col=0, low_memory=False)['sample_status']
+
+    old_metadata = pd.read_csv('data/all_metadata.csv', index_col=0, low_memory=False)
+    sample_status = old_metadata['sample_status']
 
     all_metadata = metadata.join(sample_status, how='left')
+    
+    # Combine old and new metadata and remove duplicates
+    all_metadata = pd.concat([old_metadata, all_metadata], axis=0)
+    all_metadata = all_metadata[~all_metadata.index.duplicated(keep='first')]
+
     all_metadata['sample_status'] = all_metadata['sample_status'].fillna('to_run')
 
     all_metadata.index.name = 'accession'
