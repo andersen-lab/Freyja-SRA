@@ -14,4 +14,4 @@ metadata = metadata[(metadata['SRA_published_date'] > six_months_ago) &
 
 metadata = metadata[metadata['sample_status'] == 'completed']
 # save index to txt
-metadata.index.to_series().to_csv('data/samples_to_rerun.txt', index=False, header=False)
+metadata.index.to_series().to_csv('data/samples_to_rerun.csv', index=False, header=False)

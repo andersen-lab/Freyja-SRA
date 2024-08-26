@@ -75,13 +75,16 @@ def process_depth_file(acc):
     SPIKE_END = 25384
 
     depth_file = f'{acc}.depths.tsv'
-    if 'depth' not in depth_file:
+
+    if not os.path.exists(f'outputs/variants/{depth_file}') and not os.path.exists(f'demix_rerun/{depth_file}'):
+        print(f'No depth file found for {depth_file}')
         return 0
 
-    if not os.path.exists(f'outputs/variants/{depth_file}'):
-        return 0
-
-    df_depth = pd.read_csv(f'outputs/variants/{depth_file}', sep='\t', names=['chromosome', 'position', 'base', 'depth'], header=None)
+    if os.path.exists(f'outputs/variants'):
+        df_depth = pd.read_csv(f'outputs/variants/{depth_file}', sep='\t', names=['chromosome', 'position', 'base', 'depth'], header=None)
+    else:
+        df_depth = pd.read_csv(f'demix_rerun/{depth_file}', sep='\t', names=['chromosome', 'position', 'base', 'depth'], header=None)
+    
     df_depth['position'] = pd.to_numeric(df_depth['position'], errors='coerce')
 
     df_depth = df_depth[(df_depth['position'] >= SPIKE_START) & (df_depth['position'] <= SPIKE_END)]
