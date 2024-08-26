@@ -27,11 +27,24 @@ jobs:
       - name: Fetch NCBI metadata
         run: python scripts/fetch_sra_metadata.py
 
+      - name: 'Get updated barcodes and lineages from Freyja repo'
+        run: |
+              git clone http://github.com/andersen-lab/Freyja
+              cp Freyja/freyja/data/usher_barcodes.feather data/
+              cp Freyja/freyja/data/lineages.yml data/
+              cp Freyja/freyja/data/last_barcode_update.txt data/
+
+
       - name: 'Commit and push changes'
         run: |
               git config --local user.name "$GITHUB_ACTOR"
               git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
               git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
+              if [[($(git status data/usher_barcodes.feather --porcelain | wc -c) -ne 0)]]; then
+                git add data/usher_barcodes.feather
+                git add data/lineages.yml
+                git add data/last_barcode_update.txt
+              fi
               git add data/all_metadata.csv
-              git commit -m "Fetch NCBI metadata"
+              git commit -m "Update metadata"
               git push --force
