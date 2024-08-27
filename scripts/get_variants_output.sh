@@ -8,4 +8,4 @@ while read -r accession; do
     fi
     gcloud storage cp gs://outbreak-ww-data/variants/${accession}.variants.tsv demix_rerun/
     gcloud storage cp gs://outbreak-ww-data/variants/${accession}.depths.tsv demix_rerun/
-done < "data/samples_to_rerun.txt"
+done < "data/samples_to_rerun.csv"
