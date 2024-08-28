@@ -1,9 +1,9 @@
 import pandas as pd
 
-# If samples_to_rerun.txt is not empty
-# Read samples_to_rerun.txt
+# If samples_to_rerun.csv is not empty
+# Read samples_to_rerun.csv
 try:
-    samples_to_rerun = pd.read_csv('data/samples_to_rerun.txt', header=None)
+    samples_to_rerun = pd.read_csv('data/samples_to_rerun.csv', header=None)
 except pd.errors.EmptyDataError:
     print('No samples to rerun.')
     exit()
