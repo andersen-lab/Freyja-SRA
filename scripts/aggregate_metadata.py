@@ -30,6 +30,12 @@ paths_list = [entry.path for entry in os.scandir('outputs/variants') if 'variant
 depths_list = [entry.path for entry in os.scandir('outputs/variants') if 'depths' in entry.name]
 demix_success = [entry.path.split('.')[0].split('/')[-1] for entry in os.scandir('outputs/demix') if 'demix' in entry.name]
 
+for acc in demix_success:
+    with open(f'outputs/demix/{acc}.demix.tsv', 'r') as f:
+        lines = f.readlines()
+        if len(lines[2].split(' ')) == 1:
+            demix_success.remove(acc)
+
 accessions = [p.split('/')[-1].split('.')[0] for p in paths_list]
 
 # Create metadata json
@@ -46,16 +52,18 @@ metadata['demix_success'] = metadata['sra_accession'].isin(demix_success)
 agg_demix = pd.read_json('outputs/aggregate/aggregate_demix_new.json', orient='records', lines=True).drop_duplicates(subset='sra_accession', keep='first')
 
 try:
-    metadata['demix_success'] = metadata['sra_accession'].isin(agg_demix['sra_accession']) & (metadata['sra_accession'].isin(demix_success) | metadata['sra_accession'].isin(agg_demix[agg_demix['coverage'] == 0.0]['sra_accession']))
+    metadata['demix_success'] = metadata['sra_accession'].isin(agg_demix['sra_accession']) & (metadata['sra_accession'].isin(demix_success))
 except:
     metadata['demix_success'] = False
 
 agg_variants = pd.read_json('outputs/aggregate/aggregate_variants_new.json', orient='records', lines=True).drop_duplicates(subset='sra_accession', keep='first')
 
-try:
-    metadata['variants_success'] = metadata['sra_accession'].isin(agg_variants['sra_accession'])
-except:
-    metadata['variants_success'] = False
+
+metadata['variants_success'] = metadata['sra_accession'].isin(agg_variants['sra_accession'])
+
+
+# if variants_success is false, set demix_success to false
+metadata['demix_success'] = np.where(metadata['variants_success']==False, False, metadata['demix_success'])
 
 metadata['coverage_intervals'] = metadata['sra_accession'].apply(get_intervals)
 metadata['coverage_intervals'] = metadata['coverage_intervals'].apply(format_intervals)
