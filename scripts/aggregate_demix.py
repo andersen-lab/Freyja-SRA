@@ -4,6 +4,7 @@ import yaml
 import numpy as np
 import pandas as pd
 from datetime import datetime
+from outbreak_tools import crumbs
 
 
 def agg(results):

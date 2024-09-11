@@ -24,7 +24,7 @@ jobs:
         run: |
               echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3 -y
               echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
-              pip3 install pandas numpy pyyaml ffq epiweeks pyarrow
+              pip3 install pandas numpy pyyaml ffq epiweeks pyarrow git+https://github.com/outbreak-info/python-outbreak-info.git@new_docs
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
