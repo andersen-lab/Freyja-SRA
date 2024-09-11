@@ -3,7 +3,7 @@
 [![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A523.04.3-brightgreen.svg)](http://nextflow.io) ![](https://img.shields.io/docker/image-size/dylanpilz/freyja-sra/latest) [![Process samples](https://github.com/andersen-lab/Freyja-SRA/actions/workflows/process_samples.yml/badge.svg)](https://github.com/andersen-lab/Freyja-SRA/actions/workflows/process_samples.yml)
 
 
-Automated SRA downloading, processing and [Freyja](https://github.com/andersen-lab/Freyja) analysis pipeline.
+Automated SRA downloading, processing and [Freyja](https://github.com/andersen-lab/Freyja) analysis pipeline for SARS-CoV-2 wastewater sequencing data.
 
 ## Installation
 ### Local Install via Git
@@ -36,7 +36,7 @@ Addtional configuration options can be found in `nextflow.config`
 
 ## Data Availability
 
-Freyja-SRA is currently in the process of downloading and processing all publicly available SRA data, fetched with the following search terms:
+Freyja-SRA is currently in the process of downloading and processing all publicly available SARS-CoV-2 wastewater data, fetched with the following search terms:
 ```
 '(Wastewater[All Fields] OR wastewater metagenome[All Fields]) AND ("Severe acute respiratory syndrome coronavirus 2"[Organism] OR SARS-CoV-2[All Fields])
 
