@@ -59,8 +59,10 @@ except:
 agg_variants = pd.read_json('outputs/aggregate/aggregate_variants_new.json', orient='records', lines=True).drop_duplicates(subset='sra_accession', keep='first')
 
 
-metadata['variants_success'] = metadata['sra_accession'].isin(agg_variants['sra_accession'])
-
+try:
+    metadata['variants_success'] = metadata['sra_accession'].isin(agg_variants['sra_accession'])
+except KeyError:
+    metadata['variants_success'] = False
 
 # if variants_success is false, set demix_success to false
 metadata['demix_success'] = np.where(metadata['variants_success']==False, False, metadata['demix_success'])
