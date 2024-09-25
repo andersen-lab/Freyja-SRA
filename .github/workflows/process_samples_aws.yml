@@ -22,7 +22,34 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Python
+        run: |
+              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3 -y
+              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
+              pip3 install pandas numpy pyyaml ffq epiweeks git+https://github.com/outbreak-info/python-outbreak-info.git@new_docs
+    
+      - name: 'Get accession list'
+        id: get_accession_list
+        run: |
+          
+              python scripts/get_accession_list_aws.py $BATCH_SIZE
+              if [[ -f data/accession_list.csv ]]; then
+                echo "::set-output name=run_jobs::true"
+              else
+                echo "::set-output name=run_jobs::false"
+              fi
 
+  run_samples:
+    needs: [setup]
+    if: needs.setup.outputs.run_rest_jobs == 'true'
+    permissions:
+      contents: write
+      id-token: write
+
+    runs-on: self-hosted
+
+    steps:
       - name: Setup nextflow
         uses: nf-core/setup-nextflow@v1
       
@@ -50,27 +77,6 @@ jobs:
           workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
           service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
     
-      - name: 'Get accession list'
-        id: get_accession_list
-        run: |
-          
-              python scripts/get_accession_list_aws.py $BATCH_SIZE
-              if [[ -f data/accession_list.csv ]]; then
-                echo "::set-output name=run_jobs::true"
-              else
-                echo "::set-output name=run_jobs::false"
-              fi
-
-  run_samples:
-    needs: [setup]
-    if: needs.setup.outputs.run_rest_jobs == 'true'
-    permissions:
-      contents: write
-      id-token: write
-
-    runs-on: self-hosted
-
-    steps:
       - name: Run pipeline on new samples
         run: |
                 export NXF_ENABLE_VIRTUAL_THREADS=false
