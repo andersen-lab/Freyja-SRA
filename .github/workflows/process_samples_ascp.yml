@@ -51,7 +51,12 @@ jobs:
 
       runs-on: self-hosted
 
-      steps:  
+      steps:
+        - name: Checkout main
+          uses: actions/checkout@v4
+          with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+            
         - name: Setup nextflow
           uses: nf-core/setup-nextflow@v1
         
