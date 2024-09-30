@@ -77,7 +77,10 @@ jobs:
           with:
             workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
             service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
-
+        - name: 'Get accession list'
+          id: get_accession_list
+          run: |
+                python scripts/get_accession_list.py $BATCH_SIZE
         - name: Run pipeline on new samples
           run: |
                   export NXF_ENABLE_VIRTUAL_THREADS=false
