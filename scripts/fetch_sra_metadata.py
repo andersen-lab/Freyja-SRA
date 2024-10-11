@@ -186,7 +186,10 @@ def get_metadata():
             dictVals['experiment_id'] = sampID
             dictVals['SRA_id'] = root0[0].attrib['accession']
             dictVals['SRA_published_date'] = runAttributes[0]['published'].split(' ')[0]
-            allDictVals[sampID] = dictVals
+            try:
+                allDictVals[sampID] = dictVals
+            except:
+                continue
 
         metadata = pd.concat([metadata, pd.DataFrame(allDictVals).T], axis=0)
     return metadata
