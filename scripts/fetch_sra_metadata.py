@@ -278,11 +278,16 @@ def main():
     # if units column contains 'copies/ml', convert concentration to copies/l
     mask = all_metadata['ww_surv_target_1_conc_unit'].str.contains('copies/ml', na=False)
     all_metadata.loc[mask, 'ww_surv_target_1_conc'] *= 1000
+    all_metadata.loc[mask, 'ww_surv_target_1_conc_unit'] = 'copies/l'
 
 
     # If units aren't copies/l or copies/ml, set concentration to NA
-    all_metadata.loc[~all_metadata['ww_surv_target_1_conc_unit'].isin(['copies/l', 'copies/ml']), 'ww_surv_target_1_conc'] = -1.0
-    
+    #all_metadata.loc[~all_metadata['ww_surv_target_1_conc_unit'].isin(['copies/l', 'copies/ml', 'gene copies/gram dry weight']), 'ww_surv_target_1_conc'] = -1.0
+    # If unit contains the substring 'copies/g', set unit to 'copies/g'
+
+    all_metadata.loc[all_metadata['ww_surv_target_1_conc_unit'].str.contains('copies/g', na=False), 'ww_surv_target_1_conc_unit'] = 'copies/g'
+    all_metadata.loc[all_metadata['ww_surv_target_1_conc_unit'].str.contains('copies/l', na=False), 'ww_surv_target_1_conc_unit'] = 'copies/l'
+
     print('Samples with valid viral load',len(all_metadata[all_metadata['ww_surv_target_1_conc'] > 0]))
 
     # Create human-readable, unique site_id for each sample
