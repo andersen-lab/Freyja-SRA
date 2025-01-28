@@ -21,9 +21,12 @@ jobs:
         uses: nf-core/setup-nextflow@v1
       
       - name: Setup Python
+        - uses: actions/setup-python@v5
+          with:
+            python-version: '3.13' 
+
+      - name: Install Python dependencies
         run: |
-              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3 -y
-              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
               pip3 install pandas numpy pyyaml ffq epiweeks pyarrow git+https://github.com/outbreak-info/python-outbreak-info.git@new_docs
 
       - name: 'Set up Cloud SDK'

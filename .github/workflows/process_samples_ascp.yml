@@ -25,11 +25,14 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Setup Python
+        - uses: actions/setup-python@v5
+          with:
+            python-version: '3.13' 
+
+      - name: Install Python dependencies
         run: |
-              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3 -y
-              echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
               pip3 install pandas numpy pyyaml ffq epiweeks git+https://github.com/outbreak-info/python-outbreak-info.git@new_docs
-              
+                
 
       - name: 'Get accession list'
         id: get_accession_list
@@ -60,11 +63,14 @@ jobs:
         - name: Setup nextflow
           uses: nf-core/setup-nextflow@v1
         
-        - name: Setup Python
-          run: |
-                echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3 -y
-                echo ${{secrets.DPILZ_USR_PWD}} | sudo -S dnf install python3-pip -y
-                pip3 install pandas numpy pyyaml ffq epiweeks git+https://github.com/outbreak-info/python-outbreak-info.git@new_docs
+      - name: Setup Python
+        - uses: actions/setup-python@v5
+          with:
+            python-version: '3.13' 
+
+      - name: Install Python dependencies
+        run: |
+              pip3 install pandas numpy pyyaml ffq epiweeks git+https://github.com/outbreak-info/python-outbreak-info.git@new_docs
                 
         - name: 'Set up Cloud SDK'
           uses: 'google-github-actions/setup-gcloud@v2'
@@ -77,10 +83,12 @@ jobs:
           with:
             workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
             service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
+
         - name: 'Get accession list'
           id: get_accession_list
           run: |
                 python scripts/get_accession_list.py $BATCH_SIZE
+
         - name: Run pipeline on new samples
           run: |
                   export NXF_ENABLE_VIRTUAL_THREADS=false
