@@ -73,7 +73,8 @@ END_DATE = datetime.now().strftime('%Y-%m-%d')
 INTERVAL = 14 # days
 
 def md5_hash(string):
-    return hashlib.md5(string.encode('utf-8')).hexdigest()[:8]
+    hex = hashlib.md5(string.encode('utf-8')).hexdigest()[:4]
+    return str(int(hex, 16))
 
 
 def parse_collection_date(x):
