@@ -41,7 +41,7 @@ accessions = [p.split('/')[-1].split('.')[0] for p in paths_list]
 # Create metadata json
 metadata = pd.read_csv('data/all_metadata.csv', index_col=None, low_memory=False)
 metadata = metadata[metadata['accession'].isin(accessions)]
-metadata = metadata[['accession', 'collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_population', 'ww_surv_target_1_conc','ww_surv_target_1_conc_unit', 'collection_site_id']]
+metadata = metadata[['accession', 'collection_date', 'geo_loc_country', 'geo_loc_region', 'ww_population', 'collected_by', 'ww_surv_target_1_conc','ww_surv_target_1_conc_unit', 'collection_site_id']]
 metadata = metadata.rename(columns={'accession':'sra_accession', 'ww_surv_target_1_conc':'viral_load', 'ww_surv_target_1_conc_unit':'viral_load_unit'})
 metadata['ww_population'] = metadata['ww_population'].fillna(-1.0)
 metadata = metadata.drop_duplicates(subset='sra_accession', keep='first')
