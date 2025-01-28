@@ -56,6 +56,12 @@ variants['alt_base'] = variants['mutName'].apply(handle_alt_base)
 variants = variants.drop(columns=['mutName'])
 variants = variants.rename(columns={0:'variants'})
 variants = variants.drop_duplicates(subset=['sra_accession', 'site', 'alt_base'], keep='first')
+
+variants['site'] = variants['site'].astype(int)
+variants['depth'] = variants['depth'].astype(int)
+variants['ref_base'] = variants['ref_base'].apply(lambda x: x if len(x)==1 and not x.isdigit() else None)
+variants['alt_base'] = variants['alt_base'].apply(lambda x: x if len(x)==1 and not x.isdigit() else None)
+
 variants = variants[['sra_accession', 'site', 'ref_base', 'alt_base', 'depth', 'prevalence']]
 os.makedirs('outputs/aggregate', exist_ok=True)
 
