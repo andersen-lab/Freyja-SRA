@@ -13,7 +13,9 @@ env:
 jobs:
   fetch_ncbi_metadata:
     runs-on: self-hosted
-    container: dylanpilz/freyja-sra:latest
+    container:
+      image: dylanpilz/freyja-sra:latest
+      options: --user root
 
     steps:
       - name: Checkout main
