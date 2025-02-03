@@ -5,6 +5,9 @@ on:
 
 jobs:
   rerun_demix:
+    container:
+      image: dylanpilz/freyja-sra:latest
+      options: --user root
     permissions:
         contents: write
         id-token: write
@@ -20,15 +23,6 @@ jobs:
       - name: Setup nextflow
         uses: nf-core/setup-nextflow@v1
       
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.9.7' 
-
-      - name: Install Python dependencies
-        run: |
-              pip3 install pandas numpy pyyaml ffq epiweeks pyarrow git+https://github.com/outbreak-info/python-outbreak-info.git@new_docs
-
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
         with:

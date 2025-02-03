@@ -9,6 +9,9 @@ env:
 
 jobs:
   setup:
+    container:
+      image: dylanpilz/freyja-sra:latest
+      options: --user root
     permissions:
       contents: write
       id-token: write
@@ -24,16 +27,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.9.7' 
-
-      - name: Install Python dependencies
-        run: |
-              pip3 install pandas numpy pyyaml ffq epiweeks git+https://github.com/outbreak-info/python-outbreak-info.git@new_docs
-                
-
       - name: 'Get accession list'
         id: get_accession_list
         run: |
