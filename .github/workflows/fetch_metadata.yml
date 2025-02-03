@@ -24,10 +24,10 @@ jobs:
         uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment.yml
-          condarc: |
-            channels:
-              - bioconda
-              - conda-forge
+          # condarc: |
+          #   channels:
+          #     - bioconda
+          #     - conda-forge
           init-shell: >-
             bash
           cache-environment: true
