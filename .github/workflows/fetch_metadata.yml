@@ -1,8 +1,11 @@
 name: Update NCBI metadata
 
 on:
-  schedule:
-      - cron:  '0 0 */7 * *'
+#   schedule:
+#       - cron:  '0 0 */7 * *'
+  push:
+    branches:
+      - main
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
