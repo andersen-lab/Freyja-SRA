@@ -20,8 +20,8 @@ jobs:
 
       - name: Setup Python
         run: |
-          dnf install -y python3
-          python3 -m pip install --upgrade pip
+              echo ${{secrets.ALAB_PWD}} | sudo -S dnf install python3 -y
+              echo ${{secrets.ALAB_PWD}} | sudo -S dnf install python3-pip -y
 
       - name: Install Python dependencies
         run: |
