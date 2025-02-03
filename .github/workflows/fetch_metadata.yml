@@ -29,7 +29,7 @@ jobs:
             channels:
               - bioconda
               - conda-forge
-          download-micromamba: false
+          download-micromamba: true
           init-shell: >-
             bash
           cache-environment: false
