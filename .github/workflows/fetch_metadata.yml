@@ -19,7 +19,8 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
 
-      - uses: mamba-org/setup-micromamba@v2
+      - name: Set up Micromamba
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment.yml
           init-shell: >-
