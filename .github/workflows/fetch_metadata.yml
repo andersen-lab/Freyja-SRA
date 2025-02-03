@@ -16,8 +16,7 @@ jobs:
 
 
     steps:
-      - name: Checkout main
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with: 
           path: ${{ github.sha }}
 
@@ -39,7 +38,6 @@ jobs:
               cp Freyja/freyja/data/usher_barcodes.feather data/
               cp Freyja/freyja/data/lineages.yml data/
               cp Freyja/freyja/data/last_barcode_update.txt data/
-
 
       - name: 'Commit and push changes'
         run: |
