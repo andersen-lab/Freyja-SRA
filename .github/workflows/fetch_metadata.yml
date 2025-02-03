@@ -9,6 +9,7 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  micromamba-binary-path: /home/gh-actions-alab/micromamba-bin/micromamba
 
 jobs:
   fetch_ncbi_metadata:
@@ -21,13 +22,14 @@ jobs:
           path: ${{ github.sha }}
 
       - name: Set up Micromamba
-        uses: mamba-org/setup-micromamba@v2
+        uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment.yml
-          # condarc: |
-          #   channels:
-          #     - bioconda
-          #     - conda-forge
+          condarc: |
+            channels:
+              - bioconda
+              - conda-forge
+          download-micromamba: false
           init-shell: >-
             bash
           cache-environment: false
