@@ -14,7 +14,7 @@ jobs:
   fetch_ncbi_metadata:
     runs-on: self-hosted
     container:
-      image: dylanpilz/freyja-sra:latest
+      image: dylanpilz/freyja-nf:latest
       options: --user root
 
     steps:
