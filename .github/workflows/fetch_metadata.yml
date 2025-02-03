@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
+        with: 
+          path: ${{ github.sha }}
 
       - name: Set up Micromamba
         uses: mamba-org/setup-micromamba@v2
