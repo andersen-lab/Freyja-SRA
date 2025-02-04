@@ -7,18 +7,14 @@ on:
     branches:
       - main
 
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 jobs:
   fetch_ncbi_metadata:
     runs-on: self-hosted
 
-
     steps:
       - name: Set file permissions
         run: |
-              echo ${{secrets.WENDY_GH_ACTIONS_PWD}} | sudo chmod -R 777 /storage/gh-actions-alab/actions-runner/_work/Freyja-SRA/
+              echo ${{secrets.WENDY_GH_ACTIONS_AUTH}} | sudo chmod -R 777 /storage/gh-actions-alab/actions-runner/_work/Freyja-SRA/
 
       - name: Checkout main
         uses: actions/checkout@v4
@@ -27,8 +23,8 @@ jobs:
 
       - name: Install python
         run: |
-                echo ${{secrets.WENDY_GH_ACTIONS_PWD}} | sudo -S dnf install python3 -y
-                echo ${{secrets.WENDY_GH_ACTIONS_PWD}} | sudo -S dnf install python3-pip -y
+                echo ${{secrets.WENDY_GH_ACTIONS_AUTH}} | sudo -S dnf install python3 -y
+                echo ${{secrets.WENDY_GH_ACTIONS_AUTH}} | sudo -S dnf install python3-pip -y
 
       - name: Install dependencies
         run: |
