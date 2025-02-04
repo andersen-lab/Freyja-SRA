@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Set file permissions
         run: |
-              echo ${{secrets.WENDY_GH_ACTIONS_AUTH}} | sudo chmod -R 777 /storage/gh-actions-alab/actions-runner/_work/Freyja-SRA/
+              chmod -R 777 /storage/gh-actions-alab/actions-runner/_work/Freyja-SRA/
 
       - name: Checkout main
         uses: actions/checkout@v4
