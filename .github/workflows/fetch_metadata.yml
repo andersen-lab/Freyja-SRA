@@ -10,12 +10,7 @@ on:
 jobs:
   fetch_ncbi_metadata:
     runs-on: self-hosted
-
     steps:
-      - name: Set file permissions
-        run: |
-              chmod -R 777 /storage/gh-actions-alab/actions-runner/_work/Freyja-SRA/
-
       - name: Checkout main
         uses: actions/checkout@v4
         with:
