@@ -11,6 +11,10 @@ jobs:
   fetch_ncbi_metadata:
     runs-on: self-hosted
     steps:
+      - name: Fix file permissions
+        run: |
+              echo ${{ secrets.WENDY_GH_ACTIONS_AUTH }} | sudo -S chmod -R u+rwX .
+        
       - name: Checkout main
         uses: actions/checkout@v4
         with:
