@@ -197,12 +197,12 @@ def get_metadata():
 
 
 def main():
-    metadata = get_metadata()
-    metadata.to_csv('data/raw_metadata.csv')
+    #metadata = get_metadata()
+    #metadata.to_csv('data/raw_metadata.csv')
     metadata = pd.read_csv('data/raw_metadata.csv', index_col=0 ,low_memory=False)
     metadata = metadata[~metadata.index.duplicated(keep='first')]
 
-
+    
     print('SRA accessions:', metadata.index.str.contains('SRR').sum())
     print('ENA accessions:',metadata.index.str.contains('ERR').sum())
     print('Total : ', len(metadata))
@@ -223,20 +223,19 @@ def main():
     all_metadata.index.name = 'accession'
     all_metadata = all_metadata[~all_metadata.index.duplicated(keep='first')]
     print('All fetched samples: ', len(all_metadata))
+
     
     # Parse collection date
     all_metadata['collection_date'] = all_metadata['collection_date'].astype(str)
     all_metadata['collection_date'] = all_metadata['collection_date'].apply(parse_collection_date)
     all_metadata['collection_date'] = pd.to_datetime(all_metadata['collection_date'], format='%Y-%m-%d', errors='coerce')
     all_metadata = all_metadata[~all_metadata['collection_date'].isna()]
-    
-    ## If published date is a year or more after the collection date, drop the sample
-    all_metadata['SRA_published_date'] = all_metadata['SRA_published_date'].astype(str)
-    all_metadata['SRA_published_date'] = pd.to_datetime(all_metadata['SRA_published_date'], errors='coerce', format='%Y-%m-%d')
-    all_metadata = all_metadata[(all_metadata['SRA_published_date'] - all_metadata['collection_date'] < timedelta(days=365))]
-    
-    print('Samples with valid collection date: ', len(all_metadata))
 
+    ## If published date is a year or more after the collection date, drop the sample
+    # all_metadata['SRA_published_date'] = all_metadata['SRA_published_date'].astype(str)
+    # all_metadata['SRA_published_date'] = pd.to_datetime(all_metadata['SRA_published_date'], errors='coerce', format='%Y-%m-%d')
+    # all_metadata = all_metadata[(all_metadata['SRA_published_date'] - all_metadata['collection_date'] < timedelta(days=365))]
+    
     # Parse location information
     ## Combine ENA country column with SRA country column
     
@@ -250,7 +249,7 @@ def main():
     all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].apply(
         lambda x: x.split(',')[0].strip() if len(x.split(',')) > 1 else x)
     all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].fillna(all_metadata['geographic_location_(region_and_locality)'])
-
+   
     if 'US Virgin Islands' in all_metadata['geo_loc_region'].unique():
         all_metadata['geo_loc_region'] = all_metadata['geo_loc_region'].replace(
             'US Virgin Islands', 'U.S. Virgin Islands')
@@ -266,8 +265,10 @@ def main():
 
     print('Samples with valid population: ', len(all_metadata))
 
+    print('all_metadata', all_metadata.columns)
+    print('all_metadata', all_metadata['sequenced_by'].value_counts())
     # Select columns of interest
-    all_metadata = all_metadata[['amplicon_PCR_primer_scheme', 'collected_by',
+    all_metadata = all_metadata[['amplicon_PCR_primer_scheme', 'collected_by', 'sequenced_by',
                                  'geo_loc_name', 'geo_loc_country', 'geo_loc_region', 'collection_date', 'SRA_published_date', 'ww_population', 'ww_surv_target_1_conc','ww_surv_target_1_conc_unit', 'sample_status']]
 
     # Keep samples with missing viral load, set to -1.0 to work with Elasticsearch
@@ -291,11 +292,23 @@ def main():
 
     print('Samples with valid viral load',len(all_metadata[all_metadata['ww_surv_target_1_conc'] > 0]))
 
+
+    
+    # For NA values of collected_by, fill with sequenced_by
+    all_metadata['collected_by'] = all_metadata['collected_by'].fillna(all_metadata['sequenced_by'])
+    all_metadata.drop(columns=['sequenced_by'], inplace=True)
+    
     # Create human-readable, unique site_id for each sample
     all_metadata['collection_site_id'] = all_metadata['geo_loc_name'].fillna('') +\
         all_metadata['ww_population'].fillna('').astype(str) +\
         all_metadata['amplicon_PCR_primer_scheme'].fillna('') +\
-        all_metadata['collected_by'].fillna('').astype(str)
+        all_metadata['collected_by'].fillna('').astype(str) +\
+
+    print(all_metadata['collected_by'].value_counts())
+    all_metadata['collected_by'].value_counts().to_csv('data/collected_by.csv')
+    ca_data = all_metadata[all_metadata['geo_loc_region'] == 'California']
+    ca_data = ca_data[ca_data['collection_date'] > '2024-01-01']
+    ca_data['collected_by'].value_counts().to_csv('data/collected_by_ca.csv')
 
 
     all_metadata['collection_site_id'] = all_metadata['collection_site_id'].apply(md5_hash)
