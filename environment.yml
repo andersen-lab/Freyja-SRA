@@ -1,6 +1,5 @@
 name: freyja-sra
 channels:
-    - anaconda
     - bioconda
     - conda-forge
 dependencies:
@@ -9,7 +8,6 @@ dependencies:
   - bioconda::minimap2=2.26
   - conda-forge::awscli
   - conda-forge::pyarrow
-  - conda-forge::python=3.9
   - conda-forge::google-cloud-sdk=458.0.1
   - conda-forge::procps-ng=3.3.17
   - hcc::aspera-cli
