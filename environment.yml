@@ -16,3 +16,5 @@ dependencies:
   - pip:
     - ffq
     - epiweeks
+    - pandas
+    - biopython

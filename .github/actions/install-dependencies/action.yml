@@ -1,0 +1,36 @@
+name: 'Install Dependencies'
+description: 'Install dependencies for the pipeline'
+runs:
+  using: 'composite'
+  steps:
+    - name: Cache envs
+      id: cache-envs
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ env.NXF_WORK }}/conda
+          ${{ env.CONDA }}/envs
+        key: env-${{ env.NXF_VER }}-${{ github.job }}
+        restore-keys: |
+          env-${{ env.NXF_VER }}-${{ github.job }}
+          env-${{ env.NXF_VER }}
+          env-
+    - name: Setup for conda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        environment-file: environment.yml
+        python-version: 3.11
+        mamba-version: "*"
+        channels: conda-forge,bioconda
+        conda-remove-defaults: "true"
+        miniforge-version: latest
+        channel-priority: true
+    - name: Setup nextflow
+      uses: nf-core/setup-nextflow@v2
+      with:
+        version: ${{ env.NXF_VER }}
+    - name: 'Set up Cloud SDK'
+    uses: 'google-github-actions/setup-gcloud@v2'
+    with:
+      version: '>= 363.0.0'
+    

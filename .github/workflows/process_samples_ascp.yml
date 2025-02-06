@@ -10,7 +10,7 @@ env:
 jobs:
   setup:
     container:
-      image: dylanpilz/freyja-sra:latest
+      image: dylanpilz/freyja-nf:latest
       options: --user root
     permissions:
       contents: write
