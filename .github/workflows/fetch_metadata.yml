@@ -18,8 +18,8 @@ jobs:
 
       - name: Install python
         run: |
-                echo ${{secrets.WENDY_GH_ACTIONS_AUTH}} | sudo -S dnf install python3 -y
-                echo ${{secrets.WENDY_GH_ACTIONS_AUTH}} | sudo -S dnf install python3-pip -y
+                echo ${{secrets.DPILZ_WENDY_AUTH}} | sudo -S dnf install python3 -y
+                echo ${{secrets.DPILZ_WENDY_AUTH}} | sudo -S dnf install python3-pip -y
 
       - name: Install dependencies
         run: |
