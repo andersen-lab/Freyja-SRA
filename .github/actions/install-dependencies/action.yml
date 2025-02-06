@@ -18,7 +18,8 @@ runs:
     - uses: mamba-org/setup-micromamba@v2
       with:
         environment-file: environment.yml
-        download-micromamba: true
+        download-micromamba: false
+        micromamba-binary-path: /home/gh-actions-alab/micromamba-bin/micromamba
     - name: Setup nextflow
       uses: nf-core/setup-nextflow@v2
       with:
