@@ -15,11 +15,16 @@ runs:
           env-${{ env.NXF_VER }}-${{ github.job }}
           env-${{ env.NXF_VER }}
           env-
-    - uses: mamba-org/setup-micromamba@v2.0.2
+    - name: Setup for conda
+      uses: conda-incubator/setup-miniconda@v3
       with:
         environment-file: environment.yml
-        download-micromamba: false
-        micromamba-binary-path: /home/gh-actions-alab/micromamba-bin/micromamba
+        python-version: 3.11
+        mamba-version: "2.0.5"
+        channels: conda-forge,bioconda
+        conda-remove-defaults: "true"
+        miniforge-version: latest
+        channel-priority: true
     - name: Setup nextflow
       uses: nf-core/setup-nextflow@v2
       with:
