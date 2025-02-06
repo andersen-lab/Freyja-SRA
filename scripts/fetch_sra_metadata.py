@@ -197,8 +197,8 @@ def get_metadata():
 
 
 def main():
-    #metadata = get_metadata()
-    #metadata.to_csv('data/raw_metadata.csv')
+    metadata = get_metadata()
+    metadata.to_csv('data/raw_metadata.csv')
     metadata = pd.read_csv('data/raw_metadata.csv', index_col=0 ,low_memory=False)
     metadata = metadata[~metadata.index.duplicated(keep='first')]
 
@@ -231,11 +231,6 @@ def main():
     all_metadata['collection_date'] = pd.to_datetime(all_metadata['collection_date'], format='%Y-%m-%d', errors='coerce')
     all_metadata = all_metadata[~all_metadata['collection_date'].isna()]
 
-    ## If published date is a year or more after the collection date, drop the sample
-    # all_metadata['SRA_published_date'] = all_metadata['SRA_published_date'].astype(str)
-    # all_metadata['SRA_published_date'] = pd.to_datetime(all_metadata['SRA_published_date'], errors='coerce', format='%Y-%m-%d')
-    # all_metadata = all_metadata[(all_metadata['SRA_published_date'] - all_metadata['collection_date'] < timedelta(days=365))]
-    
     # Parse location information
     ## Combine ENA country column with SRA country column
     
@@ -265,8 +260,6 @@ def main():
 
     print('Samples with valid population: ', len(all_metadata))
 
-    print('all_metadata', all_metadata.columns)
-    print('all_metadata', all_metadata['sequenced_by'].value_counts())
     # Select columns of interest
     all_metadata = all_metadata[['amplicon_PCR_primer_scheme', 'collected_by', 'sequenced_by',
                                  'geo_loc_name', 'geo_loc_country', 'geo_loc_region', 'collection_date', 'SRA_published_date', 'ww_population', 'ww_surv_target_1_conc','ww_surv_target_1_conc_unit', 'sample_status']]
@@ -283,10 +276,7 @@ def main():
     all_metadata.loc[mask, 'ww_surv_target_1_conc_unit'] = 'copies/l'
 
 
-    # If units aren't copies/l or copies/ml, set concentration to NA
-    #all_metadata.loc[~all_metadata['ww_surv_target_1_conc_unit'].isin(['copies/l', 'copies/ml', 'gene copies/gram dry weight']), 'ww_surv_target_1_conc'] = -1.0
     # If unit contains the substring 'copies/g', set unit to 'copies/g'
-
     all_metadata.loc[all_metadata['ww_surv_target_1_conc_unit'].str.contains('copies/g', na=False), 'ww_surv_target_1_conc_unit'] = 'copies/g'
     all_metadata.loc[all_metadata['ww_surv_target_1_conc_unit'].str.contains('copies/l', na=False), 'ww_surv_target_1_conc_unit'] = 'copies/l'
 
@@ -295,19 +285,12 @@ def main():
     
     # For NA values of collected_by, fill with sequenced_by
     all_metadata['collected_by'] = all_metadata['collected_by'].fillna(all_metadata['sequenced_by'])
-    all_metadata.drop(columns=['sequenced_by'], inplace=True)
     
     # Create human-readable, unique site_id for each sample
     all_metadata['collection_site_id'] = all_metadata['geo_loc_name'].fillna('') +\
         all_metadata['ww_population'].fillna('').astype(str) +\
         all_metadata['amplicon_PCR_primer_scheme'].fillna('') +\
         all_metadata['collected_by'].fillna('').astype(str)
-
-    print(all_metadata['collected_by'].value_counts())
-    all_metadata['collected_by'].value_counts().to_csv('data/collected_by.csv')
-    ca_data = all_metadata[all_metadata['geo_loc_region'] == 'California']
-    ca_data = ca_data[ca_data['collection_date'] > '2024-01-01']
-    ca_data['collected_by'].value_counts().to_csv('data/collected_by_ca.csv')
 
 
     all_metadata['collection_site_id'] = all_metadata['collection_site_id'].apply(md5_hash)
@@ -319,6 +302,10 @@ def main():
     samples_to_run = all_metadata[all_metadata['sample_status'] == 'to_run']
     print('All samples: ', all_metadata['sample_status'].value_counts())
     print('Samples to run: ', len(samples_to_run))
+
+    ca_data = all_metadata
+    ca_data['collected_by'].value_counts().to_csv('data/collected_by_ca.csv')
+
 
     all_metadata.to_csv('data/all_metadata.csv')
 
