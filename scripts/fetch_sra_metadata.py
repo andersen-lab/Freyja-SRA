@@ -292,7 +292,6 @@ def main():
 
     print('Samples with valid viral load',len(all_metadata[all_metadata['ww_surv_target_1_conc'] > 0]))
 
-
     
     # For NA values of collected_by, fill with sequenced_by
     all_metadata['collected_by'] = all_metadata['collected_by'].fillna(all_metadata['sequenced_by'])
@@ -302,7 +301,7 @@ def main():
     all_metadata['collection_site_id'] = all_metadata['geo_loc_name'].fillna('') +\
         all_metadata['ww_population'].fillna('').astype(str) +\
         all_metadata['amplicon_PCR_primer_scheme'].fillna('') +\
-        all_metadata['collected_by'].fillna('').astype(str) +\
+        all_metadata['collected_by'].fillna('').astype(str)
 
     print(all_metadata['collected_by'].value_counts())
     all_metadata['collected_by'].value_counts().to_csv('data/collected_by.csv')
