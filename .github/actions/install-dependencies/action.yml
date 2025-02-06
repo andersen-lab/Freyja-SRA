@@ -15,7 +15,7 @@ runs:
           env-${{ env.NXF_VER }}-${{ github.job }}
           env-${{ env.NXF_VER }}
           env-
-    - uses: mamba-org/setup-micromamba@v2
+    - uses: mamba-org/setup-micromamba@v2.0.2
       with:
         environment-file: environment.yml
         download-micromamba: false
