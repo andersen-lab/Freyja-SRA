@@ -3,30 +3,61 @@ name: Process Samples Aspera
 on:
   schedule:
     - cron: '0 0-16 * * *'
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.repository }}
+
 env:
   BATCH_SIZE: 100
-  
+  NXF_VER: "24.10.4"
+  NXF_WORK: ${{ github.workspace }}/work
+  NXF_OUTPUT: ${{ github.workspace }}/outputs
+  NXF_NAME: github-${{ github.run_number }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+defaults:
+  run:
+    shell: bash -eli {0}
 
 jobs:
   setup:
-    container:
-      image: dylanpilz/freyja-nf:latest
-      options: --user root
+    runs-on: self-hosted
     permissions:
       contents: write
       id-token: write
-
-    runs-on: self-hosted
 
     outputs:
       run_rest_jobs: ${{ steps.get_accession_list.outputs.run_jobs }}
 
     steps:
+      
       - name: Checkout main
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+      - name: Cache envs
+        id: cache-envs
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.NXF_WORK }}/conda
+            $CONDA_PREFIX/envs
+          key: env-${{ env.NXF_VER }}-${{ github.job }}
+          restore-keys: |
+            env-${{ env.NXF_VER }}-${{ github.job }}
+            env-${{ env.NXF_VER }}
+            env-
+
+      - name: 'Check and setup conda environment'
+        run: | 
+          mamba env update --name freyja-sra --file environment.yml --prune
+
       - name: 'Get accession list'
         id: get_accession_list
         run: |
@@ -52,19 +83,24 @@ jobs:
           uses: actions/checkout@v4
           with:
             token: ${{ secrets.GITHUB_TOKEN }}
-            
-        - name: Setup nextflow
-          uses: nf-core/setup-nextflow@v1
-        
-      - name: Setup Python
-        - uses: actions/setup-python@v5
-          with:
-            python-version: '3.13' 
 
-      - name: Install Python dependencies
-        run: |
-              pip3 install pandas numpy pyyaml ffq epiweeks git+https://github.com/outbreak-info/python-outbreak-info.git@new_docs
-                
+        - name: Cache envs
+          id: cache-envs
+          uses: actions/cache@v4
+          with:
+            path: |
+              ${{ env.NXF_WORK }}/conda
+              $CONDA_PREFIX/envs
+            key: env-${{ env.NXF_VER }}-${{ github.job }}
+            restore-keys: |
+              env-${{ env.NXF_VER }}-${{ github.job }}
+              env-${{ env.NXF_VER }}
+              env-       
+
+        - name: 'Check and setup conda environment'
+          run: | 
+            mamba env update --name freyja-sra --file environment.yml --prune
+              
         - name: 'Set up Cloud SDK'
           uses: 'google-github-actions/setup-gcloud@v2'
           with:

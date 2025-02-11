@@ -3,9 +3,7 @@ name: Update NCBI metadata
 on:
   schedule:
       - cron: '0 0 */7 * *'
-  push:
-    branches:
-      - main
+      
   workflow_dispatch:
 
 concurrency:
