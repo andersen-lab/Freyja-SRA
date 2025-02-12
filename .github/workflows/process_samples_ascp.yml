@@ -61,6 +61,7 @@ jobs:
       - name: 'Get accession list'
         id: get_accession_list
         run: |
+              mamba activate freyja-sra
               python scripts/get_accession_list.py $BATCH_SIZE
               if [[ -f data/accession_list.csv ]]; then
                 echo "::set-output name=run_jobs::true"
