@@ -100,7 +100,6 @@ jobs:
         - name: 'Check and setup conda environment'
           run: | 
             mamba env update --name freyja-sra --file environment.yml --prune
-            mamba activate freyja-sra
               
         - name: 'Set up Cloud SDK'
           uses: 'google-github-actions/setup-gcloud@v2'
@@ -117,6 +116,7 @@ jobs:
         - name: 'Get accession list'
           id: get_accession_list
           run: |
+                mamba activate freyja-sra
                 python scripts/get_accession_list.py $BATCH_SIZE
 
         - name: Run pipeline on new samples
@@ -132,6 +132,7 @@ jobs:
             
         - name: Aggregate outputs
           run: |
+                mamba activate freyja-sra
                 python scripts/aggregate_demix.py
                 python scripts/aggregate_variants.py
                 python scripts/aggregate_metadata.py
@@ -146,11 +147,13 @@ jobs:
         - id: 'concatenate-outputs'
           name: 'Concatenate outputs'
           run: |
+                mamba activate freyja-sra
                 python scripts/concat_agg_files.py
         
         - id: 'create-demix-by-week'
           name: 'Create demix by week'
           run: |
+                mamba activate freyja-sra
                 python scripts/aggregate_demix_by_week.py
 
         - id: 'upload-outputs'
@@ -164,6 +167,7 @@ jobs:
 
         - name: 'Update processed samples'
           run: |
+                mamba activate freyja-sra
                 python scripts/update_sample_status.py $BATCH_SIZE
         
         - name: 'Commit and push changes'
