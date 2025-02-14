@@ -19,7 +19,7 @@ env:
   NXF_OUTPUT: ${{ github.workspace }}/outputs
   NXF_NAME: github-${{ github.run_number }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#
+
 
 defaults:
   run:
@@ -122,6 +122,7 @@ jobs:
 
         - name: Run pipeline on new samples
           run: |
+                  mamba activate freyja-sra
                   export NXF_ENABLE_VIRTUAL_THREADS=false
                   nextflow run main.nf \
                     --accession_list data/accession_list.csv \
