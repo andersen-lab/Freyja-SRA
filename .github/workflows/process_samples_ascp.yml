@@ -127,6 +127,7 @@ jobs:
                   nextflow run main.nf \
                     --accession_list data/accession_list.csv \
                     --num_samples $BATCH_SIZE \
+                    -profile local \
                     -entry aspera &
                   BG_PID=$!
                   wait $BG_PID
