@@ -93,24 +93,24 @@ process AWS_PREFETCH {
 }
 
 
-process FASTERQ_DUMP {
-    errorStrategy 'ignore'
-    scratch '/tmp/freyja-sra'
-    shell '/bin/sh'
-    container { params.profile == "docker" ? "dylanpilz/sra-tools:latest" : "docker://dylanpilz/sra-tools:latest" }
+// process FASTERQ_DUMP {
+//     errorStrategy 'ignore'
+//     scratch '/tmp/freyja-sra'
+//     shell '/bin/sh'
+//     container { params.profile == "docker" ? "dylanpilz/sra-tools:latest" : "docker://dylanpilz/sra-tools:latest" }
 
-    input:
-    tuple val(accession), path(primer_scheme), path(sra_data)
+//     input:
+//     tuple val(accession), path(primer_scheme), path(sra_data)
 
-    output:
-    tuple val(accession), path(primer_scheme), path("*.fastq")
+//     output:
+//     tuple val(accession), path(primer_scheme), path("*.fastq")
 
-    script:
-    """
-    #!/bin/sh
-    fasterq-dump ./${sra_data}/${accession} --progress --threads 8 --split-files    
-    """
-}
+//     script:
+//     """
+//     #!/bin/sh
+//     fasterq-dump ./${sra_data}/${accession} --progress --threads 8 --split-files    
+//     """
+// }
 
 process GET_ASPERA_DOWNLOAD_SCRIPT {
     errorStrategy 'ignore'

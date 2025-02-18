@@ -18,7 +18,7 @@ annot = file(params.annot)
 include {
     GET_AMPLICON_SCHEME;
     AWS_PREFETCH;
-    FASTERQ_DUMP;
+    //FASTERQ_DUMP;
     GET_ASPERA_DOWNLOAD_SCRIPT;
     ASPERA_CONNECT;
 } from "./modules/sra.nf"
@@ -37,31 +37,31 @@ include {
     FREYJA_DEMIX;
 } from "./modules/freyja.nf"
 
-workflow aws {
+// workflow aws {
 
-    Channel
-        .fromPath(accession_list)
-        .splitCsv()
-        .map { line -> line.join('') }
-        .take(params.num_samples)
-        .set { acc_ch }
+//     Channel
+//         .fromPath(accession_list)
+//         .splitCsv()
+//         .map { line -> line.join('') }
+//         .take(params.num_samples)
+//         .set { acc_ch }
 
-    GET_AMPLICON_SCHEME(acc_ch, metadata)
-        .set { primer_scheme_ch }
+//     GET_AMPLICON_SCHEME(acc_ch, metadata)
+//         .set { primer_scheme_ch }
 
-    AWS_PREFETCH(primer_scheme_ch)
+//     AWS_PREFETCH(primer_scheme_ch)
 
-    FASTERQ_DUMP(AWS_PREFETCH.out)
-        .branch {
-            unknown_primer: it[1].text == 'unknown'
-            known_primer: it[1].text != 'unknown'
-        }
-        .set { fq_ch }
+//     FASTERQ_DUMP(AWS_PREFETCH.out)
+//         .branch {
+//             unknown_primer: it[1].text == 'unknown'
+//             known_primer: it[1].text != 'unknown'
+//         }
+//         .set { fq_ch }
 
-    process_unknown_primer(fq_ch.unknown_primer)
-    process_known_primer(fq_ch.known_primer)
+//     process_unknown_primer(fq_ch.unknown_primer)
+//     process_known_primer(fq_ch.known_primer)
 
-}
+// }
 
 workflow aspera {
     Channel
