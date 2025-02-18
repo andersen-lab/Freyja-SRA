@@ -17,7 +17,7 @@ annot = file(params.annot)
 // Import modules
 include {
     GET_AMPLICON_SCHEME;
-    AWS_PREFETCH;
+    //AWS_PREFETCH;
     //FASTERQ_DUMP;
     GET_ASPERA_DOWNLOAD_SCRIPT;
     ASPERA_CONNECT;

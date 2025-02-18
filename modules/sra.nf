@@ -61,22 +61,22 @@ process GET_AMPLICON_SCHEME {
 }
 
 
-process SRA_PREFETCH {
-    input:
-    val accession
-    path primer_scheme
-    container { params.profile == "docker" ? "dylanpilz/sra-tools:latest" : "docker://dylanpilz/sra-tools:latest" }
+// process SRA_PREFETCH {
+//     input:
+//     val accession
+//     path primer_scheme
+//     container { params.profile == "docker" ? "dylanpilz/sra-tools:latest" : "docker://dylanpilz/sra-tools:latest" }
 
 
-    output:
-    tuple val(accession), path(primer_scheme), path("*")
+//     output:
+//     tuple val(accession), path(primer_scheme), path("*")
 
-    script:
-    """
-    #!/bin/sh
-    prefetch ${accession}
-    """
-}
+//     script:
+//     """
+//     #!/bin/sh
+//     prefetch ${accession}
+//     """
+// }
 
 process AWS_PREFETCH {
     input:
