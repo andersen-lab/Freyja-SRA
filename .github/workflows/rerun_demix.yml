@@ -49,7 +49,7 @@ jobs:
               export NXF_ENABLE_VIRTUAL_THREADS=false
               nextflow run main.nf \
                 -entry rerun_demix \
-                -profile docker \
+                -profile local \
                 --accession_list data/samples_to_rerun.csv \
                 --variants_dir demix_rerun \
 
