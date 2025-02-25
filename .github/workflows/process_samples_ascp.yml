@@ -3,9 +3,6 @@ name: Process Samples Aspera
 on:
   schedule:
     - cron: '0 0-16 * * *'
-  push:
-    branches:
-      - main
 
   workflow_dispatch:
 
@@ -13,12 +10,12 @@ concurrency:
   group: ${{ github.repository }}
 
 env:
-  BATCH_SIZE: 100
   NXF_VER: "24.10.4"
   NXF_WORK: ${{ github.workspace }}/work
   NXF_OUTPUT: ${{ github.workspace }}/outputs
   NXF_NAME: github-${{ github.run_number }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  BATCH_SIZE: 100
 
 
 defaults:
@@ -70,14 +67,11 @@ jobs:
       - name: Run pipeline on new samples
         run: |
                 mamba activate freyja-sra
-                export NXF_ENABLE_VIRTUAL_THREADS=false
                 nextflow run main.nf \
                   --accession_list data/accession_list.csv \
                   --num_samples $BATCH_SIZE \
                   -profile local \
-                  -entry aspera &
-                BG_PID=$!
-                wait $BG_PID
+                  -entry aspera
           
       - name: Aggregate outputs
         run: |
