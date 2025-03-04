@@ -2,14 +2,28 @@ name: Rerun demix
 on:
   schedule:
     - cron: '0 0 * * *'
+  workflow_dispatch:
 
+concurrency:
+  group: ${{ github.repository }}
+
+env:
+  NXF_VER: "24.10.4"
+  NXF_WORK: ${{ github.workspace }}/work
+  NXF_OUTPUT: ${{ github.workspace }}/outputs
+  NXF_NAME: github-${{ github.run_number }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  BATCH_SIZE: 100
+
+defaults:
+  run:  
+    shell: bash -eli {0}
 jobs:
   rerun_demix:
+    runs-on: self-hosted
     permissions:
         contents: write
         id-token: write
-
-    runs-on: self-hosted
 
     steps:
       - name: Checkout main
@@ -17,20 +31,35 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup nextflow
-        uses: nf-core/setup-nextflow@v1
-      
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v2'
+      - name: Cache envs
+        id: cache-envs
+        uses: actions/cache@v4
         with:
-          version: '>= 363.0.0'
-          
+          path: |
+            ${{ env.NXF_WORK }}/conda
+            $CONDA_PREFIX/envs
+          key: env-${{ env.NXF_VER }}-${{ github.job }}
+          restore-keys: |
+            env-${{ env.NXF_VER }}-${{ github.job }}
+            env-${{ env.NXF_VER }}
+            env-
+
+      - name: 'Check and setup conda environment'
+        run: | 
+          mamba env update --name freyja-sra --file environment.yml --prune
+
       - id: 'auth'
         name: 'Authenticate with gcloud'
         uses: 'google-github-actions/auth@v2'
         with:
           workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
           service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          version: '>= 363.0.0'
+          
 
       - name: 'Get samples to re-run'
         run: |
@@ -48,7 +77,7 @@ jobs:
                 -entry rerun_demix \
                 -profile local \
                 --accession_list data/samples_to_rerun.csv \
-                --variants_dir demix_rerun \
+                --variants_dir demix_rerun
 
       - name: 'Aggregate demix results'
         run: |
