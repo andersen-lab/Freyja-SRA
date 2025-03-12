@@ -6,6 +6,8 @@ metadata = pd.read_csv('data/all_metadata.csv')
 
 metadata = metadata[metadata['sample_status'] == 'to_run']
 
+metadata = metadata.sort_values('collection_date', ascending=False)
+
 accessions = metadata['accession'][:batch_size] # Get first batch_size accessions
 
 if len(accessions) == 0:
