@@ -70,7 +70,7 @@ df_agg_weekly = df_agg.groupby(['epiweek', 'geo_loc_region', 'name']).agg({
     'pop_weighted_prevalence': 'sum',
     'collection_site_id': 'nunique',
     'sra_accession': 'nunique',
-    'ww_population': 'sum',
+    'ww_population': 'mean',
 }).reset_index().rename(columns={
     'collection_site_id': 'num_sites',
     'sra_accession': 'num_samples',
@@ -92,7 +92,7 @@ for region, states in CENSUS_REGIONS.items():
         'pop_weighted_prevalence': 'sum',
         'collection_site_id': 'nunique',
         'sra_accession': 'nunique',
-        'ww_population': 'sum',
+        'ww_population': 'mean',
     }).reset_index().rename(columns={
         'collection_site_id': 'num_sites',
         'sra_accession': 'num_samples',
@@ -112,7 +112,7 @@ df_nation = df_agg.groupby(['epiweek', 'name']).agg({
     'pop_weighted_prevalence': 'sum',
     'collection_site_id': 'nunique',
     'sra_accession': 'nunique',
-    'ww_population': 'sum',
+    'ww_population': 'mean',
 }).reset_index().rename(columns={
     'collection_site_id': 'num_sites',
     'sra_accession': 'num_samples',
@@ -128,6 +128,7 @@ df_nation['mean_lineage_prevalence'] = df_nation['pop_weighted_prevalence'] / df
 # Combine all census regions with state data and national data
 df_region_combined = pd.concat(df_agg_census)
 df_agg_weekly = pd.concat([df_agg_weekly, df_region_combined, df_nation])
+df_agg_weekly['total_population'] = df_agg_weekly.groupby(['epiweek', 'geo_loc_region'])['total_population'].transform('mean') # Ensure total population is consistent across lineages in the same region
 
 df_agg_weekly['id'] = df_agg_weekly['epiweek'].astype(str) + '_' + df_agg_weekly['geo_loc_region'] + '_' + df_agg_weekly['name']
 df_agg_weekly['crumbs'] = df_agg_weekly['name'].map(crumbs)
