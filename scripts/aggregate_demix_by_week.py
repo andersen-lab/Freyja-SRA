@@ -9,10 +9,8 @@ CENSUS_REGIONS = {
     'South': ['Delaware', 'Maryland', 'Florida', 'Georgia', 'North Carolina', 'South Carolina', 'Virginia', 'District of Columbia', 'West Virginia', 'Alabama', 'Kentucky', 'Mississippi', 'Tennessee', 'Arkansas', 'Louisiana', 'Oklahoma', 'Texas'],
     'West': ['Arizona', 'Colorado', 'Idaho', 'Montana', 'Nevada', 'New Mexico', 'Utah', 'Wyoming', 'Alaska', 'California', 'Hawaii', 'Oregon', 'Washington']
 }
-CENSUS_REGIONS = {region: [state.lower() for state in states] for region, states in CENSUS_REGIONS.items()}
 
-def sum_unique(series):
-    return series.unique().sum()
+
 
 # Create state to region mapping for easier reference
 STATE_TO_REGION = {}
@@ -49,8 +47,11 @@ df_agg['collection_date'] = pd.to_datetime(df_agg['collection_date'])
 df_agg['epiweek'] = df_agg['collection_date'].apply(lambda x: Week.fromdate(x))
 
 # Calculate population, sample count, and site count for each region/week
+def sum_unique(series):
+    return series.unique().sum()
+
 region_stats = df_agg.groupby(['geo_loc_region', 'epiweek']).agg({
-    'ww_population': 'sum',  # Sum the populations within each state
+    'ww_population': 'mean',  # Sum the populations within each state
     'sra_accession': 'nunique',
     'collection_site_id': 'nunique'
 }).reset_index()
@@ -59,18 +60,19 @@ region_stats = df_agg.groupby(['geo_loc_region', 'epiweek']).agg({
 region_stats['census_region'] = region_stats['geo_loc_region'].map(STATE_TO_REGION)
 
 # Print value counts for samples where census_region is null
-print('census_region null', df_agg[df_agg['census_region'].isna()]['geo_loc_region'].value_counts())
+print('census_region', region_stats['census_region'].value_counts())
+region_stats.to_csv('outputs/aggregate/region_stats.csv', index=False)
 
 # For census regions, aggregate the already-aggregated state data to avoid double counting
 census_stats = region_stats.groupby(['census_region', 'epiweek']).agg({
-    'ww_population': 'sum',
+    'ww_population': 'mean',
     'sra_accession': 'sum',  # Sum the unique counts at state level for region totals
     'collection_site_id': 'sum'
 }).reset_index()
 
 # For national stats, use the census region data
 nation_stats = census_stats.groupby(['epiweek']).agg({
-    'ww_population': 'sum',
+    'ww_population': 'mean',
     'sra_accession': 'sum',
     'collection_site_id': 'sum'
 }).reset_index()
@@ -167,9 +169,6 @@ df_agg_weekly['week_end'] = df_agg_weekly['epiweek'].apply(lambda x: x.enddate()
 df_agg_weekly['total_population'] = df_agg_weekly['region_id'].map(population_dict)
 df_agg_weekly['num_samples'] = df_agg_weekly['region_id'].map(num_samples_dict)
 df_agg_weekly['num_sites'] = df_agg_weekly['region_id'].map(num_sites_dict)
-
-print('california', df_agg_weekly[(df_agg_weekly['geo_loc_region'] == 'California') & (df_agg_weekly['epiweek'] == 202423)]['total_population'].value_counts())
-print('west', df_agg_weekly[(df_agg_weekly['geo_loc_region'] == 'West') & (df_agg_weekly['epiweek'] == 202423)]['total_population'].value_counts())
 
 df_agg_weekly = df_agg_weekly[['id', 'epiweek', 'week_start', 'week_end', 'geo_loc_region', 'total_population', 'num_sites', 'num_samples', 'name', 'mean_lineage_prevalence', 'crumbs']]
 
