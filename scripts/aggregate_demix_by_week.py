@@ -11,7 +11,6 @@ CENSUS_REGIONS = {
 }
 
 
-
 # Create state to region mapping for easier reference
 STATE_TO_REGION = {}
 for region, states in CENSUS_REGIONS.items():
@@ -50,32 +49,24 @@ df_agg['epiweek'] = df_agg['collection_date'].apply(lambda x: Week.fromdate(x))
 def sum_unique(series):
     return series.unique().sum()
 
-region_stats = df_agg.groupby(['geo_loc_region', 'epiweek']).agg({
-    'ww_population': 'mean',  # Sum the populations within each state
+region_stats = df_agg.groupby(['geo_loc_region', 'epiweek', 'census_region']).agg({
+    'ww_population': 'mean',  
     'sra_accession': 'nunique',
     'collection_site_id': 'nunique'
 }).reset_index()
 
-# Add census region to region_stats
-region_stats['census_region'] = region_stats['geo_loc_region'].map(STATE_TO_REGION)
-
-# Print value counts for samples where census_region is null
-print('census_region', region_stats['census_region'].value_counts())
-region_stats.to_csv('outputs/aggregate/region_stats.csv', index=False)
-
-# For census regions, aggregate the already-aggregated state data to avoid double counting
 census_stats = region_stats.groupby(['census_region', 'epiweek']).agg({
-    'ww_population': 'mean',
-    'sra_accession': 'sum',  # Sum the unique counts at state level for region totals
-    'collection_site_id': 'sum'
-}).reset_index()
-
-# For national stats, use the census region data
-nation_stats = census_stats.groupby(['epiweek']).agg({
-    'ww_population': 'mean',
+    'ww_population': 'sum',
     'sra_accession': 'sum',
     'collection_site_id': 'sum'
 }).reset_index()
+
+nation_stats = census_stats.groupby(['epiweek']).agg({
+    'ww_population': 'sum',
+    'sra_accession': 'sum',
+    'collection_site_id': 'sum'
+}).reset_index()
+
 nation_stats['geo_loc_region'] = 'USA'
 
 # Create dictionaries from the corrected data
