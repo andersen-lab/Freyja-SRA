@@ -33,9 +33,6 @@ demix = demix[~demix.groupby('sra_accession')['prevalence'].transform('sum').gt(
 # Add metadata to demix
 df_agg = pd.merge(demix, metadata, on='sra_accession', how='left')
 
-# Add census region to data
-df_agg['census_region'] = df_agg['geo_loc_region'].map(STATE_TO_REGION)
-
 # Calculate population-weighted lineage prevalence for each lineage (prevalence * sampled population)
 df_agg['prevalence'] = pd.to_numeric(df_agg['prevalence'])
 df_agg['ww_population'] = pd.to_numeric(df_agg['ww_population'])
@@ -44,10 +41,8 @@ df_agg['pop_weighted_prevalence'] = df_agg['prevalence'] * df_agg['ww_population
 # Find the total population for each week and region
 df_agg['collection_date'] = pd.to_datetime(df_agg['collection_date'])
 df_agg['epiweek'] = df_agg['collection_date'].apply(lambda x: Week.fromdate(x))
+df_agg['census_region'] = df_agg['geo_loc_region'].map(STATE_TO_REGION)
 
-# Calculate population, sample count, and site count for each region/week
-def sum_unique(series):
-    return series.unique().sum()
 
 region_stats = df_agg.groupby(['geo_loc_region', 'epiweek', 'census_region']).agg({
     'ww_population': 'mean',  
