@@ -44,8 +44,9 @@ df_agg['epiweek'] = df_agg['collection_date'].apply(lambda x: Week.fromdate(x))
 df_agg['census_region'] = df_agg['geo_loc_region'].map(STATE_TO_REGION)
 
 
+
 region_stats = df_agg.groupby(['geo_loc_region', 'epiweek', 'census_region']).agg({
-    'ww_population': 'mean',  
+    'ww_population': lambda x: x.drop_duplicates().sum(),  # Sum of unique population values
     'sra_accession': 'nunique',
     'collection_site_id': 'nunique'
 }).reset_index()
