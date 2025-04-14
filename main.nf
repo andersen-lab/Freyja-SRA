@@ -2,7 +2,7 @@
 nextflow.enable.dsl=2
 
 /*
- * Automated pipeline for Freyja analysis of SRA data
+ * Automated pipeline for Freyja analysis of SARS-CoV-2 wastewater sequencing data
  */
 
 accession_list = file(params.accession_list)
@@ -10,17 +10,11 @@ metadata = file(params.metadata)
 ref = file(params.ref)
 bedfiles = file(params.bedfiles)
 baseDir = file("$baseDir")
-aspera_key = file("${baseDir}/data/asperaweb_id_dsa.openssh")
 barcodes = file("${baseDir}/data/usher_barcodes.feather")
-annot = file(params.annot)
 
 // Import modules
 include {
     GET_AMPLICON_SCHEME;
-    //AWS_PREFETCH;
-    //FASTERQ_DUMP;
-    GET_ASPERA_DOWNLOAD_SCRIPT;
-    ASPERA_CONNECT;
 } from "./modules/sra.nf"
 
 include {
@@ -37,48 +31,26 @@ include {
     FREYJA_DEMIX;
 } from "./modules/freyja.nf"
 
-// workflow aws {
-
-//     Channel
-//         .fromPath(accession_list)
-//         .splitCsv()
-//         .map { line -> line.join('') }
-//         .take(params.num_samples)
-//         .set { acc_ch }
-
-//     GET_AMPLICON_SCHEME(acc_ch, metadata)
-//         .set { primer_scheme_ch }
-
-//     AWS_PREFETCH(primer_scheme_ch)
-
-//     FASTERQ_DUMP(AWS_PREFETCH.out)
-//         .branch {
-//             unknown_primer: it[1].text == 'unknown'
-//             known_primer: it[1].text != 'unknown'
-//         }
-//         .set { fq_ch }
-
-//     process_unknown_primer(fq_ch.unknown_primer)
-//     process_known_primer(fq_ch.known_primer)
-
-// }
-
-workflow aspera {
+workflow fetch {
     Channel
         .fromPath(accession_list)
         .splitCsv()
         .map { line -> line.join('') }
         .take(params.num_samples)
-        .set { acc_ch }
+        .set { samples_ch }
 
-    GET_AMPLICON_SCHEME(acc_ch, metadata)
+    GET_AMPLICON_SCHEME(samples_ch, metadata)
         .set { primer_scheme_ch }
 
-    GET_ASPERA_DOWNLOAD_SCRIPT(primer_scheme_ch, aspera_key)
-    ASPERA_CONNECT(GET_ASPERA_DOWNLOAD_SCRIPT.out, aspera_key)
+    SRATOOLS_PREFETCH(samples_ch)
+    SRATOOLS_FASTERQDUMP(SRATOOLS_PREFETCH.out.sra)
+    
+    // Join the primer scheme information with the reads
+    SRATOOLS_FASTERQDUMP.out.reads
+        .join(primer_scheme_ch, by: 0) // Join by the first element (accession ID)
         .branch {
-            unknown_primer: it[1].text == 'unknown'
-            known_primer: it[1].text != 'unknown'
+            unknown_primer: it[2].text == 'unknown'
+            known_primer: it[2].text != 'unknown'
         }
         .set { fq_ch }
 
