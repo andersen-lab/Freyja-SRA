@@ -1,4 +1,4 @@
-name: Process Samples Aspera
+name: Process Samples
 
 on:
   schedule:
@@ -76,7 +76,7 @@ jobs:
                   --accession_list data/accession_list.csv \
                   --num_samples $BATCH_SIZE \
                   -profile local \
-                  -entry aspera
+                  -entry fetch
           
       - name: Aggregate outputs
         run: |
