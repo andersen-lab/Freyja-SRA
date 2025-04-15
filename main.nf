@@ -50,6 +50,10 @@ workflow fetch {
     SRATOOLS_PREFETCH(samples_ch)
     SRATOOLS_FASTERQDUMP(SRATOOLS_PREFETCH.out.sra)
 
+    SRATOOLS_FASTERQDUMP.out
+        .branch { it[0].primer_scheme == "unknown" }
+        .set { unknown_primer_fastq_ch }
+
 
     // process_unknown_primer(fq_ch.unknown_primer)
     // process_known_primer(fq_ch.known_primer)
