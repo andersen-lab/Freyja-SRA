@@ -5,8 +5,7 @@ nextflow.enable.dsl=2
  * Automated pipeline for Freyja analysis of SARS-CoV-2 wastewater sequencing data
  */
 
-accession_list = file(params.accession_list)
-metadata = file(params.metadata)
+sra_metadata = file(params.sra_metadata)
 ref = file(params.ref)
 bedfiles = file(params.bedfiles)
 baseDir = file("$baseDir")
@@ -36,30 +35,24 @@ include {
 } from "./modules/freyja.nf"
 
 workflow fetch {
-    Channel
-        .fromPath(accession_list)
-        .splitCsv()
-        .map { line -> line.join('') }
-        .take(params.num_samples)
+    Channel.fromPath(sra_metadata)
+        .splitCsv(header: true, sep: ',')
+        .map { row ->
+            meta = [
+                id: row.accession.toString(),
+                primer_scheme: row.amplicon_PCR_primer_scheme.toString(),
+            ]
+            [meta, row.accession.toString()]
+        }
+        .take(5)
         .set { samples_ch }
-
-    GET_AMPLICON_SCHEME(samples_ch, metadata)
-        .set { primer_scheme_ch }
 
     SRATOOLS_PREFETCH(samples_ch)
     SRATOOLS_FASTERQDUMP(SRATOOLS_PREFETCH.out.sra)
-    
-    // Join the primer scheme information with the reads
-    SRATOOLS_FASTERQDUMP.out.reads
-        .join(primer_scheme_ch, by: 0) // Join by the first element (accession ID)
-        .branch {
-            unknown_primer: it[2].text == 'unknown'
-            known_primer: it[2].text != 'unknown'
-        }
-        .set { fq_ch }
 
-    process_unknown_primer(fq_ch.unknown_primer)
-    process_known_primer(fq_ch.known_primer)
+
+    // process_unknown_primer(fq_ch.unknown_primer)
+    // process_known_primer(fq_ch.known_primer)
 }
 
 workflow process_unknown_primer {

@@ -6,16 +6,12 @@ dependencies:
   - bioconda::cutadapt=4.4
   - bioconda::freyja=1.5.1
   - bioconda::minimap2=2.26
+  - bioconda::sra-tools=3.2.0
+  - conda-forge::pigz=2.8  
   - conda-forge::python=3.10
-  - conda-forge::awscli
   - conda-forge::pyarrow
   - conda-forge::google-cloud-sdk=458.0.1
-  - conda-forge::procps-ng=3.3.17
-  - hcc::aspera-cli
   - pip
   - pip:
-    - ffq
     - epiweeks
     - pandas
-    - biopython
-    - git+https://github.com/outbreak-info/python-outbreak-info
