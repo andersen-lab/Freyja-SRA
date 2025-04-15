@@ -14,8 +14,8 @@ barcodes = file("${baseDir}/data/usher_barcodes.feather")
 
 // Import modules
 
-include { SRATOOLS_FASTERQDUMP    } from '../modules/nf-core/sratools/fasterqdump/main'
-include { SRATOOLS_PREFETCH       } from '../modules/nf-core/sratools/prefetch/main'
+include { SRATOOLS_FASTERQDUMP    } from './modules/nf-core/sratools/fasterqdump/main'
+include { SRATOOLS_PREFETCH       } from './modules/nf-core/sratools/prefetch/main'
 
 include {
     GET_AMPLICON_SCHEME;
