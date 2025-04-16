@@ -17,10 +17,6 @@ include { SRATOOLS_FASTERQDUMP    } from './modules/nf-core/sratools/fasterqdump
 include { SRATOOLS_PREFETCH       } from './modules/nf-core/sratools/prefetch/main'
 
 include {
-    GET_AMPLICON_SCHEME;
-} from "./modules/sra.nf"
-
-include {
     CUTADAPT_TRIM;
     MINIMAP2;
     MINIMAP2_UNKNOWN_PRIMER;
@@ -40,23 +36,33 @@ workflow fetch {
         .map { row ->
             meta = [
                 id: row.accession.toString(),
+                sample_status: row.sample_status.toString(),
                 primer_scheme: row.amplicon_PCR_primer_scheme.toString(),
             ]
             [meta, row.accession.toString()]
         }
         .take(5)
+        .filter { it[0].sample_status == 'to_run' }
         .set { samples_ch }
+
+    samples_ch.view { meta, acc -> "Sample: ${meta.id}, status: ${meta.sample_status}, primer scheme: ${meta.primer_scheme}" }
 
     SRATOOLS_PREFETCH(samples_ch)
     SRATOOLS_FASTERQDUMP(SRATOOLS_PREFETCH.out.sra)
 
-    SRATOOLS_FASTERQDUMP.out
-        .branch { it[0].primer_scheme == "unknown" }
-        .set { unknown_primer_fastq_ch }
+    SRATOOLS_FASTERQDUMP.out.reads
+        .branch { meta, fastq ->
+            known_primer: meta.primer_scheme != 'unknown'
+            unknown_primer: meta.primer_scheme == 'unknown'
+        }
+        .set { fq_ch }
+    
+    // View the branched channels with labels
+    fq_ch.known_primer.view { meta, fastq -> "Known primer: ${meta.id}, scheme: ${meta.primer_scheme}" }
+    fq_ch.unknown_primer.view { meta, fastq -> "Unknown primer: ${meta.id}, scheme: ${meta.primer_scheme}" }
 
-
-    // process_unknown_primer(fq_ch.unknown_primer)
-    // process_known_primer(fq_ch.known_primer)
+    process_unknown_primer(fq_ch.unknown_primer)
+    process_known_primer(fq_ch.known_primer)
 }
 
 workflow process_unknown_primer {

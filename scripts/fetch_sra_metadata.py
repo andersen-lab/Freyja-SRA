@@ -68,7 +68,7 @@ us_state_to_abbrev = {
     "U.S. Virgin Islands": "VI",
 }
 
-START_DATE = '2020-03-14'
+START_DATE = '2020-03-01'
 END_DATE = datetime.now().strftime('%Y-%m-%d')
 INTERVAL = 14 # days
 
@@ -197,8 +197,8 @@ def get_metadata():
 
 
 def main():
-    metadata = get_metadata()
-    metadata.to_csv('data/raw_metadata.csv')
+    # metadata = get_metadata()
+    # metadata.to_csv('data/raw_metadata.csv')
     metadata = pd.read_csv('data/raw_metadata.csv', index_col=0 ,low_memory=False)
     metadata = metadata[~metadata.index.duplicated(keep='first')]
 
@@ -260,6 +260,26 @@ def main():
 
     print('Samples with valid population: ', len(all_metadata))
 
+    # Parse primer scheme
+    PRIMER_SCHEMA = {
+        'v5.3': 'ARTICv5.3.2',
+        'v4.1': 'ARTICv4.1',
+        'v3': 'ARTICv3',
+        'qiaseq': 'ARTICv3',
+        'snap': 'snap_primers'
+    }
+
+    def match_primer_scheme(primer_str):
+        if pd.isna(primer_str):
+            return 'unknown'
+        primer_lower = str(primer_str).strip().lower()
+        for key, value in PRIMER_SCHEMA.items():
+            if key in primer_lower:
+                return value        
+        return 'unknown'
+
+    all_metadata['amplicon_PCR_primer_scheme'] = all_metadata['amplicon_PCR_primer_scheme'].apply(match_primer_scheme)
+
     # Select columns of interest
     all_metadata = all_metadata[['amplicon_PCR_primer_scheme', 'collected_by', 'sequenced_by',
                                  'geo_loc_name', 'geo_loc_country', 'geo_loc_region', 'collection_date', 'SRA_published_date', 'ww_population', 'ww_surv_target_1_conc','ww_surv_target_1_conc_unit', 'sample_status']]
@@ -289,7 +309,7 @@ def main():
     # Create human-readable, unique site_id for each sample
     all_metadata['collection_site_id'] = all_metadata['geo_loc_name'].fillna('') +\
         all_metadata['ww_population'].fillna('').astype(str) +\
-        all_metadata['amplicon_PCR_primer_scheme'].fillna('') +\
+        all_metadata['amplicon_PCR_primer_scheme'].fillna('unknown') +\
         all_metadata['collected_by'].fillna('').astype(str)
 
 
