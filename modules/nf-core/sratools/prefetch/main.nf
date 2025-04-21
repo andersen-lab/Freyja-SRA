@@ -1,4 +1,5 @@
 process SRATOOLS_PREFETCH {
+    errorStrategy 'ignore'
     tag "$id"
     label 'process_low'
 
