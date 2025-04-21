@@ -55,7 +55,7 @@ workflow process_unknown_primer {
 
     main:
     CUTADAPT_TRIM(unknown_primer_fastq_ch)
-    MINIMAP2(unknown_primer_fastq_ch, params.reference)
+    MINIMAP2(CUTADAPT_TRIM.out, params.reference)
 
     freyja(MINIMAP2.out)
 }

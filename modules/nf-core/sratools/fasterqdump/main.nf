@@ -10,8 +10,7 @@ process SRATOOLS_FASTERQDUMP {
     output:
     tuple val(meta), path('*.fastq'), emit: reads
     path "*.fastq.gz"
-    path "versions.yml"            , emit: versions
-
+    
     script:
     """
     fasterq-dump \\

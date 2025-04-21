@@ -10,7 +10,6 @@ process SRATOOLS_PREFETCH {
 
     output:
     tuple val(meta), path(id), emit: sra
-    path 'versions.yml'      , emit: versions
 
     when:
     task.ext.when == null || task.ext.when

@@ -21,6 +21,20 @@ process CUTADAPT_TRIM {
     }
 }
 
+process IVAR_TRIM {
+    input:
+    tuple val(meta), path(bam)
+    path bedfiles
+
+    output:
+    tuple val(meta), path("*.trimmed.bam")
+
+    script:
+    """
+    ivar trim -x 4 -e -m 80 -i ${bam} -b ${bedfiles}/${meta.primer_scheme}.bed | samtools sort -o ${meta.id}.trimmed.bam
+    """
+}
+
 process MINIMAP2 {
     input:
     tuple val(meta), path(reads)
@@ -40,41 +54,5 @@ process MINIMAP2 {
             -bS \\
             | samtools sort \\
                 -o ${meta.id}.bam
-    """
-}
-
-process MINIMAP2_UNKNOWN_PRIMER {
-    input:
-    tuple val(meta), path(reads)
-    path reference
-
-    output:
-    tuple val(meta), path("*.bam")
-
-    script:
-    """
-    minimap2 \\
-        -ax sr \\
-        -t $task.cpus \\
-        $reference \\
-        $reads \\
-        | samtools view \\
-            -bS \\
-            | samtools sort \\
-                -o ${meta.id}.bam
-    """
-}
-
-process IVAR_TRIM {
-    input:
-    tuple val(meta), path(bam)
-    path bedfiles
-
-    output:
-    tuple val(meta), path("*.trimmed.bam")
-
-    script:
-    """
-    ivar trim -x 4 -e -m 80 -i ${bam} -b ${bedfiles}/${meta.primer_scheme}.bed | samtools sort -o ${meta.id}.trimmed.bam
     """
 }
