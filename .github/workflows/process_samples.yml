@@ -22,7 +22,7 @@ defaults:
     shell: bash -eli {0}
 
 jobs:
-  setup:
+  run:
     runs-on: self-hosted
     permissions:
       contents: write
@@ -63,17 +63,10 @@ jobs:
         with:
           version: '>= 363.0.0'
 
-      - name: 'Get accession list'
-        id: get_accession_list
-        run: |
-              mamba activate freyja-sc2
-              python scripts/get_accession_list.py $BATCH_SIZE
-
       - name: Run pipeline on new samples
         run: |
                 mamba activate freyja-sc2
                 nextflow run main.nf \
-                  --accession_list data/accession_list.csv \
                   --num_samples $BATCH_SIZE \
                   -profile local \
                   -entry fetch
