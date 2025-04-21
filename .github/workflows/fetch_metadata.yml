@@ -42,10 +42,10 @@ jobs:
             env-
       - name: 'Check and setup conda environment'
         run: | 
-          mamba env update --name freyja-sra --file environment.yml --prune
+          mamba env update --name freyja-sc2 --file environment.yml --prune
       - name: Fetch NCBI metadata
         run: |
-          mamba activate freyja-sra
+          mamba activate freyja-sc2
           python scripts/fetch_sra_metadata.py
 
       - name: 'Get updated barcodes and lineages from Freyja repo'
@@ -59,7 +59,7 @@ jobs:
         run: |
               git config --local user.name "$GITHUB_ACTOR"
               git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-              git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
+              git remote set-url origin https://github.com/andersen-lab/freyja-sc2
               if [[($(git status data/usher_barcodes.feather --porcelain | wc -c) -ne 0)]]; then
                 git add data/usher_barcodes.feather
                 git add data/lineages.yml

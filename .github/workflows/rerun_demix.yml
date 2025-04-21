@@ -46,13 +46,13 @@ jobs:
 
       - name: 'Check and setup conda environment'
         run: | 
-          mamba env update --name freyja-sra --file environment.yml --prune
+          mamba env update --name freyja-sc2 --file environment.yml --prune
 
       - id: 'auth'
         name: 'Authenticate with gcloud'
         uses: 'google-github-actions/auth@v2'
         with:
-          workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
+          workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sc2'
           service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
 
       - name: 'Set up Cloud SDK'
@@ -64,17 +64,17 @@ jobs:
       - name: 'Get samples to re-run'
         run: |
               mkdir demix_rerun
-              mamba activate freyja-sra
+              mamba activate freyja-sc2
               python scripts/get_samples_for_demix_rerun.py
               
       - name: 'Get variants output'
         run: |
-              mamba activate freyja-sra
+              mamba activate freyja-sc2
               bash scripts/get_variants_output.sh
       
       - name: 'Rerun demix'
         run: |
-              mamba activate freyja-sra
+              mamba activate freyja-sc2
               export NXF_ENABLE_VIRTUAL_THREADS=false
               nextflow run main.nf \
                 -entry rerun_demix \
@@ -84,12 +84,12 @@ jobs:
 
       - name: 'Aggregate demix results'
         run: |
-              mamba activate freyja-sra
+              mamba activate freyja-sc2
               python scripts/aggregate_demix.py
 
       - name: 'Replace old demix results'
         run: |
-              mamba activate freyja-sra
+              mamba activate freyja-sc2
               gcloud storage cp gs://outbreak-ww-data/aggregate/aggregate_demix.json outputs/aggregate/aggregate_demix.json
               gcloud storage cp gs://outbreak-ww-data/aggregate/aggregate_metadata.json outputs/aggregate/aggregate_metadata.json
               python scripts/update_aggregate_demix.py
@@ -97,7 +97,7 @@ jobs:
 
       - name: 'Aggregate demix by week'
         run: |
-              mamba activate freyja-sra
+              mamba activate freyja-sc2
               python scripts/aggregate_demix_by_week.py
 
       - id: 'upload-demix'

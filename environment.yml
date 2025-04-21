@@ -1,4 +1,4 @@
-name: freyja-sra
+name: freyja-sc2
 channels:
     - bioconda
     - conda-forge

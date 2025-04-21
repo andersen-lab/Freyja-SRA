@@ -49,13 +49,13 @@ jobs:
 
       - name: 'Check and setup conda environment'
         run: | 
-          mamba env update --name freyja-sra --file environment.yml --prune
+          mamba env update --name freyja-sc2 --file environment.yml --prune
 
       - id: 'auth'
         name: 'Authenticate with gcloud'
         uses: 'google-github-actions/auth@v2'
         with:
-          workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sra'
+          workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sc2'
           service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
           
       - name: 'Set up Cloud SDK'
@@ -66,12 +66,12 @@ jobs:
       - name: 'Get accession list'
         id: get_accession_list
         run: |
-              mamba activate freyja-sra
+              mamba activate freyja-sc2
               python scripts/get_accession_list.py $BATCH_SIZE
 
       - name: Run pipeline on new samples
         run: |
-                mamba activate freyja-sra
+                mamba activate freyja-sc2
                 nextflow run main.nf \
                   --accession_list data/accession_list.csv \
                   --num_samples $BATCH_SIZE \
@@ -80,7 +80,7 @@ jobs:
           
       - name: Aggregate outputs
         run: |
-              mamba activate freyja-sra
+              mamba activate freyja-sc2
               python scripts/aggregate_demix.py
               python scripts/aggregate_variants.py
               python scripts/aggregate_metadata.py
@@ -95,13 +95,13 @@ jobs:
       - id: 'concatenate-outputs'
         name: 'Concatenate outputs'
         run: |
-              mamba activate freyja-sra
+              mamba activate freyja-sc2
               python scripts/concat_agg_files.py
       
       - id: 'create-demix-by-week'
         name: 'Create demix by week'
         run: |
-              mamba activate freyja-sra
+              mamba activate freyja-sc2
               python scripts/aggregate_demix_by_week.py
 
       - id: 'upload-outputs'
@@ -115,14 +115,14 @@ jobs:
 
       - name: 'Update processed samples'
         run: |
-              mamba activate freyja-sra
+              mamba activate freyja-sc2
               python scripts/update_sample_status.py $BATCH_SIZE
       
       - name: 'Commit and push changes'
         run: |
               git config --local user.name "$GITHUB_ACTOR"
               git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-              git remote set-url origin https://github.com/andersen-lab/Freyja-SRA
+              git remote set-url origin https://github.com/andersen-lab/freyja-sc2
               git add data/all_metadata.csv
               git commit -m "Update processed samples"
               git push --force
