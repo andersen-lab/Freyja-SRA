@@ -4,97 +4,77 @@
 
 process CUTADAPT_TRIM {
     input:
-    tuple tuple val(sample_id), path(primer_scheme), tuple path(read1), path(read2)
+    tuple val(meta), path(reads)
 
     output:
-    tuple val(sample_id), path("*_trimmed.fastq")
+    tuple val(meta), path("*_trimmed.fastq")
 
     script:
-    """
-    #!/usr/bin/env python3
-    import subprocess
-
-    cmd = ['cutadapt', '-l', '+30', '-l', '-30', '-o', '${sample_id}_1_trimmed.fastq', '-p', '${sample_id}_2_trimmed.fastq', '${read1}', '${read2}']
-    subprocess.run(cmd)
-    """
+    if (reads.size() == 2) {
+        """
+        cutadapt -l +30 -l -30 -o ${meta.id}_1_trimmed.fastq -p ${meta.id}_2_trimmed.fastq ${reads[0]} ${reads[1]}
+        """
+    } else {
+        """
+        cutadapt -l +30 -l -30 -o ${meta.id}_trimmed.fastq ${reads}
+        """
+    }
 }
 
 process MINIMAP2 {
-    errorStrategy 'ignore'
     input:
-    tuple tuple val(sample_id), path(primer_scheme), tuple path(read1), path(read2)
+    tuple val(meta), path(reads)
+    path reference
 
     output:
-    path "${sample_id}.bam"
+    tuple val(meta), path("*.bam")
 
     script:
     """
-    minimap2 -ax sr ${ref} ${read1} ${read2} | samtools view -bS - > ${sample_id}.bam   
+    minimap2 \\
+        -ax sr \\
+        -t $task.cpus \\
+        $reference \\
+        $reads \\
+        | samtools view \\
+            -bS \\
+            | samtools sort \\
+                -o ${meta.id}.bam
     """
 }
 
 process MINIMAP2_UNKNOWN_PRIMER {
-    errorStrategy 'ignore'
     input:
-    tuple val(sample_id), path(reads)
-    path ref
+    tuple val(meta), path(reads)
+    path reference
 
     output:
-    path "${sample_id}.bam"
+    tuple val(meta), path("*.bam")
 
     script:
     """
-    minimap2 -ax sr ${ref} ${reads}  | samtools view -bS - > ${sample_id}.bam   
-    """
-}
-
-process SAMTOOLS_1 {
-    input:
-    path bamfile
-
-    output:
-    val bamfile.baseName
-    path "${bamfile.baseName}.sorted.bam"
-    path "${bamfile.baseName}.sorted.bam.bai"
-
-    script:
-    """
-    samtools sort -o ${bamfile.baseName}.sorted.bam ${bamfile}
-    samtools index ${bamfile.baseName}.sorted.bam
+    minimap2 \\
+        -ax sr \\
+        -t $task.cpus \\
+        $reference \\
+        $reads \\
+        | samtools view \\
+            -bS \\
+            | samtools sort \\
+                -o ${meta.id}.bam
     """
 }
 
 process IVAR_TRIM {
     input:
-    val sra_accession
-    path sorted_bam
-    path bam_index
-    val primer_scheme
+    tuple val(meta), path(bam)
     path bedfiles
 
     output:
-    val sra_accession
-    path "${sra_accession}.trimmed.bam"
+    tuple val(meta), path("*.trimmed.bam")
 
     script:
     """
-    ivar trim -x 4 -e -m 80 -i ${sorted_bam} -b ${bedfiles}/${primer_scheme}.bed -p ${sra_accession}.trimmed.bam
-    """
-}
-
-process SAMTOOLS_2 {
-    input:
-    val sra_accession
-    path bamfile
-
-    output:
-    val sra_accession
-    path "${sra_accession}.sorted.bam"
-    path "${sra_accession}.sorted.bam.bai"
-
-    script:
-    """
-    samtools sort -o ${sra_accession}.sorted.bam ${bamfile}
-    samtools index ${sra_accession}.sorted.bam
+    ivar trim -x 4 -e -m 80 -i ${bam} -b ${bedfiles}/${meta.primer_scheme}.bed | samtools sort -o ${meta.id}.trimmed.bam
     """
 }

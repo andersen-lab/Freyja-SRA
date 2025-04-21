@@ -2,56 +2,35 @@ process FREYJA_VARIANTS {
     publishDir "${params.output}/variants", mode: 'copy'
 
     input:
-    val sra_accession
-    path input_bam
-    path bam_index
-    path ref
+    tuple val(meta), path(bam)
+    path reference
 
     output:
-    tuple val(sra_accession), path("${sra_accession}.variants.tsv"), path("${sra_accession}.depths.tsv")
+    tuple val(meta), path("${meta.id}.variants.tsv"), path("${meta.id}.depths.tsv")
 
     script:
     """
-    freyja variants ${input_bam} --variants ${sra_accession}.variants.tsv --depths ${sra_accession}.depths.tsv --ref ${ref}
+    freyja variants ${bam} --variants ${meta.id}.variants.tsv --depths ${meta.id}.depths.tsv --ref ${reference}
     """
 }
 
 process FREYJA_DEMIX {
     publishDir "${params.output}/demix", mode: 'copy'
-    errorStrategy {task.attempt <= maxRetries  ? 'retry' : 'ignore' }
-    maxRetries 1
+    errorStrategy 'ignore' 
 
     input:
-    tuple val(sample_id), path(variants), path(depths)
-    val eps
+    tuple val(meta), path(variants), path(depths)
     path barcodes
 
     output:
-    path "${sample_id}.demix.tsv"
-
-    script:
-    def depthCutoff = 0 + (task.attempt - 1) * 10
-    """
-    freyja demix ${variants} ${depths} --eps ${eps} --output ${sample_id}.demix.tsv --depthcutoff ${depthCutoff} --relaxedmrca --barcodes ${barcodes}
-    """
-}
-
-process FREYJA_COVARIANTS {
-    publishDir "${params.output}/covariants", mode: 'copy'
-    errorStrategy 'ignore'
-    
-    input:
-    val sra_accession
-    path input_bam
-    path bam_index
-    path ref
-    path annot
-
-    output:
-    path "${sra_accession}.covariants.tsv"
+    path "*.demix.tsv"
 
     script:
     """
-    freyja covariants ${input_bam} ${params.min_site} ${params.max_site} --output ${sra_accession}.covariants.tsv --ref-genome ${ref} --gff-file ${annot}
+    freyja demix \\
+        $variants \\
+        $depths \\
+        --barcodes $barcodes \\
+        --output ${meta.id}.demix.tsv
     """
 }

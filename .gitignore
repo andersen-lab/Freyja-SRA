@@ -9,6 +9,7 @@ outputs
 demix_rerun
 variants_rerun
 aggregate_demix.tsv
+bam
 
 # vscode
 .vscode
@@ -22,3 +23,5 @@ aggregate_demix.tsv
 
 # macOS
 .DS_Store
+
+PRJNA1*

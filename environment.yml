@@ -3,8 +3,8 @@ channels:
     - bioconda
     - conda-forge
 dependencies:
-  - bioconda::cutadapt=4.4
-  - bioconda::freyja=1.5.1
+  - bioconda::cutadapt=5.0
+  - bioconda::freyja=1.5.3
   - bioconda::minimap2=2.26
   - bioconda::sra-tools=3.2.0
   - conda-forge::pigz=2.8  
