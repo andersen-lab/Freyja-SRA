@@ -55,7 +55,7 @@ jobs:
         name: 'Authenticate with gcloud'
         uses: 'google-github-actions/auth@v2'
         with:
-          workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/github/providers/freyja-sc2'
+          workload_identity_provider: 'projects/12767718289/locations/global/workloadIdentityPools/outbreak-ww/providers/freyja-sc2'
           service_account: 'outbreak-ww@andersen-lab-primary.iam.gserviceaccount.com'
           
       - name: 'Set up Cloud SDK'
