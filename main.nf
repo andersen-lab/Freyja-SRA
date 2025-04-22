@@ -65,7 +65,7 @@ workflow process_known_primer {
 
     main:
     MINIMAP2(known_primer_fastq_ch, params.reference)
-    IVAR_TRIM(MINIMAP2.out, params.bedfiles).view()
+    IVAR_TRIM(MINIMAP2.out, params.bedfiles)
 
     freyja(IVAR_TRIM.out)
 }

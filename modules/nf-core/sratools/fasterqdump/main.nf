@@ -1,6 +1,7 @@
 process SRATOOLS_FASTERQDUMP {
     tag "$meta.id"
     label 'process_single'
+    cpus 16
 
     conda "${moduleDir}/environment.yml"
 
