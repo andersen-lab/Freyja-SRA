@@ -14,7 +14,7 @@ env:
   NXF_OUTPUT: ${{ github.workspace }}/outputs
   NXF_NAME: github-${{ github.run_number }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  BATCH_SIZE: 100
+  BATCH_SIZE: 50
 
 
 defaults:
