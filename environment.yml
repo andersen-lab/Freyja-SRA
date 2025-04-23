@@ -15,4 +15,5 @@ dependencies:
   - pip:
     - epiweeks
     - pandas
+    - frozendict
     - git+https://github.com/outbreak-info/python-outbreak-info
