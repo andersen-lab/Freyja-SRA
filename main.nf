@@ -35,6 +35,12 @@ workflow fetch {
         .set { samples_ch }
 
 
+    samples_ch
+        .map { meta, accession -> accession }
+        .collectFile(name: "accession_list.txt", storeDir: "./data") { accession -> 
+            accession + "\n" 
+        }
+
     SRATOOLS_PREFETCH(samples_ch)
     SRATOOLS_FASTERQDUMP(SRATOOLS_PREFETCH.out.sra)
 
@@ -48,6 +54,7 @@ workflow fetch {
 
     process_unknown_primer(fq_ch.unknown_primer)
     process_known_primer(fq_ch.known_primer)
+
 }
 
 workflow process_unknown_primer {
