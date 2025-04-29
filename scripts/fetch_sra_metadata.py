@@ -326,6 +326,9 @@ def main():
     ca_data = all_metadata
     ca_data['collected_by'].value_counts().to_csv('data/collected_by_ca.csv')
 
+    # Sort by collection date
+    all_metadata = all_metadata.sort_values(by='collection_date', ascending=False)
+    all_metadata = all_metadata.reset_index()
 
     all_metadata.to_csv('data/all_metadata.csv')
 
