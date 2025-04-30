@@ -209,7 +209,7 @@ def main():
 
     # Get sample status from current metadata file
 
-    old_metadata = pd.read_csv('data/all_metadata.csv', index_col=0, low_memory=False)
+    old_metadata = pd.read_csv('data/all_metadata.csv', index_col=1, low_memory=False)
     sample_status = old_metadata['sample_status']
 
     all_metadata = metadata.join(sample_status, how='left')
@@ -323,12 +323,8 @@ def main():
     print('All samples: ', all_metadata['sample_status'].value_counts())
     print('Samples to run: ', len(samples_to_run))
 
-    ca_data = all_metadata
-    ca_data['collected_by'].value_counts().to_csv('data/collected_by_ca.csv')
-
     # Sort by collection date
     all_metadata = all_metadata.sort_values(by='collection_date', ascending=False)
-    all_metadata = all_metadata.reset_index()
 
     all_metadata.to_csv('data/all_metadata.csv')
 
