@@ -197,9 +197,10 @@ def get_metadata():
 
 
 def main():
-    metadata = get_metadata()
-    metadata.to_csv('data/raw_metadata.csv')
+    # metadata = get_metadata()
+    # metadata.to_csv('data/raw_metadata.csv')
     metadata = pd.read_csv('data/raw_metadata.csv', index_col=0 ,low_memory=False)
+    metadata.index.name = 'accession'
     metadata = metadata[~metadata.index.duplicated(keep='first')]
 
     
@@ -209,7 +210,7 @@ def main():
 
     # Get sample status from current metadata file
 
-    old_metadata = pd.read_csv('data/all_metadata.csv', index_col=1, low_memory=False)
+    old_metadata = pd.read_csv('data/all_metadata.csv', index_col=0, low_memory=False)
     sample_status = old_metadata['sample_status']
 
     all_metadata = metadata.join(sample_status, how='left')
@@ -325,6 +326,7 @@ def main():
 
     # Sort by collection date
     all_metadata = all_metadata.sort_values(by='collection_date', ascending=False)
+    all_metadata.index.name = 'accession'
 
     all_metadata.to_csv('data/all_metadata.csv')
 
