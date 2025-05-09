@@ -197,8 +197,8 @@ def get_metadata():
 
 
 def main():
-    # metadata = get_metadata()
-    # metadata.to_csv('data/raw_metadata.csv')
+    metadata = get_metadata()
+    metadata.to_csv('data/raw_metadata.csv')
     metadata = pd.read_csv('data/raw_metadata.csv', index_col=0 ,low_memory=False)
     metadata.index.name = 'accession'
     metadata = metadata[~metadata.index.duplicated(keep='first')]
